@@ -4,7 +4,9 @@ import AddStudents from "./AddStudents";
 type CourseRosterPageProps = { courseId: number };
 import { API } from "@koh/api-client";
 import { useCourse } from "../../hooks/useCourse";
-import { message } from "antd";
+import { message, Button } from "antd";
+import { AddStudentModal } from "./AddStudentModal";
+
 const CourseRosterPageComponent = styled.div`
   width: 90%;
   margin-left: auto;
@@ -18,6 +20,8 @@ export default function AddStudentsToCourse({
   const [file, setFile] = useState();
   const fileReader = new FileReader();
   const { course } = useCourse(courseId);
+  const [addStudentModal, setAddStudentModal] = useState(false);
+
   const handleOnChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -31,6 +35,7 @@ export default function AddStudentsToCourse({
       fileReader.readAsText(file);
     }
   };
+
   const addStudents = async (students: string) => {
     const lines = students.split("\r\n");
     lines.forEach(async (student, i) => {
@@ -69,26 +74,39 @@ export default function AddStudentsToCourse({
   return (
     <div>
       <CourseRosterPageComponent>
-        <div style={{ textAlign: "center" }}>
-          <h1>Import student file </h1>
-          <form>
-            <input
-              type={"file"}
-              id={"csvFileInput"}
-              accept={".csv"}
-              onChange={handleOnChange}
-            />
-            <button
-              onClick={(e) => {
-                handleOnSubmit(e);
-              }}
-            >
-              Add students
-            </button>
-          </form>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div style={{ textAlign: "center" }}>
+            <h1>Import student file </h1>
+            <form>
+              <input
+                type={"file"}
+                id={"csvFileInput"}
+                accept={".csv"}
+                onChange={handleOnChange}
+              />
+              <button
+                onClick={(e) => {
+                  handleOnSubmit(e);
+                }}
+              >
+                Add students
+              </button>
+            </form>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <h1>Add student manually</h1>
+            <Button type="primary" onClick={() => setAddStudentModal(true)}>
+              Add student
+            </Button>
+          </div>
         </div>
         <AddStudents courseId={courseId} />
       </CourseRosterPageComponent>
+      <AddStudentModal
+        course={course}
+        visible={addStudentModal}
+        onClose={() => setAddStudentModal(false)}
+      />
     </div>
   );
 }

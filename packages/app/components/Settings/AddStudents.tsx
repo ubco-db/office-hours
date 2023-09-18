@@ -1,12 +1,12 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { API } from "@koh/api-client";
 import { Role } from "@koh/common";
-import { Divider, Input, List, Pagination, Spin } from "antd";
+import { Divider, Input, List, Pagination, Spin, Button } from "antd";
 import Avatar from "antd/lib/avatar/avatar";
 import { useState } from "react";
 import { ReactElement } from "react";
 import styled from "styled-components";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
 type CourseRosterProps = { courseId: number };
 
@@ -67,6 +67,14 @@ function RenderTable({
     setSearch(event.target.value);
     setPage(1);
   };
+  const handleDelete = async (userId) => {
+    try {
+      await API.profile.deleteStudent(userId);
+      mutate(`${role}/${page}/${search}`);
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+    }
+  };
   const { data } = useSWR(
     `${role}/${page}/${search}`,
     async () => await API.course.getUserInfo(courseId, page, role, search)
@@ -100,6 +108,9 @@ function RenderTable({
                   title={item.name}
                 />
                 <div>{item.email}</div>
+                <Button type="danger" onClick={() => handleDelete(item.id)}>
+                  Delete
+                </Button>
               </List.Item>
             )}
             bordered
