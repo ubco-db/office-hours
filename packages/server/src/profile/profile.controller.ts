@@ -437,6 +437,23 @@ export class ProfileController {
     );
   }
 
+  @Delete(':id/delete_student')
+  @UseGuards(JwtAuthGuard)
+  async deleteUser(@Param('id') id: number): Promise<any> {
+    const user = await UserModel.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const userCourses = await UserCourseModel.find({ where: { user: user } });
+    await UserCourseModel.remove(userCourses);
+
+    await UserModel.remove(user);
+
+    return { message: 'User deleted successfully' };
+  }
+
   @Delete('/delete_profile_picture')
   @UseGuards(JwtAuthGuard)
   async deleteProfilePicture(@User() user: UserModel): Promise<void> {
