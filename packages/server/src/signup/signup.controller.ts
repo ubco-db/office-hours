@@ -35,7 +35,6 @@ export class SignupController {
     @Body() body: UBCOuserParam,
   ): Promise<any> {
     const course = await CourseModel.findOne(body.selected_course);
-    console.log(body);
     if (!course) {
       console.log('course');
       throw new NotFoundException();

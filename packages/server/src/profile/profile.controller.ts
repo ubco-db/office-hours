@@ -6,6 +6,7 @@ import {
   QuestionStatusKeys,
   UpdateProfileParams,
   PROD_URL,
+  UBCOuserParam,
 } from '@koh/common';
 import {
   BadRequestException,
@@ -177,6 +178,66 @@ export class ProfileController {
       }
     });
   }
+
+  @Get(':id/student')
+  @UseGuards(JwtAuthGuard)
+  async getStudent(
+    @Param('id') id: number,
+    @Res() res: Response,
+  ): Promise<any> {
+    const student = await UserModel.findOne(id);
+    res.status(200).send(student);
+    return student;
+  }
+
+  @Post(':id/edit_student')
+  @UseGuards(JwtAuthGuard)
+  async edit_student(
+    @Param('id') id: number,
+    @Res() res: Response,
+    @Body() body: UBCOuserParam,
+  ): Promise<any> {
+    const user = await UserModel.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (body.email && body.email !== user.email && body.email !== '') {
+      user.email = body.email;
+    }
+
+    if (
+      body.first_name &&
+      body.first_name !== user.firstName &&
+      body.first_name !== ''
+    ) {
+      user.firstName = body.first_name;
+    }
+
+    if (
+      body.last_name &&
+      body.last_name !== user.lastName &&
+      body.last_name !== ''
+    ) {
+      user.lastName = body.last_name;
+    }
+
+    if (body.password && body.password !== '') {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(body.password, salt);
+    }
+
+    if (body.sid && body.sid !== user.sid) {
+      user.sid = body.sid;
+    }
+
+    await user.save();
+
+    res.status(200).send({ message: 'User has been updated' });
+    return 'success';
+  }
+
   //potential problem-should fix later. Currently checking whether question in database, but student can be in different queues(so find with both queues and user id)
   //get all student in course
   @Get(':c/id')

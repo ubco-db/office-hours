@@ -95,7 +95,13 @@ export default function AddStudentsToCourse({
           </div>
           <div style={{ textAlign: "center" }}>
             <h1>Add student manually</h1>
-            <Button type="primary" onClick={() => setAddStudentModal(true)}>
+            <Button
+              type="primary"
+              onClick={(e) => {
+                e.currentTarget.blur();
+                setAddStudentModal(true);
+              }}
+            >
               Add student
             </Button>
           </div>
