@@ -92,8 +92,15 @@ class APIClient {
       this.req("DELETE", `/api/v1/profile/delete_profile_picture`),
     getAllStudents: async (courseId: number): Promise<any> =>
       this.req("GET", `/api/v1/profile/${courseId}/id`, undefined),
-    getStudent: async (sid: number): Promise<any> =>
-      this.req("GET", `/api/v1/profile/${sid}/student`, undefined),
+    getStudent: async (id: number): Promise<any> =>
+      this.req("GET", `/api/v1/profile/${id}/student`, undefined),
+    editStudent: async (student: UBCOuserParam, id: number) =>
+      this.req(
+        "POST",
+        `/api/v1/profile/${id}/edit_student`,
+        undefined,
+        student
+      ),
     inQueue: async (sid: number): Promise<boolean> =>
       this.req("GET", `/api/v1/profile/${sid}/inQueue`, undefined),
     updatePassword: async (password: string, token: string): Promise<void> =>
