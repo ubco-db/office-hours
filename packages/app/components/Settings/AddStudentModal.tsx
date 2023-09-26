@@ -20,11 +20,15 @@ export function AddStudentModal({
     await API.signup.registerStudent(userData);
     mutate(`${Role.STUDENT}/${page}/${search}`);
   };
+
   return (
     <Modal
       title="Add student"
       visible={visible}
-      onCancel={onClose}
+      onCancel={() => {
+        form.resetFields();
+        onClose();
+      }}
       onOk={async () => {
         const value = await form.validateFields();
         const userData: UBCOuserParam = {
@@ -38,6 +42,7 @@ export function AddStudentModal({
           courses: [],
         };
         await addStudent(userData);
+        form.resetFields();
         onClose();
       }}
     >
