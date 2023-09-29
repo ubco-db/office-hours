@@ -14,6 +14,51 @@ import { DesktopNotifModel } from 'notification/desktop-notif.entity';
 describe('Profile Integration', () => {
   const supertest = setupIntegrationTest(ProfileModule);
 
+  describe('GET /profile/:id/student', () => {
+    it("doesn't allow to access endpoint when JWT is not set", async () => {
+      await UserFactory.create();
+      await supertest().get('/profile/1/student').expect(401);
+    });
+
+    it('returns student user profile', async () => {
+      const user = await UserFactory.create();
+
+      const res = await supertest({ userId: user.id })
+        .get(`/profile/${user.id}/student`)
+        .expect(200);
+
+      expect(res.body).toMatchSnapshot();
+    });
+  });
+
+  describe('DELETE /profile/:id/delete_student', () => {
+    it("doesn't allow to access endpoint when JWT is not set", async () => {
+      await UserFactory.create();
+
+      await supertest().delete('/profile/1/delete_student').expect(401);
+    });
+
+    it("fails to delete a user when user doesn't exist", async () => {
+      const user = await UserFactory.create();
+
+      const res = await supertest({ userId: user.id })
+        .delete('/profile/0/delete_student')
+        .expect(404);
+
+      expect(res.body.message).toBe('User not found');
+    });
+
+    it('deletes the user', async () => {
+      const user = await UserFactory.create();
+
+      const res = await supertest({ userId: user.id }).delete(
+        `/profile/${user.id}/delete_student`,
+      );
+
+      expect(res.body.message).toBe('User deleted successfully');
+    });
+  });
+
   describe('GET /profile', () => {
     it('returns the logged-in user profile', async () => {
       const user = await UserFactory.create();
