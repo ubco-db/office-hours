@@ -64,7 +64,9 @@ export default function QueueCheckInModal({
             data-cy="select-existing-queue"
             filterOption={(input, option) => {
               return (
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option.children as unknown as string)
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
               );
             }}
           >

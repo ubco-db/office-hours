@@ -5,7 +5,13 @@ import { API } from "@koh/api-client";
 import { default as React } from "react";
 import { mutate } from "swr";
 import { useState, useEffect } from "react";
-import { Role } from "@koh/common";
+import { Role, UBCOuserParam } from "@koh/common";
+
+interface EditStudentModalProps {
+  courseId: number;
+  student: any;
+  onClose: () => void;
+}
 
 export function EditStudentModal({
   courseId,

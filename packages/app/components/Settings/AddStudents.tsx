@@ -1,6 +1,6 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { API } from "@koh/api-client";
-import { Role } from "@koh/common";
+import { Role, UBCOuserParam } from "@koh/common";
 import {
   Divider,
   Input,
