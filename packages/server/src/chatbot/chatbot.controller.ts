@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
-import { ChatbotService } from './chatbot.service';
+import { ChatbotResponse, ChatbotService } from './chatbot.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { InteractionModel } from './interaction.entity';
 import { ChatbotQuestionModel } from './question.entity';
@@ -22,5 +22,10 @@ export class ChatbotController {
     @Body() body: ChatBotQuestionParams,
   ): Promise<ChatbotQuestionModel> {
     return await this.ChatbotService.createQuestion(body);
+  }
+
+  @Post('ask')
+  async ask(@Body() body: { question: string }): Promise<ChatbotResponse> {
+    return await this.ChatbotService.ask(body.question);
   }
 }
