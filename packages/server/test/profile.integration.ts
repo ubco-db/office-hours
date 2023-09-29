@@ -14,6 +14,62 @@ import { DesktopNotifModel } from 'notification/desktop-notif.entity';
 describe('Profile Integration', () => {
   const supertest = setupIntegrationTest(ProfileModule);
 
+  describe('POST /profile/:id/edit_student', () => {
+    it('Does not allow unauthorized edit', async () => {
+      await UserFactory.create();
+
+      await supertest()
+        .post(`/profile/1/edit_student`)
+        .send({
+          email: 'hello@world.com',
+          first_name: 'bob',
+          password: 'onion',
+          last_name: 'chungus',
+          selected_course: 134,
+          sid: 123,
+          photo_url: '',
+          courses: [],
+        })
+        .expect(401);
+    });
+
+    it('Cannot edit user that does not exist', async () => {
+      const user = await UserFactory.create();
+
+      await supertest({ userId: user.id })
+        .post(`/profile/0/edit_student`)
+        .send({
+          email: 'hello@world.com',
+          first_name: 'bob',
+          password: 'onion',
+          last_name: 'chungus',
+          selected_course: 134,
+          sid: 123,
+          photo_url: '',
+          courses: [],
+        })
+        .expect(404);
+    });
+
+    it('edits user', async () => {
+      const user = await UserFactory.create();
+
+      await supertest({ userId: user.id })
+        .post(`/profile/${user.id}/edit_student`)
+        .send({
+          email: 'hello@world.com',
+          first_name: 'bob',
+          password: 'onion',
+          last_name: 'chungus',
+          selected_course: 134,
+          sid: 123,
+          photo_url: '',
+          courses: [],
+        })
+        .expect(200);
+    });
+  });
+
   describe('GET /profile/:id/student', () => {
     it("doesn't allow to access endpoint when JWT is not set", async () => {
       await UserFactory.create();
