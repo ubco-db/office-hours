@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { Menu, Modal, Popover, Typography, Space } from "antd";
 import Link from "next/link";
-import React, { ReactElement, ReactNode, useState } from "react";
+import React, { ReactElement, useState } from "react";
 import styled from "styled-components";
 import SelfAvatar from "../common/SelfAvatar";
 import { useRoleInCourse } from "../../hooks/useRoleInCourse";
@@ -30,7 +30,7 @@ interface ProfileDrawerProps {
   courseId: number;
 }
 
-function shortcutInfoContent(role: Role): ReactNode {
+function shortcutInfoContent(role: Role): React.ReactNode {
   if (role === Role.STUDENT) {
     return (
       <Space direction="vertical" style={{ display: "flex" }}>
