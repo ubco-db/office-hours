@@ -38,7 +38,7 @@ export class ChatbotService {
   // filePath currently relative
 
   documentStore: PineconeStore;
-  questionIndex: VectorOperationsApi;
+  questionIndex: any;
   embeddings: OpenAIEmbeddings;
 
   async createInteraction(data: InteractionParams): Promise<InteractionModel> {
@@ -167,8 +167,7 @@ export class ChatbotService {
     return documentChunks;
   };
 
-  // Fills pineconestore from directory
-  initialPineconeStore = async (filePath: string) => {
+  initializePineconeStore = async (filePath: string) => {
     const directoryLoader = await this.getDirectoryLoader(filePath);
     const rawDocuments = await this.loadDocuments(directoryLoader);
     const documentChunks = await this.splitDocuments(rawDocuments);
@@ -183,9 +182,9 @@ export class ChatbotService {
     const similarQuestions = await this.getSimilarQuestions(query);
 
     // Convert to nested class to handle PDFs, TXTs, Webpages, etc
-    // Fix any type
-    // string: Set<string>
-    const groupedSourceDocuments: any = {};
+    const groupedSourceDocuments: {
+      [key: string]: Set<string>;
+    } = {};
     chainResponse.sourceDocuments.map((sourceDocument: any) => {
       let group: Set<string> =
         groupedSourceDocuments[sourceDocument.metadata['pdf.info.Title']];
@@ -198,7 +197,9 @@ export class ChatbotService {
     });
     // { 'COSC 404 - R-Trees': Set(5) { 8, 2, 23 }, 'COSC 404 - B-Trees': Set(5) { 4, 9 }}
 
-    const groupedSimilarDocuments: any = {};
+    const groupedSimilarDocuments: {
+      [key: string]: Set<string>;
+    } = {};
     similarDocuments.map((similarDocument: any) => {
       let group: Set<string> =
         groupedSimilarDocuments[similarDocument.metadata['pdf.info.Title']];
@@ -213,9 +214,9 @@ export class ChatbotService {
 
     await this.insertQuestion({
       query,
-      answer,
-      sourceDocuments,
-      similarDocuments,
+      answer: chainResponse.text,
+      sourceDocuments: groupedSourceDocuments,
+      similarDocuments: groupedSimilarDocuments,
     });
 
     return {
