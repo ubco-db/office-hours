@@ -61,3 +61,30 @@ Object {
   "sid": null,
 }
 `;
+
+exports[`Profile Integration GET /profile/:id/user returns user profile 1`] = `
+Object {
+  "defaultMessage": null,
+  "desktopNotifsEnabled": false,
+  "email": "user@ubc.ca",
+  "firstName": "User",
+  "hideInsights": Array [],
+  "id": 1,
+  "includeDefaultMessage": true,
+  "insights": Array [
+    "TotalStudents",
+    "TotalQuestionsAsked",
+    "MedianWaitTime",
+    "QuestionTypeBreakdown",
+    "MostActiveStudents",
+    "QuestionToStudentRatio",
+    "MedianHelpingTime",
+  ],
+  "lastName": "Person",
+  "name": "User Person",
+  "password": null,
+  "phoneNotifsEnabled": false,
+  "photoURL": null,
+  "sid": null,
+}
+`;

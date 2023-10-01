@@ -14,12 +14,12 @@ import { DesktopNotifModel } from 'notification/desktop-notif.entity';
 describe('Profile Integration', () => {
   const supertest = setupIntegrationTest(ProfileModule);
 
-  describe('POST /profile/:id/edit_student', () => {
+  describe('POST /profile/:id/edit_user', () => {
     it('Does not allow unauthorized edit', async () => {
       await UserFactory.create();
 
       await supertest()
-        .post(`/profile/1/edit_student`)
+        .post(`/profile/1/edit_user`)
         .send({
           email: 'hello@world.com',
           first_name: 'bob',
@@ -37,7 +37,7 @@ describe('Profile Integration', () => {
       const user = await UserFactory.create();
 
       await supertest({ userId: user.id })
-        .post(`/profile/0/edit_student`)
+        .post(`/profile/0/edit_user`)
         .send({
           email: 'hello@world.com',
           first_name: 'bob',
@@ -55,7 +55,7 @@ describe('Profile Integration', () => {
       const user = await UserFactory.create();
 
       await supertest({ userId: user.id })
-        .post(`/profile/${user.id}/edit_student`)
+        .post(`/profile/${user.id}/edit_user`)
         .send({
           email: 'hello@world.com',
           first_name: 'bob',
@@ -66,21 +66,21 @@ describe('Profile Integration', () => {
           photo_url: '',
           courses: [],
         })
-        .expect(200);
+        .expect(201);
     });
   });
 
-  describe('GET /profile/:id/student', () => {
+  describe('GET /profile/:id/user', () => {
     it("doesn't allow to access endpoint when JWT is not set", async () => {
       await UserFactory.create();
-      await supertest().get('/profile/1/student').expect(401);
+      await supertest().get('/profile/1/user').expect(401);
     });
 
-    it('returns student user profile', async () => {
+    it('returns user profile', async () => {
       const user = await UserFactory.create();
 
       const res = await supertest({ userId: user.id })
-        .get(`/profile/${user.id}/student`)
+        .get(`/profile/${user.id}/user`)
         .expect(200);
 
       expect(res.body).toMatchSnapshot();
@@ -111,7 +111,7 @@ describe('Profile Integration', () => {
         `/profile/${user.id}/delete_student`,
       );
 
-      expect(res.body.message).toBe('User deleted successfully');
+      expect(res.body.message).toBe('Student deleted successfully');
     });
   });
 
