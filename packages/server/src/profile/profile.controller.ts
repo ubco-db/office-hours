@@ -2,6 +2,8 @@ import {
   DesktopNotifPartial,
   ERROR_MESSAGES,
   GetProfileResponse,
+  DeletedStudentResponse,
+  EditUserResponse,
   // isProd,
   QuestionStatusKeys,
   UpdateProfileParams,
@@ -179,38 +181,39 @@ export class ProfileController {
     });
   }
 
-  @Get(':id/student')
+  @Get(':id/user')
   @UseGuards(JwtAuthGuard)
-  async getStudent(
-    @Param('id') id: number,
-    @Res() res: Response,
-  ): Promise<any> {
-    const student = await UserModel.findOne(id);
-    res.status(200).send(student);
-    return student;
+  async getUser(@Param('id') id: number): Promise<UserModel> {
+    const user = await UserModel.findOne(id);
+    return user;
   }
 
-  @Post(':id/edit_student')
+  @Post(':id/edit_user')
   @UseGuards(JwtAuthGuard)
-  async edit_student(
+  async edit_user(
     @Param('id') id: number,
-    @Res() res: Response,
     @Body() body: UBCOuserParam,
-  ): Promise<any> {
+  ): Promise<EditUserResponse> {
     const user = await UserModel.findOne(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    if (body.email && body.email !== user.email && body.email !== '') {
+    if (
+      body.email &&
+      body.email !== user.email &&
+      body.email !== '' &&
+      body.email.length !== 0
+    ) {
       user.email = body.email;
     }
 
     if (
       body.first_name &&
       body.first_name !== user.firstName &&
-      body.first_name !== ''
+      body.first_name !== '' &&
+      body.first_name.length !== 0
     ) {
       user.firstName = body.first_name;
     }
@@ -218,7 +221,8 @@ export class ProfileController {
     if (
       body.last_name &&
       body.last_name !== user.lastName &&
-      body.last_name !== ''
+      body.last_name !== '' &&
+      body.last_name.length !== 0
     ) {
       user.lastName = body.last_name;
     }
@@ -234,8 +238,7 @@ export class ProfileController {
 
     await user.save();
 
-    res.status(200).send({ message: 'User has been updated' });
-    return 'success';
+    return { message: 'User updated successfully' };
   }
 
   //potential problem-should fix later. Currently checking whether question in database, but student can be in different queues(so find with both queues and user id)
@@ -500,7 +503,9 @@ export class ProfileController {
 
   @Delete(':id/delete_student')
   @UseGuards(JwtAuthGuard)
-  async deleteUser(@Param('id') id: number): Promise<any> {
+  async deleteStudent(
+    @Param('id') id: number,
+  ): Promise<DeletedStudentResponse> {
     const user = await UserModel.findOne(id);
 
     if (!user) {
@@ -510,9 +515,7 @@ export class ProfileController {
     const userCourses = await UserCourseModel.find({ where: { user: user } });
     await UserCourseModel.remove(userCourses);
 
-    await UserModel.remove(user);
-
-    return { message: 'User deleted successfully' };
+    return { message: 'Student deleted successfully' };
   }
 
   @Delete('/delete_profile_picture')

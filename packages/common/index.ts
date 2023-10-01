@@ -609,6 +609,14 @@ export interface KhouryRedirectResponse {
   redirect: string;
 }
 
+export interface DeletedStudentResponse {
+  message: string;
+}
+
+export interface EditUserResponse {
+  message: string;
+}
+
 export class UpdateProfileParams {
   @IsBoolean()
   @IsOptional()

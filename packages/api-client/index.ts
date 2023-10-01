@@ -42,7 +42,10 @@ import {
   CoursePartial,
   Calendar,
   createCourse,
+  DeletedStudentResponse,
+  EditUserResponse,
 } from "@koh/common";
+import { UserModel } from "@koh/server/src/profile/user.entity";
 import Axios, { AxiosInstance, Method } from "axios";
 import { plainToClass } from "class-transformer";
 import { ClassType } from "class-transformer/ClassTransformer";
@@ -92,15 +95,13 @@ class APIClient {
       this.req("DELETE", `/api/v1/profile/delete_profile_picture`),
     getAllStudents: async (courseId: number): Promise<any> =>
       this.req("GET", `/api/v1/profile/${courseId}/id`, undefined),
-    getStudent: async (id: number): Promise<any> =>
-      this.req("GET", `/api/v1/profile/${id}/student`, undefined),
-    editStudent: async (student: UBCOuserParam, id: number) =>
-      this.req(
-        "POST",
-        `/api/v1/profile/${id}/edit_student`,
-        undefined,
-        student
-      ),
+    getUser: async (id: number): Promise<UserModel> =>
+      this.req("GET", `/api/v1/profile/${id}/user`, undefined),
+    editUser: async (
+      student: UBCOuserParam,
+      id: number
+    ): Promise<EditUserResponse> =>
+      this.req("POST", `/api/v1/profile/${id}/edit_user`, undefined, student),
     inQueue: async (sid: number): Promise<boolean> =>
       this.req("GET", `/api/v1/profile/${sid}/inQueue`, undefined),
     updatePassword: async (password: string, token: string): Promise<void> =>
@@ -111,7 +112,7 @@ class APIClient {
       ),
     verifyResetPassword: async (token: string): Promise<boolean> =>
       this.req("GET", `/api/v1/profile/verify_token?token=${token}`, undefined),
-    deleteStudent: async (sid: number): Promise<any> =>
+    deleteStudent: async (sid: number): Promise<DeletedStudentResponse> =>
       this.req("DELETE", `/api/v1/profile/${sid}/delete_student`),
   };
   site_admin = {

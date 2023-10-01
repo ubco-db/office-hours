@@ -1,6 +1,6 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { API } from "@koh/api-client";
-import { Role, UBCOuserParam } from "@koh/common";
+import { Role } from "@koh/common";
 import {
   Divider,
   Input,
@@ -17,6 +17,7 @@ import { ReactElement } from "react";
 import styled from "styled-components";
 import useSWR, { mutate } from "swr";
 import { EditStudentModal } from "./EditStudentModal";
+import { UserModel } from "@koh/server/src/profile/user.entity";
 
 type CourseRosterProps = { courseId: number };
 
@@ -26,7 +27,7 @@ type RenderTableProps = {
   listTitle: string;
   displaySearchBar: boolean;
   searchPlaceholder: string;
-  modifyFunction: (newValue: UBCOuserParam) => void;
+  modifyFunction: (newValue: UserModel) => void;
 };
 
 const CourseRosterComponent = styled.div`
@@ -77,8 +78,8 @@ function RenderTable({
   listTitle,
   displaySearchBar,
   searchPlaceholder,
-  modifyFunction,
-}: RenderTableProps): ReactElement {
+}: //modifyFunction,
+RenderTableProps): ReactElement {
   const [page, setPage] = useState(1);
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
@@ -148,16 +149,16 @@ function RenderTable({
                 />
                 <Space>
                   <div>{item.email}</div>
-                  <Button
+                  {/* <Button
                     type="primary"
                     onClick={async (e) => {
                       e.currentTarget.blur();
-                      const student = await API.profile.getStudent(item.id);
+                      const student = await API.profile.getUser(item.id);
                       modifyFunction(student);
                     }}
                   >
                     Edit
-                  </Button>
+                  </Button> */}
                   <Button type="danger" onClick={() => showPopconfirm(item.id)}>
                     Delete
                   </Button>

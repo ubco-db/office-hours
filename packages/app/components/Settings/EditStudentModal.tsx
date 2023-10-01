@@ -25,7 +25,7 @@ export function EditStudentModal({
   const editStudent = async (userData: UBCOuserParam, id: number) => {
     console.log(userData);
     console.log(id);
-    await API.profile.editStudent(userData, id);
+    await API.profile.editUser(userData, id);
     mutate(`${Role.STUDENT}/${page}/${search}`);
   };
 
