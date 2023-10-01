@@ -4,7 +4,7 @@ import AddStudents from "./AddStudents";
 type CourseRosterPageProps = { courseId: number };
 import { API } from "@koh/api-client";
 import { useCourse } from "../../hooks/useCourse";
-import { message, Button } from "antd";
+import { message } from "antd";
 import { AddStudentModal } from "./AddStudentModal";
 
 const CourseRosterPageComponent = styled.div`
@@ -94,7 +94,7 @@ export default function AddStudentsToCourse({
             </form>
           </div>
           <div style={{ textAlign: "center" }}>
-            <h1>Add student manually</h1>
+            {/* <h1>Add student manually</h1>
             <Button
               type="primary"
               onClick={(e) => {
@@ -103,7 +103,7 @@ export default function AddStudentsToCourse({
               }}
             >
               Add student
-            </Button>
+            </Button> */}
           </div>
         </div>
         <AddStudents courseId={courseId} />
