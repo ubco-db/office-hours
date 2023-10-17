@@ -112,8 +112,11 @@ class APIClient {
       ),
     verifyResetPassword: async (token: string): Promise<boolean> =>
       this.req("GET", `/api/v1/profile/verify_token?token=${token}`, undefined),
-    deleteStudent: async (sid: number): Promise<DeletedStudentResponse> =>
-      this.req("DELETE", `/api/v1/profile/${sid}/delete_student`),
+    unRegisterStudent: async (
+      sid: number,
+      cid: number
+    ): Promise<DeletedStudentResponse> =>
+      this.req("DELETE", `/api/v1/profile/${sid}/${cid}/unRegister_student`),
   };
   site_admin = {
     getCourses: async (): Promise<GetCourseResponse[]> =>

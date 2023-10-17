@@ -54,6 +54,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'mail/mail.service';
 import { OrganizationService } from '../organization/organization.service';
+import { CourseModel } from 'course/course.entity';
+import { CourseRolesGuard } from 'guards/course-roles.guard';
+import { Roles } from '../decorators/roles.decorator';
 @Controller('profile')
 export class ProfileController {
   constructor(
@@ -182,14 +185,16 @@ export class ProfileController {
   }
 
   @Get(':id/user')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard) // TEMPORARY! need to make organizational level role guards
+  @Roles(Role.PROFESSOR)
   async getUser(@Param('id') id: number): Promise<UserModel> {
     const user = await UserModel.findOne(id);
     return user;
   }
 
   @Post(':id/edit_user')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard) // TEMPORARY! need to make organizational level role guards
+  @Roles(Role.PROFESSOR)
   async edit_user(
     @Param('id') id: number,
     @Body() body: UBCOuserParam,
@@ -501,21 +506,30 @@ export class ProfileController {
     );
   }
 
-  @Delete(':id/delete_student')
-  @UseGuards(JwtAuthGuard)
-  async deleteStudent(
+  @Delete(':id/:cid/unRegister_student')
+  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @Roles(Role.PROFESSOR, Role.TA)
+  async unRegisterStudent(
     @Param('id') id: number,
+    @Param('cid') cid: number,
   ): Promise<DeletedStudentResponse> {
     const user = await UserModel.findOne(id);
+    const course = await CourseModel.findOne(cid);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const userCourses = await UserCourseModel.find({ where: { user: user } });
-    await UserCourseModel.remove(userCourses);
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
 
-    return { message: 'Student deleted successfully' };
+    const userCourse = await UserCourseModel.find({
+      where: { user: user, course: course },
+    });
+    await UserCourseModel.remove(userCourse);
+
+    return { message: 'Student removed from course successfully' };
   }
 
   @Delete('/delete_profile_picture')

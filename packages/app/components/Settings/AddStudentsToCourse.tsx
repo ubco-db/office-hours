@@ -93,8 +93,8 @@ export default function AddStudentsToCourse({
               </button>
             </form>
           </div>
-          <div style={{ textAlign: "center" }}>
-            {/* <h1>Add student manually</h1>
+          {/* <div style={{ textAlign: "center" }}>
+            <h1>Add student manually</h1>
             <Button
               type="primary"
               onClick={(e) => {
@@ -103,8 +103,8 @@ export default function AddStudentsToCourse({
               }}
             >
               Add student
-            </Button> */}
-          </div>
+            </Button>
+          </div> */}
         </div>
         <AddStudents courseId={courseId} />
       </CourseRosterPageComponent>

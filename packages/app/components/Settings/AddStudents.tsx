@@ -85,7 +85,7 @@ RenderTableProps): ReactElement {
   const [search, setSearch] = useState("");
   const [isVisible, setIsVisible] = useState(null);
 
-  const showPopconfirm = (itemId) => {
+  const showPopConfirm = (itemId) => {
     setIsVisible(itemId);
   };
 
@@ -109,7 +109,7 @@ RenderTableProps): ReactElement {
   };
   const handleDelete = async (userId) => {
     try {
-      await API.profile.deleteStudent(userId);
+      await API.profile.unRegisterStudent(userId, courseId);
       mutate(`${role}/${page}/${search}`);
     } catch (error) {
       console.error("Failed to delete user:", error);
@@ -159,7 +159,7 @@ RenderTableProps): ReactElement {
                   >
                     Edit
                   </Button> */}
-                  <Button type="danger" onClick={() => showPopconfirm(item.id)}>
+                  <Button type="danger" onClick={() => showPopConfirm(item.id)}>
                     Delete
                   </Button>
                 </Space>

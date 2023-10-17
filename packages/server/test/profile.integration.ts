@@ -15,7 +15,7 @@ describe('Profile Integration', () => {
   const supertest = setupIntegrationTest(ProfileModule);
 
   describe('POST /profile/:id/edit_user', () => {
-    it('Does not allow unauthorized edit', async () => {
+    it('does not allow edit when not logged in', async () => {
       await UserFactory.create();
 
       await supertest()
@@ -33,7 +33,7 @@ describe('Profile Integration', () => {
         .expect(401);
     });
 
-    it('Cannot edit user that does not exist', async () => {
+    it('cannot edit user that does not exist', async () => {
       const user = await UserFactory.create();
 
       await supertest({ userId: user.id })
@@ -87,31 +87,44 @@ describe('Profile Integration', () => {
     });
   });
 
-  describe('DELETE /profile/:id/delete_student', () => {
+  describe('DELETE /profile/:id/:cid/unRegister_student', () => {
     it("doesn't allow to access endpoint when JWT is not set", async () => {
       await UserFactory.create();
 
-      await supertest().delete('/profile/1/delete_student').expect(401);
+      await supertest().delete('/profile/1/1/unRegister_student').expect(401);
     });
 
     it("fails to delete a user when user doesn't exist", async () => {
       const user = await UserFactory.create();
+      const courseId = (await CourseFactory.create()).id; // Replace with a valid course ID
 
       const res = await supertest({ userId: user.id })
-        .delete('/profile/0/delete_student')
+        .delete(`/profile/0/${courseId}/unRegister_student`)
         .expect(404);
 
       expect(res.body.message).toBe('User not found');
     });
 
-    it('deletes the user', async () => {
+    it("fails to delete a user when course doesn't exist", async () => {
       const user = await UserFactory.create();
+      const invalidCourseId = 0;
+
+      const res = await supertest({ userId: user.id })
+        .delete(`/profile/${user.id}/${invalidCourseId}/unRegister_student`)
+        .expect(404);
+
+      expect(res.body.message).toBe('Course not found');
+    });
+
+    it('deletes the user from the course', async () => {
+      const user = await UserFactory.create();
+      const courseId = (await CourseFactory.create()).id;
 
       const res = await supertest({ userId: user.id }).delete(
-        `/profile/${user.id}/delete_student`,
+        `/profile/${user.id}/${courseId}/unRegister_student`,
       );
 
-      expect(res.body.message).toBe('Student deleted successfully');
+      expect(res.body.message).toBe('Student removed from course successfully');
     });
   });
 
