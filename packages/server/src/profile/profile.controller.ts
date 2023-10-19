@@ -18,7 +18,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
@@ -68,6 +67,7 @@ export class ProfileController {
     private mailService: MailService,
     private organizationService: OrganizationService,
   ) {}
+
   //forgetpassword route used for creating links to be sent to the email
   @Post('/forgetpassword/:e')
   async forgetpassword(
@@ -101,6 +101,7 @@ export class ProfileController {
         res.status(500).send({ message: err });
       });
   }
+
   // enter reset page
   @Get('/enter_resetpassword')
   async enterReset(
@@ -152,6 +153,7 @@ export class ProfileController {
       user.email,
     );
   }
+
   //two functions, one is verify user through authToken, another is to update password using userId and new password
   @Get('verify_token')
   async verifyToken(@Query('token') token: string): Promise<boolean> {
@@ -163,6 +165,7 @@ export class ProfileController {
     }
     return true;
   }
+
   @Patch(':password/update_password')
   async updatePassword(
     @Param('password') p: string,
@@ -299,6 +302,7 @@ export class ProfileController {
     //     });
     // });
   }
+
   @Get(':id/inQueue')
   @UseGuards(JwtAuthGuard)
   async inQueue(
@@ -389,6 +393,16 @@ export class ProfileController {
 
     const organizationRole =
       await this.organizationService.getOrganizationRoleByUserId(user.id);
+    const userOrganization =
+      await this.organizationService.getOrganizationAndRoleByUserId(user.id);
+
+    const organization = pick(userOrganization, [
+      'id',
+      'organizationName',
+      'organizationDescription',
+      'organizationLogoUrl',
+      'organizationRole',
+    ]);
 
     return {
       ...userResponse,
@@ -396,7 +410,7 @@ export class ProfileController {
       phoneNumber: user.phoneNotif?.phoneNumber,
       desktopNotifs,
       pendingCourses,
-      organizationRole,
+      organization,
     };
   }
 
@@ -408,13 +422,13 @@ export class ProfileController {
     user: UserModel,
   ): Promise<GetProfileResponse> {
     if (userPatch.email) {
-      const email = UserModel.findOne({
+      const email = await UserModel.findOne({
         where: {
           email: userPatch.email,
         },
       });
       if (email) {
-        throw new InternalServerErrorException('Email already in db');
+        throw new BadRequestException('Email already in db');
       }
     }
     user = Object.assign(user, userPatch);
