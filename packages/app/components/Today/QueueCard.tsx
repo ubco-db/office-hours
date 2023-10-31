@@ -8,15 +8,17 @@ import {
   Skeleton,
   Space,
   Tag,
-  Tooltip
+  Tooltip,
 } from "antd";
 import Linkify from "react-linkify";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import styled from "styled-components";
 import { QueuePartial } from "../../../common/index";
 import { KOHAvatar } from "../common/SelfAvatar";
+import { API } from "@koh/api-client";
+import { set } from "lodash";
 
 type QueueCard = {
   queue: QueuePartial;
@@ -135,15 +137,39 @@ const NotesSkeleton = styled(Skeleton)`
 const QueueCard = ({
   queue,
   isTA,
-  updateQueueNotes
+  updateQueueNotes,
 }: QueueCard): ReactElement => {
   const [editingNotes, setEditingNotes] = useState(false);
   const [updatedNotes, setUpdatedNotes] = useState(queue.notes);
+  const [eventsForTheDay, setEventsForTheDay] = useState([]);
   const router = useRouter();
   const { cid } = router.query;
-
   const staffList = queue.staffList;
 
+  useEffect(() => {
+    // Get timezone from the browser
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const currentDate = new Date();
+    const dateString = currentDate.toISOString();
+
+    // Fetching the events
+    const fetchEvents = async () => {
+      try {
+        const events = await API.calendar.getEventsForTheDay(
+          Number(cid),
+          dateString,
+          timezone,
+        );
+        console.log(events);
+        setEventsForTheDay(events);
+      } catch (error) {
+        console.error("Failed to fetch events for the day:", error);
+      }
+    };
+
+    // Invoke the fetchEvents function
+    fetchEvents();
+  }, [cid]);
   const handleUpdate = () => {
     setEditingNotes(false);
     updateQueueNotes(queue, updatedNotes);
@@ -153,7 +179,7 @@ const QueueCard = ({
       headStyle={{
         background: queue.isOpen ? "#25426C" : "#25426cbf",
         color: "#FFFFFF",
-        borderRadius: "6px 6px 0 0"
+        borderRadius: "6px 6px 0 0",
       }}
       className={"open-queue-card"}
       title={<span>{queue.room} </span>}
@@ -203,13 +229,15 @@ const QueueCard = ({
           </Space>
         </RightQueueInfoRow>
       </QueueInfoRow>
-      {staffList.length > 1 && (
-        <HeaderText>checked-in staff</HeaderText>
-      ) /*todo: add better text*/}
+      {
+        staffList.length > 1 && (
+          <HeaderText>checked-in staff</HeaderText>
+        ) /*todo: add better text*/
+      }
 
       <Row justify="space-between" align="middle">
         <div>
-          {staffList.map(staffMember => (
+          {staffList.map((staffMember) => (
             <Tooltip key={staffMember.id} title={staffMember.name}>
               <StyledKOHAvatar
                 size={96}
@@ -220,12 +248,26 @@ const QueueCard = ({
           ))}
         </div>
         <QueueCardDivider />
+        {eventsForTheDay.map((event) => (
+          <div key={event.id}>
+            {event.locationType === "in-person" ? (
+              <div>
+                <strong>Location:</strong> {event.locationDetail}
+              </div>
+            ) : (
+              <div>
+                <strong>Online:</strong> {event.zoomLink}
+              </div>
+            )}
+          </div>
+        ))}
+        <QueueCardDivider />
         {editingNotes ? (
           <NotesDiv>
             <NotesInput
               defaultValue={queue.notes}
               value={updatedNotes}
-              onChange={e => setUpdatedNotes(e.target.value as any)}
+              onChange={(e) => setUpdatedNotes(e.target.value as any)}
             />
           </NotesDiv>
         ) : queue.notes ? (
@@ -286,7 +328,7 @@ export function QueueCardSkeleton(): ReactElement {
       headStyle={{
         background: "#25426C",
         color: "#FFFFFF",
-        borderRadius: "6px 6px 0 0"
+        borderRadius: "6px 6px 0 0",
       }}
       className={"open-queue-card"}
       title={<Skeleton title={false} paragraph={{ rows: 1 }} />}

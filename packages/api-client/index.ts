@@ -317,9 +317,23 @@ class APIClient {
       this.req("POST", `/api/v1/calendar`, undefined, body),
     getEvents: async (cid: number): Promise<Calendar[]> =>
       this.req("GET", `/api/v1/calendar/${cid}`),
+    getEventsForTheDay: async (
+      cid: number,
+      date: string,
+      timezone?: string,
+    ): Promise<Calendar[]> => {
+      const tzParam = timezone ? `?timezone=${timezone}` : "";
+      return this.req("GET", `/api/v1/calendar/${cid}/${date}${tzParam}`);
+    },
     deleteEvent: async (eventId: number): Promise<Calendar> =>
       this.req("DELETE", `/api/v1/calendar/${eventId}/delete`),
+    patchEvent: async (
+      eventId: number,
+      body: Partial<Calendar>,
+    ): Promise<Calendar> =>
+      this.req("PATCH", `/api/v1/calendar/${eventId}`, undefined, body),
   };
+
   queues = {
     get: async (queueId: number): Promise<GetQueueResponse> =>
       this.req("GET", `/api/v1/queues/${queueId}`, GetQueueResponse),

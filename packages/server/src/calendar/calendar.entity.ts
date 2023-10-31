@@ -17,11 +17,14 @@ export class CalendarModel extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ type: 'timestamp' })
   start: Date;
 
-  @Column()
+  @Column({ type: 'timestamp' })
   end: Date;
+
+  @Column({ type: 'date', nullable: true })
+  endDate: Date;
 
   @Column('text', { array: true, nullable: true, default: null })
   daysOfWeek: string[];
@@ -29,7 +32,13 @@ export class CalendarModel extends BaseEntity {
   @Column({ nullable: true })
   allDay: boolean;
 
-  @ManyToOne(type => CourseModel)
+  @Column({ type: 'enum', enum: ['in-person', 'zoom'] })
+  locationType: 'in-person' | 'zoom';
+
+  @Column({ nullable: true })
+  locationDetail: string;
+
+  @ManyToOne((type) => CourseModel)
   @JoinColumn({ name: 'course' })
   @Exclude()
   course: CourseModel;

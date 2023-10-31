@@ -47,12 +47,8 @@ export default function TAQueueDetailButtons({
   question: Question;
   hasUnresolvedRephraseAlert: boolean;
 }): ReactElement {
-  //const defaultMessage = useDefaultMessage();
   const { course } = useCourse(courseId);
   const { mutateQuestions } = useQuestions(queueId);
-  // const { queue }= useQueue(queueId);
-  // eslint-disable-next-line prefer-const
-  // let timerCheckout=useRef(null);
   const changeStatus = useCallback(
     async (status: QuestionStatus) => {
       await API.questions.update(question.id, { status });
@@ -60,28 +56,10 @@ export default function TAQueueDetailButtons({
       if (status === ClosedQuestionStatus.Resolved) {
         message.warning("Your Question is ended");
       }
-      // if (status===LimboQuestionStatus.CantFind||status===ClosedQuestionStatus.Resolved){
-      // timerCheckout.current = setTimeout(() => {
-      //     message.warning("You are checked out due to inactivity");
-      //     checkOutTA();
-      //  }, 1000*20);
-      // }
     },
-    [question.id, mutateQuestions]
+    [question.id, mutateQuestions],
   );
   const { isCheckedIn, isHelping } = useTAInQueueInfo(queueId);
-
-  // const checkOutTA = async ()=>{
-  //     // await API.taStatus.checkOut(courseId, queue?.room);
-  //     // mutateCourse();
-  // }
-  // function setCheckOutTimer() {
-  //     timerCheckout.current = setTimeout(() => {
-  //         message.warning("You are checked out due to inactivity");
-  //         checkOutTA();
-  //      }, 1000*20);
-  // }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendRephraseAlert = async () => {
     const payload: RephraseQuestionPayload = {
       queueId,
@@ -98,7 +76,7 @@ export default function TAQueueDetailButtons({
       await mutateQuestions();
       message.success("Successfully asked student to rephrase their question.");
     } catch (e) {
-      //If the ta creates an alert that already exists the error is caught and nothing happens
+      message.error("Failed to ask student to rephrase their question.");
     }
   };
 
@@ -110,16 +88,19 @@ export default function TAQueueDetailButtons({
 
     if (course.questionTimer) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, prefer-const
-      let questionTimer = setTimeout(() => {
-        changeStatus(ClosedQuestionStatus.Resolved);
-      }, course.questionTimer * 60 * 1000);
+      let questionTimer = setTimeout(
+        () => {
+          changeStatus(ClosedQuestionStatus.Resolved);
+        },
+        course.questionTimer * 60 * 1000,
+      );
     }
   };
   const deleteQuestion = async () => {
     await changeStatus(
       question.status === OpenQuestionStatus.Drafting
         ? ClosedQuestionStatus.DeletedDraft
-        : LimboQuestionStatus.TADeleted
+        : LimboQuestionStatus.TADeleted,
     );
     await API.questions.notify(question.id);
   };
@@ -131,7 +112,7 @@ export default function TAQueueDetailButtons({
         deleteQuestion();
       }
     },
-    [question]
+    [question],
   );
 
   if (question.status === OpenQuestionStatus.Helping) {

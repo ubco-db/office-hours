@@ -22,6 +22,8 @@ import PopularTimes from "../../../components/Today/PopularTimes/PopularTimes";
 import AsyncQuestionCard from "../../../components/AsyncQuestion/AsyncQuestionCard";
 import { orderBy } from "lodash";
 import { useChatbotContext } from "../../../providers/chatbotProvider";
+import StudentSchedulePanel from "../../../components/Schedule/StudentSchedulePanel";
+import TASchedulePanel from "../../../components/Schedule/TASchedulePanel";
 
 const Container = styled.div`
   margin-top: 32px;
@@ -168,7 +170,17 @@ export default function Today(): ReactElement {
               }
             </TodayCol>
             <TodayCol md={12} sm={24}>
-              <SchedulePanel courseId={Number(cid)} defaultView="timeGridDay" />
+              {role === Role.STUDENT ? (
+                <StudentSchedulePanel
+                  courseId={Number(cid)}
+                  defaultView="timeGridDay"
+                />
+              ) : (
+                <TASchedulePanel
+                  courseId={Number(cid)}
+                  defaultView="timeGridDay"
+                />
+              )}
             </TodayCol>
           </Row>
         </Container>
