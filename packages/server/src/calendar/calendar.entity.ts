@@ -8,6 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { calendarEventLocationType } from '@koh/common';
 
 @Entity('calendar_model')
 export class CalendarModel extends BaseEntity {
@@ -32,8 +33,8 @@ export class CalendarModel extends BaseEntity {
   @Column({ nullable: true })
   allDay: boolean;
 
-  @Column({ type: 'enum', enum: ['in-person', 'zoom'] })
-  locationType: 'in-person' | 'zoom';
+  @Column({ type: 'enum', enum: calendarEventLocationType })
+  locationType: calendarEventLocationType;
 
   @Column({ nullable: true })
   locationDetail: string;

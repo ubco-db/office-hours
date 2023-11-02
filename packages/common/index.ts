@@ -278,6 +278,11 @@ export enum QuestionType {
   Other = "Other",
 }
 
+export enum calendarEventLocationType {
+  inPerson = "in-person",
+  online = "online",
+  hybrid = "hybrid",
+}
 // Type of async question events
 export enum asyncQuestionEventType {
   answered = "answered",
@@ -573,7 +578,7 @@ export function isKhouryCourse(
 export class Calendar {
   @IsString()
   title!: string;
-  //start and end are timestamps
+
   @IsDate()
   @Type(() => Date)
   start!: Date;
@@ -587,8 +592,8 @@ export class Calendar {
   @IsOptional()
   endDate?: Date;
 
-  @IsEnum(["in-person", "zoom"])
-  locationType!: "in-person" | "zoom";
+  @IsEnum(calendarEventLocationType)
+  locationType!: calendarEventLocationType;
 
   @IsString()
   @IsOptional()

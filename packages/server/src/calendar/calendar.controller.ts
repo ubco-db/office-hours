@@ -17,7 +17,6 @@ import { CalendarModel } from './calendar.entity';
 import { Calendar, ERROR_MESSAGES } from '@koh/common';
 import { CourseModel } from 'course/course.entity';
 import { Between } from 'typeorm';
-import moment from 'moment';
 
 @Controller('calendar')
 @UseGuards(JwtAuthGuard)
@@ -43,7 +42,7 @@ export class CalendarController {
       const event = await CalendarModel.create({
         title: body.title,
         start: body.start,
-        end: body.end,
+        end: body.end || null,
         endDate: body.endDate || null,
         locationType: body.locationType,
         locationDetail: body.locationDetail || null,

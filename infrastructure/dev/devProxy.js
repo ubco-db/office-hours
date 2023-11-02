@@ -16,7 +16,6 @@ const proxy = createProxyMiddleware({
         "/chat": "http://localhost:3003",
     },
     ws: true,
-    logLevel: "debug",
     changeOrigin: true,
 });
 

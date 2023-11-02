@@ -20,6 +20,7 @@ import { Role } from "@koh/common";
 import { format } from "date-fns";
 import EditEventModal from "./EditEventModal";
 import { set } from "lodash";
+import CreateEventModal from "./CreateEventModal";
 
 const CalendarWrapper = styled.div`
   margin-bottom: 20px;
@@ -49,20 +50,15 @@ export default function TASchedulePanel({
   const calendarRef = useRef(null);
   const spinnerRef = useRef(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [edit, setEdit] = useState(false);
+  const [createModalVisible, setCreateModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [createEvent, setCreateEvent] = useState(null);
   const [events, setEvents] = useState([]);
-  const [info, setInfo] = useState(null);
   useEffect(() => {
     if (courseId) {
       getEvent();
     }
-  }, [courseId, editModalVisible]);
-  useEffect(() => {
-    if (selectedEvent) {
-      setEditModalVisible(true);
-    }
-  }, [selectedEvent]);
+  }, [courseId, editModalVisible, createModalVisible]);
 
   //format events-all repeated ones need to start time and endTime, the other ones are regular stuff
   const getEvent = async () => {
@@ -81,26 +77,38 @@ export default function TASchedulePanel({
   const parseEvent = (event) => {
     const startDate = new Date(event.start);
     const endDate = new Date(event.end);
-
+    const returnEvent = {
+      id: event.id,
+      title: event.title,
+      start: startDate,
+      end: endDate,
+      locationType: event.locationType,
+      locationDetail: event.locationDetail,
+    };
     if (event.endDate) {
-      return {
-        id: event.id,
-        title: event.title,
-        daysOfWeek: event.daysOfWeek,
-        startTime: format(startDate, "HH:mm"),
-        endTime: format(endDate, "HH:mm"),
-        endRecur: event.endDate,
-      };
+      returnEvent["endRecur"] = event.endDate;
+      returnEvent["daysOfWeek"] = event.daysOfWeek;
+      returnEvent["startTime"] = format(startDate, "HH:mm");
+      returnEvent["endTime"] = format(endDate, "HH:mm");
+      return returnEvent;
     } else {
       // Non-recurring event
-      return {
-        id: event.id,
-        title: event.title,
-        start: startDate,
-        end: endDate,
-      };
+      return returnEvent;
     }
   };
+  const handleEditClick = (clickInfo) => {
+    console.log(clickInfo.event);
+    console.log(events);
+    for (let i = 0; i < events.length; i++) {
+      if (Number(events[i].id) === Number(clickInfo.event.id)) {
+        setSelectedEvent(events[i]);
+        console.log(selectedEvent);
+        break; // exit loop once a match is found
+      }
+    }
+    setEditModalVisible(true);
+  };
+
   return (
     <div>
       <SpinnerContainer ref={spinnerRef}>
@@ -120,21 +128,13 @@ export default function TASchedulePanel({
               interactionPlugin,
             ]}
             // eventclick means update
-            eventClick={(clickInfo) => {
-              setSelectedEvent({
-                id: clickInfo.event.id,
-                start: clickInfo.event.start,
-                end: clickInfo.event.end,
-                title: clickInfo.event.title,
-              });
-              setEdit(true);
-            }}
+            eventClick={handleEditClick}
             select={(select) => {
-              setSelectedEvent({
+              setCreateEvent({
                 start: select.start,
                 end: select.end,
               });
-              setEdit(false);
+              setCreateModalVisible(true);
             }}
             events={events}
             scrollTime="13:00:00" // auto set each day's view to begin at x AM
@@ -155,7 +155,12 @@ export default function TASchedulePanel({
             visible={editModalVisible}
             onClose={() => setEditModalVisible(false)}
             event={selectedEvent}
-            edit={edit}
+            courseId={courseId}
+          />
+          <CreateEventModal
+            visible={createModalVisible}
+            onClose={() => setCreateModalVisible(false)}
+            event={createEvent}
             courseId={courseId}
           />
         </CalendarWrapper>
