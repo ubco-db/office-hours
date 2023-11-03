@@ -520,22 +520,27 @@ export class ProfileController {
     );
   }
 
-  @Delete(':id/:cid/unRegister_student')
+  @Delete(':uid/:cid/unRegister_student')
   @UseGuards(JwtAuthGuard, CourseRolesGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async unRegisterStudent(
-    @Param('id') id: number,
+    @Param('uid') uid: number,
     @Param('cid') cid: number,
-  ): Promise<DeletedStudentResponse> {
-    const user = await UserModel.findOne(id);
+    @Res() res: Response,
+  ): Promise<Response<DeletedStudentResponse>> {
+    const user = await UserModel.findOne(uid);
     const course = await CourseModel.findOne(cid);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      return res.status(HttpStatus.NOT_FOUND).send({
+        message: ERROR_MESSAGES.profileController.userResponseNotFound,
+      });
     }
 
     if (!course) {
-      throw new NotFoundException('Course not found');
+      return res.status(HttpStatus.NOT_FOUND).send({
+        message: ERROR_MESSAGES.courseController.courseNotFound,
+      });
     }
 
     const userCourse = await UserCourseModel.find({
@@ -543,7 +548,9 @@ export class ProfileController {
     });
     await UserCourseModel.remove(userCourse);
 
-    return { message: 'Student removed from course successfully' };
+    return res
+      .status(HttpStatus.OK)
+      .send({ message: 'Student removed from course successfully' });
   }
 
   @Delete('/delete_profile_picture')

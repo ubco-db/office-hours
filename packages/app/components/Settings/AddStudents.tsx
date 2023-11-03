@@ -112,7 +112,7 @@ RenderTableProps): ReactElement {
       await API.profile.unRegisterStudent(userId, courseId);
       mutate(`${role}/${page}/${search}`);
     } catch (error) {
-      console.error("Failed to delete user:", error);
+      console.error("Failed to remove user from course:", error);
     }
   };
   const { data } = useSWR(

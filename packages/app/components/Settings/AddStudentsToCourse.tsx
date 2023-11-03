@@ -6,6 +6,7 @@ import { API } from "@koh/api-client";
 import { useCourse } from "../../hooks/useCourse";
 import { message } from "antd";
 import { AddStudentModal } from "./AddStudentModal";
+import { Button } from "antd";
 
 const CourseRosterPageComponent = styled.div`
   width: 90%;
@@ -84,13 +85,14 @@ export default function AddStudentsToCourse({
                 accept={".csv"}
                 onChange={handleOnChange}
               />
-              <button
+              <Button
+                type="primary"
                 onClick={(e) => {
                   handleOnSubmit(e);
                 }}
               >
                 Add students
-              </button>
+              </Button>
             </form>
           </div>
           {/* <div style={{ textAlign: "center" }}>

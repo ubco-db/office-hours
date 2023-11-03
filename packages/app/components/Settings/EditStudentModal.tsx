@@ -23,10 +23,12 @@ export function EditStudentModal({
   const [search] = useState("");
 
   const editStudent = async (userData: UBCOuserParam, id: number) => {
-    console.log(userData);
-    console.log(id);
-    await API.profile.editUser(userData, id);
-    mutate(`${Role.STUDENT}/${page}/${search}`);
+    try {
+      await API.profile.editUser(userData, id);
+      mutate(`${Role.STUDENT}/${page}/${search}`);
+    } catch (error) {
+      console.error("Failed to edit user:", error);
+    }
   };
 
   useEffect(() => {

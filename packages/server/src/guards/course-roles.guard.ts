@@ -12,8 +12,7 @@ export class CourseRolesGuard extends RolesGuard {
     const user = await UserModel.findOne(request.user.userId, {
       relations: ['courses'],
     });
-
-    const courseId = request.params.id;
+    const courseId = request.params.id ?? request.params.cid;
     return { courseId, user };
   }
 }

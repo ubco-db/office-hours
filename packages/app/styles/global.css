@@ -41,6 +41,11 @@ body {
     background: #f8f9fb;
 }
 
+.ant-btn-danger {
+    background-color: #ff4d4f; 
+    border-color: #ff4d4f; 
+}
+
 .ant-radio-checked .ant-radio-inner {
     border-color: #3684c6 !important ;
 }
