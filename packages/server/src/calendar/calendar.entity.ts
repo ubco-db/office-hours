@@ -25,6 +25,9 @@ export class CalendarModel extends BaseEntity {
   end: Date;
 
   @Column({ type: 'date', nullable: true })
+  startDate: Date;
+
+  @Column({ type: 'date', nullable: true })
   endDate: Date;
 
   @Column('text', { array: true, nullable: true, default: null })
@@ -37,7 +40,10 @@ export class CalendarModel extends BaseEntity {
   locationType: calendarEventLocationType;
 
   @Column({ nullable: true })
-  locationDetail: string;
+  locationOnline: string;
+
+  @Column({ nullable: true })
+  locationInPerson: string;
 
   @ManyToOne((type) => CourseModel)
   @JoinColumn({ name: 'course' })

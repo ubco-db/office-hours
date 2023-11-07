@@ -141,35 +141,9 @@ const QueueCard = ({
 }: QueueCard): ReactElement => {
   const [editingNotes, setEditingNotes] = useState(false);
   const [updatedNotes, setUpdatedNotes] = useState(queue.notes);
-  const [eventsForTheDay, setEventsForTheDay] = useState([]);
   const router = useRouter();
   const { cid } = router.query;
   const staffList = queue.staffList;
-
-  useEffect(() => {
-    // Get timezone from the browser
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const currentDate = new Date();
-    const dateString = currentDate.toISOString();
-
-    // Fetching the events
-    const fetchEvents = async () => {
-      try {
-        const events = await API.calendar.getEventsForTheDay(
-          Number(cid),
-          dateString,
-          timezone,
-        );
-        console.log(events);
-        setEventsForTheDay(events);
-      } catch (error) {
-        console.error("Failed to fetch events for the day:", error);
-      }
-    };
-
-    // Invoke the fetchEvents function
-    fetchEvents();
-  }, [cid]);
   const handleUpdate = () => {
     setEditingNotes(false);
     updateQueueNotes(queue, updatedNotes);
@@ -247,20 +221,6 @@ const QueueCard = ({
             </Tooltip>
           ))}
         </div>
-        <QueueCardDivider />
-        {eventsForTheDay.map((event) => (
-          <div key={event.id}>
-            {event.locationType === "in-person" ? (
-              <div>
-                <strong>Location:</strong> {event.locationDetail}
-              </div>
-            ) : (
-              <div>
-                <strong>Online:</strong> {event.zoomLink}
-              </div>
-            )}
-          </div>
-        ))}
         <QueueCardDivider />
         {editingNotes ? (
           <NotesDiv>

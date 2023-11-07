@@ -83,7 +83,8 @@ export default function TASchedulePanel({
       start: startDate,
       end: endDate,
       locationType: event.locationType,
-      locationDetail: event.locationDetail,
+      locationInPerson: event.locationInPerson,
+      locationOnline: event.locationOnline,
     };
     if (event.endDate) {
       returnEvent["endRecur"] = event.endDate;

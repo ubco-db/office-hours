@@ -23,7 +23,7 @@ interface EditQueueModalProps {
 export function EditQueueModal({
   queueId,
   visible,
-  onClose
+  onClose,
 }: EditQueueModalProps): ReactElement {
   const { queue, mutateQueue } = useQueue(queueId);
   const [form] = Form.useForm();
@@ -64,10 +64,10 @@ export function EditQueueModal({
     [courseNumber]
   );
 
-  const onAddChange = e => {
+  const onAddChange = (e) => {
     setQuestionTypeAddState(e.target.value);
   };
-  const onZoomLinkChange = e => {
+  const onZoomLinkChange = (e) => {
     setZoomLink(e.target.value);
   };
   const addQuestionType = useCallback(async () => {
@@ -78,7 +78,7 @@ export function EditQueueModal({
     await API.course
       .editCourseInfo(Number(courseId), {
         courseId: Number(courseId),
-        zoomLink: zoomLink
+        zoomLink: zoomLink,
       })
       .then(() => {
         message.success("Zoom link Changed");
@@ -88,7 +88,7 @@ export function EditQueueModal({
   return (
     <Modal
       title="Edit Queue Details"
-      visible={visible}
+      open={visible}
       onCancel={onClose}
       onOk={async () => {
         const value = await form.validateFields();
@@ -99,7 +99,7 @@ export function EditQueueModal({
       {queue && (
         <Form form={form} initialValues={queue}>
           <Form.Item label="Queue Notes" name="notes">
-            <NotesInput allowClear={true} placeholder={""} />
+            <NotesInput placeholder={""} />
           </Form.Item>
           <Form.Item
             label="Allow New Questions"
@@ -111,7 +111,7 @@ export function EditQueueModal({
           <h4>Current Question Types: (click to delete)</h4>
           <Radio.Group buttonStyle="solid">
             {questionsTypeState.length > 0 ? (
-              questionsTypeState.map(q => (
+              questionsTypeState.map((q) => (
                 <Radio.Button onClick={() => onclick(q)} key={q} value={q}>
                   {" "}
                   {q}

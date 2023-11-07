@@ -24,7 +24,6 @@ export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}
   @Post()
   async addEvent(@Body() body: Calendar) {
-    console.log(body);
     const course = await CourseModel.findOne(body.cid);
     if (!course) {
       console.error(
@@ -43,14 +42,15 @@ export class CalendarController {
         title: body.title,
         start: body.start,
         end: body.end || null,
+        startDate: body.startDate || null,
         endDate: body.endDate || null,
         locationType: body.locationType,
-        locationDetail: body.locationDetail || null,
-        course: course,
+        locationInPerson: body.locationInPerson || null,
+        locationOnline: body.locationOnline || null,
         allDay: body.allDay || false,
-        daysOfWeek: body.daysOfWeek || null,
+        daysOfWeek: body.daysOfWeek || [],
+        course: course,
       }).save();
-
       return event;
     } catch (err) {
       console.error(err);
@@ -112,24 +112,30 @@ export class CalendarController {
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
-
-    // Find events for the given course ID that fall on the target date
+    // Determine the day of week index from the target date
+    const dayOfWeek = targetDate.getDay().toString();
+    // Retrieve all events for the given course
     const events = await CalendarModel.find({
-      where: {
-        course: cid,
-        start: Between(startOfDay, endOfDay),
-      },
+      where: { course: cid },
+    });
+    // Filter to get events occurring on the target date
+    const filteredEvents = events.filter((event) => {
+      if (!event.daysOfWeek) {
+        // For one-time events, check if they occur on the target date
+        return (
+          new Date(event.start) >= startOfDay && new Date(event.end) <= endOfDay
+        );
+      } else {
+        // For recurring events, check if the target day is a match and within the event's date range
+        return (
+          event.daysOfWeek.includes(dayOfWeek) &&
+          new Date(event.start) <= targetDate &&
+          (!event.endDate || new Date(event.endDate) >= targetDate)
+        );
+      }
     });
 
-    if (!events || events.length === 0) {
-      console.error(ERROR_MESSAGES.courseController.courseNotFound + 'events');
-      throw new HttpException(
-        ERROR_MESSAGES.courseController.courseNotFound,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return events;
+    return filteredEvents;
   }
 
   @Delete(':id/delete')

@@ -568,7 +568,7 @@ export class KhouryProfCourse {
 }
 
 export function isKhouryCourse(
-  c: KhouryCourse | KhouryProfCourse,
+  c: KhouryCourse | KhouryProfCourse
 ): c is KhouryCourse {
   return (
     (c as KhouryCourse).role !== undefined &&
@@ -590,6 +590,11 @@ export class Calendar {
   @IsDate()
   @Type(() => Date)
   @IsOptional()
+  startDate?: Date;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
   endDate?: Date;
 
   @IsEnum(calendarEventLocationType)
@@ -597,7 +602,11 @@ export class Calendar {
 
   @IsString()
   @IsOptional()
-  locationDetail?: string;
+  locationOnline?: string;
+
+  @IsString()
+  @IsOptional()
+  locationInPerson?: string;
 
   @IsNumber()
   cid!: number;
@@ -1140,7 +1149,7 @@ export interface InsightObject {
   size: "default" | "small";
   compute: (
     insightFilters: any,
-    cacheManager?: Cache,
+    cacheManager?: Cache
   ) => Promise<PossibleOutputTypes>;
 }
 
@@ -1247,7 +1256,7 @@ export const ERROR_MESSAGES = {
       fsmViolation: (
         role: string,
         questionStatus: string,
-        bodyStatus: string,
+        bodyStatus: string
       ): string =>
         `${role} cannot change status from ${questionStatus} to ${bodyStatus}`,
       taOnlyEditQuestionStatus: "TA/Professors can only edit question status",

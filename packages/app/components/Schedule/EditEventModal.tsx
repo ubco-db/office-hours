@@ -14,6 +14,7 @@ import moment from "moment";
 import { API } from "@koh/api-client";
 import { on } from "events";
 import { calendarEventLocationType } from "@koh/common";
+import { set } from "lodash";
 
 const dayToIntMapping = {
   Sunday: "0",
@@ -24,6 +25,12 @@ const dayToIntMapping = {
   Friday: "5",
   Saturday: "6",
 };
+const locationTypeMapping = {
+  inperson: 0,
+  online: 1,
+  hybrid: 2,
+};
+
 type EditEventModalProps = {
   visible: boolean;
   onClose: () => void;
@@ -38,89 +45,88 @@ const EditEventModal = ({
   courseId,
 }: EditEventModalProps) => {
   const [form] = Form.useForm();
-  const [isRepeating, setIsRepeating] = useState(null);
-  const [isInPerson, setIsInPerson] = useState(null);
-  const [location, setLocation] = useState(event?.locationDetail);
-  const intToDayMapping = Object.keys(dayToIntMapping).reduce((acc, day) => {
-    acc[dayToIntMapping[day]] = day;
-    return acc;
-  }, {});
-  const daysOfWeekNames =
-    event?.daysOfWeek?.map((intValue) => intToDayMapping[intValue]) || [];
-  const [selectedDays, setSelectedDays] = useState(daysOfWeekNames);
+  const [isRepeating, setIsRepeating] = useState(false);
+  const [locationType, setLocationType] = useState(
+    locationTypeMapping[event?.locationType]
+  );
+  const [selectedDays, setSelectedDays] = useState(null);
+
+  useEffect(() => {
+    // Set initial form values with the event data
+    form.setFieldsValue({
+      title: event?.title,
+      locationInPerson: event?.locationInPerson,
+      locationOnline: event?.locationOnline,
+      endDate: event?.endRecur ? moment(event.endRecur) : null,
+      locationType: locationTypeMapping[event?.locationType],
+    });
+    setIsRepeating(!!event?.endRecur);
+    if (event && event.daysOfWeek) {
+      setSelectedDays(
+        event.daysOfWeek.map((dayInt) => intToDayMapping[dayInt])
+      );
+    }
+  }, [event, form]);
+  const intToDayMapping = Object.fromEntries(
+    Object.entries(dayToIntMapping).map(([key, value]) => [value, key])
+  );
+
   const handleDaysChange = (checkedValues) => {
-    if (!checkedValues.includes(moment(event.start).format("dddd"))) {
-      checkedValues.push(moment(event.start).format("dddd"));
+    if (!checkedValues.includes(moment(event?.start).format("dddd"))) {
+      checkedValues.push(moment(event?.start).format("dddd"));
     }
     setSelectedDays(checkedValues);
   };
-  useEffect(() => {
-    console.log("event", event);
-    form.setFieldsValue({
-      title: event ? event.title : null,
-      location: event?.location,
-      eventType: event?.locationType,
-      endDate: event ? moment(event.endDate) : null,
-    });
-    if (event?.daysOfWeek && event?.endRecur) {
-      setIsRepeating(true);
-    }
-    setIsInPerson(event?.locationType === calendarEventLocationType.inPerson);
-    if (event) {
-      if (event.daysOfWeek) {
-        const mappedDays = event.daysOfWeek.map(
-          (intValue) => intToDayMapping[intValue],
-        );
-        setSelectedDays(mappedDays);
-      } else {
-        setSelectedDays([moment(event.start).format("dddd")]);
-      }
-    }
-  }, [event, visible]);
-
   const handleOk = async () => {
     try {
       const formData = await form.validateFields();
       const eventObject = {
         ...formData,
-        isRepeating,
-        locationType: isInPerson
-          ? calendarEventLocationType.inPerson
-          : calendarEventLocationType.online,
-        repeatDays: isRepeating ? selectedDays : undefined,
-        zoomLink: !isInPerson ? location : undefined,
-        locationDetail: isInPerson ? location : undefined,
+        cid: courseId,
+        start: moment(event.start).toISOString(),
+        end: moment(event.end).toISOString(),
       };
+      switch (locationType) {
+        case 0: // In Person
+          eventObject.locationType = calendarEventLocationType.inPerson;
+          eventObject.locationInPerson = formData.locationInPerson;
+          break;
+        case 1: // Online
+          eventObject.locationType = calendarEventLocationType.online;
+          eventObject.locationOnline = formData.locationOnline;
+          break;
+        case 2: // Hybrid
+          eventObject.locationType = calendarEventLocationType.hybrid;
+          eventObject.locationInPerson = formData.locationInPerson;
+          eventObject.locationOnline = formData.locationOnline;
+          break;
+        default:
+          message.error("Invalid location type");
+          return; // Prevents the function from continuing
+      }
 
+      // Logic for repeating events
+      if (isRepeating) {
+        if (formData.endDate && selectedDays) {
+          eventObject.daysOfWeek = selectedDays.map(
+            (day) => dayToIntMapping[day]
+          );
+          eventObject.startDate = moment().startOf("day").format("YYYY-MM-DD");
+          eventObject.endDate = moment(formData.endDate).format("YYYY-MM-DD");
+        } else {
+          message.error("Please select all fields for repeating events");
+          return; // Prevents the function from continuing
+        }
+      }
       updateEvent(eventObject);
     } catch (validationError) {
-      console.error("Validation failed:", validationError);
+      message.error("Event validation failed");
     }
   };
-  const formatEvent = (rawEvent, courseId) => {
-    // Convert the Moment objects to JavaScript Date
-    const formattedEvent = {
-      cid: courseId,
-      title: rawEvent.title,
-      start: rawEvent.startTime.toDate(),
-      end: rawEvent.endTime.toDate(),
-      locationType: rawEvent.locationType,
-      locationDetail: rawEvent.locationDetail || null,
-    };
-    if (selectedDays) {
-      formattedEvent["daysOfWeek"] = selectedDays.map(
-        (day) => dayToIntMapping[day],
-      );
-    }
-    if (rawEvent.endDate) {
-      formattedEvent["endDate"] = rawEvent.endDate.toDate();
-    }
-    return formattedEvent;
-  };
+
   const updateEvent = async (updatedEvent) => {
     try {
-      const formattedEvent = formatEvent(updatedEvent, courseId);
-      const response = await API.calendar.patchEvent(event.id, formattedEvent);
+      const response = await API.calendar.patchEvent(event.id, updatedEvent);
       if (response) {
         console.log("Event updated successfully", response);
       } else {
@@ -132,20 +138,14 @@ const EditEventModal = ({
     onClose();
   };
   return (
-    <Modal open={visible} onOk={handleOk} onCancel={onClose} closable={false}>
-      <Form
-        form={form}
-        initialValues={{
-          title: event ? event.title : "",
-          startTime: event
-            ? moment(event.startTime).format("YYYY-MM-DD HH:mm:ss")
-            : null,
-          endTime: event
-            ? moment(event.endTime).format("YYYY-MM-DD HH:mm:ss")
-            : null,
-          eventType: "online",
-        }}
-      >
+    <Modal
+      title="Edit Event"
+      open={visible}
+      onOk={handleOk}
+      onCancel={onClose}
+      closable={false}
+    >
+      <Form form={form} layout="vertical">
         <Form.Item
           label="Title"
           name="title"
@@ -155,26 +155,31 @@ const EditEventModal = ({
         </Form.Item>
 
         <Form.Item label="Start Time" name="startTime">
-          <Tooltip title="To change the time, exit this modal and reselect by dragging over a new area.">
-            <span>{event ? event.startTime : "Select time"}</span>
-          </Tooltip>
+          <TimePicker
+            defaultValue={
+              event ? moment(event.startTime, "HH:mm:ss") : moment()
+            }
+            format="HH:mm"
+          />
         </Form.Item>
+
         <Form.Item label="End Time" name="endTime">
-          <Tooltip title="To change the time, exit this modal and reselect by dragging over a new area.">
-            <span>{event ? event.endTime : "Select time"}</span>
-          </Tooltip>
+          <TimePicker
+            defaultValue={event ? moment(event.endTime, "HH:mm:ss") : moment()}
+            format="HH:mm"
+          />
         </Form.Item>
+
         <Form.Item>
           <Checkbox
             checked={isRepeating}
             onChange={(e) => setIsRepeating(e.target.checked)}
-            defaultChecked={isRepeating}
           >
             Repeat Event
           </Checkbox>
         </Form.Item>
 
-        {isRepeating ? (
+        {isRepeating && (
           <>
             <Form.Item label="End Date" name="endDate">
               <DatePicker />
@@ -193,38 +198,67 @@ const EditEventModal = ({
               </Checkbox.Group>
             </Form.Item>
           </>
-        ) : (
-          <Form.Item label="Event Day">
-            <span>{moment(event?.start).format("dddd")}</span>
-          </Form.Item>
         )}
-
-        <Form.Item label="Event Type" name="eventType">
+        <Form.Item
+          label="Location Type"
+          name="locationType"
+          rules={[
+            { required: true, message: "Please select the location type!" },
+          ]}
+        >
           <Radio.Group
-            onChange={(e) => setIsInPerson(e.target.value === "in-person")}
+            onChange={(e) => setLocationType(e.target.value)}
+            value={locationType}
           >
-            <Radio value="in-person">In-Person</Radio>
-            <Radio value="online">Online</Radio>
-            <Radio value="hybrid">Hybrid</Radio>
+            <Radio value={0}>In-Person</Radio>
+            <Radio value={1}>Online</Radio>
+            <Radio value={2}>Hybrid</Radio>
           </Radio.Group>
         </Form.Item>
 
-        {isInPerson ? (
+        {locationType === 0 && (
           <Form.Item
             label="Location"
-            name="location"
-            rules={[{ required: true, message: "Please input the location" }]}
+            name="locationInPerson"
+            rules={[{ required: true, message: "Please input the location!" }]}
           >
             <Input />
           </Form.Item>
-        ) : (
+        )}
+
+        {locationType === 1 && (
           <Form.Item
             label="Zoom Link"
-            name="location"
-            rules={[{ required: true, message: "Please input the Zoom link!" }]}
+            name="locationOnline"
+            rules={[
+              { required: true, message: "Please input the meeting link!" },
+            ]}
           >
             <Input />
           </Form.Item>
+        )}
+
+        {locationType === 2 && (
+          <>
+            <Form.Item
+              label="Location"
+              name="locationInPerson"
+              rules={[
+                { required: true, message: "Please input the location!" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Zoom Link"
+              name="locationOnline"
+              rules={[
+                { required: true, message: "Please input the meeting link!" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </>
         )}
       </Form>
     </Modal>

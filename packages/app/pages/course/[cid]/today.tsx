@@ -10,7 +10,6 @@ import styled from "styled-components";
 // import GPTChatbotPage from "../../../components/Chatbot/Chatbot";
 import { StandardPageContainer } from "../../../components/common/PageContainer";
 import NavBar from "../../../components/Nav/NavBar";
-import SchedulePanel from "../../../components/Schedule/SchedulePanel";
 import QueueCard, {
   QueueCardSkeleton,
 } from "../../../components/Today/QueueCard";
@@ -24,6 +23,7 @@ import { orderBy } from "lodash";
 import { useChatbotContext } from "../../../providers/chatbotProvider";
 import StudentSchedulePanel from "../../../components/Schedule/StudentSchedulePanel";
 import TASchedulePanel from "../../../components/Schedule/TASchedulePanel";
+import EventForToday from "../../../components/Today/EventForToday";
 
 const Container = styled.div`
   margin-top: 32px;
@@ -91,12 +91,12 @@ export default function Today(): ReactElement {
     orderBy(
       course?.queues,
       ["isOpen", "isProfessorQueue"],
-      ["desc", sortByProfOrder],
+      ["desc", sortByProfOrder]
     );
 
   const updateQueueNotes = async (
     queue: QueuePartial,
-    notes: string,
+    notes: string
   ): Promise<void> => {
     const newQueues =
       course &&
@@ -134,6 +134,7 @@ export default function Today(): ReactElement {
                   </i>
                 </div>
               </Row>
+              <EventForToday courseId={Number(cid)} />
               {course?.queues?.length === 0 ? (
                 <>
                   {" "}
@@ -162,8 +163,8 @@ export default function Today(): ReactElement {
                     heatmap={collapseHeatmap(
                       arrayRotate(
                         course.heatmap,
-                        -Math.floor(moment().utcOffset() / 15),
-                      ),
+                        -Math.floor(moment().utcOffset() / 15)
+                      )
                     )}
                   />
                 )
