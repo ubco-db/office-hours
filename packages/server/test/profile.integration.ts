@@ -6,12 +6,14 @@ import {
   CourseSectionFactory,
   LastRegistrationFactory,
   OrganizationFactory,
+  UserCourseFactory,
 } from './util/factories';
 import { setupIntegrationTest } from './util/testUtils';
 import { ProfileModule } from '../src/profile/profile.module';
 import { PhoneNotifModel } from 'notification/phone-notif.entity';
 import { DesktopNotifModel } from 'notification/desktop-notif.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import { Role } from '@koh/common';
 
 describe('Profile Integration', () => {
   const supertest = setupIntegrationTest(ProfileModule);
@@ -42,9 +44,9 @@ describe('Profile Integration', () => {
         .post(`/profile/0/edit_user`)
         .send({
           email: 'hello@world.com',
-          first_name: 'bob',
-          password: 'onion',
-          last_name: 'chungus',
+          first_name: 'hello',
+          password: 'pass',
+          last_name: 'world',
           selected_course: 134,
           sid: 123,
           photo_url: '',
@@ -60,10 +62,10 @@ describe('Profile Integration', () => {
         .post(`/profile/${user.id}/edit_user`)
         .send({
           email: 'hello@world.com',
-          first_name: 'bob',
-          password: 'onion',
-          last_name: 'chungus',
-          selected_course: 134,
+          first_name: 'hello',
+          password: 'pass',
+          last_name: 'world',
+          selected_course: 123,
           sid: 123,
           photo_url: '',
           courses: [],
@@ -97,33 +99,54 @@ describe('Profile Integration', () => {
     });
 
     it("fails to delete a user when user doesn't exist", async () => {
-      const user = await UserFactory.create();
-      const courseId = (await CourseFactory.create()).id; // Replace with a valid course ID
+      const professor = await UserFactory.create();
+      const course = await CourseFactory.create();
 
-      const res = await supertest({ userId: user.id })
-        .delete(`/profile/0/${courseId}/unRegister_student`)
+      await UserCourseFactory.create({
+        user: professor,
+        course: course,
+        role: Role.PROFESSOR,
+      });
+
+      const res = await supertest({ userId: professor.id })
+        .delete(`/profile/0/${course.id}/unRegister_student`)
         .expect(404);
 
-      expect(res.body.message).toBe('User not found');
+      expect(res.body.message).toBe('The user response was not found');
     });
 
     it("fails to delete a user when course doesn't exist", async () => {
       const user = await UserFactory.create();
       const invalidCourseId = 0;
+      const professor = await UserFactory.create();
+      const course = await CourseFactory.create();
 
-      const res = await supertest({ userId: user.id })
+      await UserCourseFactory.create({
+        user: professor,
+        course: course,
+        role: Role.PROFESSOR,
+      });
+
+      const res = await supertest({ userId: professor.id })
         .delete(`/profile/${user.id}/${invalidCourseId}/unRegister_student`)
         .expect(404);
 
-      expect(res.body.message).toBe('Course not found');
+      expect(res.body.message).toBe('Not In This Course');
     });
 
     it('deletes the user from the course', async () => {
       const user = await UserFactory.create();
-      const courseId = (await CourseFactory.create()).id;
+      const course = await CourseFactory.create();
+      const professor = await UserFactory.create();
 
-      const res = await supertest({ userId: user.id }).delete(
-        `/profile/${user.id}/${courseId}/unRegister_student`,
+      await UserCourseFactory.create({
+        user: professor,
+        course: course,
+        role: Role.PROFESSOR,
+      });
+
+      const res = await supertest({ userId: professor.id }).delete(
+        `/profile/${user.id}/${course.id}/unRegister_student`,
       );
 
       expect(res.body.message).toBe('Student removed from course successfully');

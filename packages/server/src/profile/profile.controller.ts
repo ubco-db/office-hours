@@ -188,21 +188,21 @@ export class ProfileController {
   }
 
   @Get(':id/user')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard) // TEMPORARY! need to make organizational level role guards
+  @UseGuards(JwtAuthGuard) // TEMPORARY! need to make organizational level role guards
   @Roles(Role.PROFESSOR)
   async getUser(@Param('id') id: number): Promise<UserModel> {
     const user = await UserModel.findOne(id);
     return user;
   }
 
-  @Post(':id/edit_user')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard) // TEMPORARY! need to make organizational level role guards
+  @Post(':uid/edit_user')
+  @UseGuards(JwtAuthGuard) // TEMPORARY! need to make organizational level role guards
   @Roles(Role.PROFESSOR)
   async edit_user(
-    @Param('id') id: number,
+    @Param('uid') uid: number,
     @Body() body: UBCOuserParam,
   ): Promise<EditUserResponse> {
-    const user = await UserModel.findOne(id);
+    const user = await UserModel.findOne(uid);
 
     if (!user) {
       throw new NotFoundException('User not found');

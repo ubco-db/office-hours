@@ -102,9 +102,9 @@ class APIClient {
       this.req("GET", `/api/v1/profile/${id}/user`, undefined),
     editUser: async (
       student: UBCOuserParam,
-      id: number
+      uid: number
     ): Promise<EditUserResponse> =>
-      this.req("POST", `/api/v1/profile/${id}/edit_user`, undefined, student),
+      this.req("POST", `/api/v1/profile/${uid}/edit_user`, undefined, student),
     inQueue: async (sid: number): Promise<boolean> =>
       this.req("GET", `/api/v1/profile/${sid}/inQueue`, undefined),
     updatePassword: async (password: string, token: string): Promise<void> =>
