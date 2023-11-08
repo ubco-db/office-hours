@@ -24,6 +24,7 @@ import { CalendarModel } from './src/calendar/calendar.entity';
 import { OrganizationUserModel } from './src/organization/organization-user.entity';
 import { OrganizationModel } from './src/organization/organization.entity';
 import { OrganizationCourseModel } from './src/organization/organization-course.entity';
+import { ChatMessageModel } from 'chat/chatMessage.entity';
 config();
 
 // Options only used whe run via CLI
@@ -58,6 +59,7 @@ const typeorm = {
     EventModel,
     QuestionGroupModel,
     AlertModel,
+    ChatMessageModel,
     ImageModel,
     CalendarModel,
     LastRegistrationModel,

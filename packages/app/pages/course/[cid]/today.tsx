@@ -14,7 +14,7 @@ import SchedulePanel from "../../../components/Schedule/SchedulePanel";
 import QueueCard, {
   QueueCardSkeleton,
 } from "../../../components/Today/QueueCard";
-import { ChatbotComponent } from "../../../components/Chatbot/Chatbot";
+
 import TodayPageCheckinButton from "../../../components/Today/QueueCheckInButton";
 import { useCourse } from "../../../hooks/useCourse";
 import { useRoleInCourse } from "../../../hooks/useRoleInCourse";
@@ -22,6 +22,8 @@ import PopularTimes from "../../../components/Today/PopularTimes/PopularTimes";
 import AsyncQuestionCard from "../../../components/AsyncQuestion/AsyncQuestionCard";
 import { orderBy } from "lodash";
 import { useChatbotContext } from "../../../providers/chatbotProvider";
+// import ChatStudent from "../../../components/Chat/ChatStudent";
+import ChatTA from "../../../components/Chat/ChatTA";
 
 const Container = styled.div`
   margin-top: 32px;
@@ -89,12 +91,12 @@ export default function Today(): ReactElement {
     orderBy(
       course?.queues,
       ["isOpen", "isProfessorQueue"],
-      ["desc", sortByProfOrder],
+      ["desc", sortByProfOrder]
     );
 
   const updateQueueNotes = async (
     queue: QueuePartial,
-    notes: string,
+    notes: string
   ): Promise<void> => {
     const newQueues =
       course &&
@@ -160,8 +162,8 @@ export default function Today(): ReactElement {
                     heatmap={collapseHeatmap(
                       arrayRotate(
                         course.heatmap,
-                        -Math.floor(moment().utcOffset() / 15),
-                      ),
+                        -Math.floor(moment().utcOffset() / 15)
+                      )
                     )}
                   />
                 )
@@ -171,6 +173,8 @@ export default function Today(): ReactElement {
               <SchedulePanel courseId={Number(cid)} defaultView="timeGridDay" />
             </TodayCol>
           </Row>
+          {/* {role === Role.STUDENT ? <ChatStudent /> : <ChatTA />} */}
+          <ChatTA />
         </Container>
       </StandardPageContainer>
     );

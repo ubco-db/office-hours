@@ -27,6 +27,7 @@ import { asyncQuestionModule } from 'asyncQuestion/asyncQuestion.module';
 import { ImageModule } from 'images/image.module';
 import { MailModule } from 'mail/mail.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
+import { ChatModule } from 'chat/chat.module';
 import { OrganizationModule } from 'organization/organization.module';
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { OrganizationModule } from 'organization/organization.module';
     LoginModule,
     SignupModule,
     ProfileModule,
+    ChatModule,
     CourseModule,
     QueueModule,
     NotificationModule,
