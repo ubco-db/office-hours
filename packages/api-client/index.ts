@@ -41,9 +41,6 @@ import {
   AsyncQuestion,
   CoursePartial,
   Calendar,
-  createCourse,
-  DeletedStudentResponse,
-  EditUserResponse,
   ChatbotQuestion,
   ChatBotQuestionParams,
   Interaction,
@@ -120,14 +117,6 @@ class APIClient {
       cid: number
     ): Promise<DeletedStudentResponse> =>
       this.req("DELETE", `/api/v1/profile/${sid}/${cid}/unRegister_student`),
-  };
-  site_admin = {
-    getCourses: async (): Promise<GetCourseResponse[]> =>
-      this.req("GET", "/api/v1/site_admin/all_courses"),
-    createCourse: async (body: createCourse): Promise<any> =>
-      this.req("POST", `/api/v1/site_admin/course`, undefined, body),
-    deleteCourse: async (cid: number): Promise<GetCourseResponse> =>
-      this.req("DELETE", `/api/v1/site_admin/${cid}/deleteCourse`),
   };
   chatbot = {
     createInteraction: async (body: {
