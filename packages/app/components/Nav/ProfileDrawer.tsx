@@ -11,6 +11,7 @@ import styled from 'styled-components'
 import SelfAvatar from '../common/SelfAvatar'
 import { useRoleInCourse } from '../../hooks/useRoleInCourse'
 import { Role } from '@koh/common'
+import { useRouter } from 'next/router'
 const { Text } = Typography
 
 const StyleablePopover = ({ className, ...props }: { className: string }) => (
@@ -75,6 +76,7 @@ export default function ProfileDrawer({
 }: ProfileDrawerProps): ReactElement {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const role = useRoleInCourse(courseId)
+  const router = useRouter()
   return (
     <>
       <NoPaddingPopover
@@ -102,7 +104,7 @@ export default function ProfileDrawer({
               key="1"
               icon={<QuestionCircleOutlined />}
               onClick={() => {
-                window.open('http://example.com')
+                router.push('/guide')
                 setIsPopoverOpen(false)
               }}
             >
