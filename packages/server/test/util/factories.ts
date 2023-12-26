@@ -1,5 +1,5 @@
 import { QuestionGroupModel } from 'question/question-group.entity';
-import { AlertType, QuestionType, Role } from '@koh/common';
+import { AlertType, OrganizationRole, QuestionType, Role } from '@koh/common';
 import { AlertModel } from 'alerts/alerts.entity';
 import { EventModel, EventType } from 'profile/event-model.entity';
 import { Factory } from 'typeorm-factory';
@@ -14,6 +14,8 @@ import { LastRegistrationModel } from 'login/last-registration-model.entity';
 import { ProfSectionGroupsModel } from 'login/prof-section-groups.entity';
 import { OrganizationModel } from '../../src/organization/organization.entity';
 import { InteractionModel } from 'chatbot/interaction.entity';
+import { OrganizationCourseModel } from 'organization/organization-course.entity';
+import { OrganizationUserModel } from 'organization/organization-user.entity';
 
 export const UserFactory = new Factory(UserModel)
   .attr('email', `user@ubc.ca`)
@@ -44,6 +46,7 @@ export const CourseFactory = new Factory(CourseModel)
   )
   .attr('sectionGroupName', 'CS 304')
   .attr('enabled', true)
+  .attr('courseInviteCode', 'invite-code')
   .assocOne('semester', SemesterFactory);
 
 export const CourseSectionFactory = new Factory(CourseSectionMappingModel)
@@ -101,12 +104,18 @@ export const AlertFactory = new Factory(AlertModel)
 
 export const OrganizationFactory = new Factory(OrganizationModel)
   .attr('name', 'UBCO')
-  .attr('description', 'UBC Okanagan')
-  .attr(
-    'logoUrl',
-    'https://etug.ca/wp-content/uploads/2014/03/ubc-e1523034593970.png',
-  );
+  .attr('description', 'UBC Okanagan');
+
 export const InteractionFactory = new Factory(InteractionModel)
   .assocOne('course', CourseFactory)
   .assocOne('user', UserFactory)
   .attr('timestamp', new Date());
+
+export const OrganizationCourseFactory = new Factory(OrganizationCourseModel)
+  .assocOne('organization', OrganizationFactory)
+  .assocOne('course', CourseFactory);
+
+export const OrganizationUserFactory = new Factory(OrganizationUserModel)
+  .assocOne('organization', OrganizationFactory)
+  .assocOne('organizationUser', UserFactory)
+  .attr('role', OrganizationRole.MEMBER);

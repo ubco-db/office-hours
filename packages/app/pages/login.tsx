@@ -1,117 +1,300 @@
-import Router from "next/router";
-import { ReactElement, useState } from "react";
-import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { message, Button, Form, Input } from "antd";
-import styled from "styled-components";
-import Head from "next/head";
+import Router from 'next/router'
+import { ReactElement, useState } from 'react'
+import { LeftOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  message,
+  Button,
+  Form,
+  Input,
+  Card,
+  Row,
+  Col,
+  Select,
+  Spin,
+  Alert,
+} from 'antd'
+import styled from 'styled-components'
+import Head from 'next/head'
+import { API } from '@koh/api-client'
+import useSWR from 'swr'
 
 const Container = styled.div`
   margin-left: auto;
   margin-right: auto;
   text-align: center;
-  width: 300px;
   padding-top: 100px;
-`;
+  width: 60%;
+  border-radius: 15px;
+  height: auto;
+
+  @media (max-width: 650px) {
+    width: 90%;
+  }
+
+  @media (max-width: 992px) {
+    width: 80%;
+  }
+`
 
 export default function Login(): ReactElement {
-  const [pass, setPass] = useState("");
-  const [uname, setUname] = useState("");
+  const [pass, setPass] = useState('')
+  const [uname, setUname] = useState('')
+  const [accountActiveResponse, setAccountActiveResponse] = useState(true)
+  const [loginMenu, setLoginMenu] = useState(false)
+  const [organization, setOrganization] = useState(null)
+
+  const { data: organizations } = useSWR(`api/v1/organization`, async () =>
+    API.organizations.getOrganizations(),
+  )
+
+  const loginWithGoogle = async () => {
+    await API.auth
+      .loginWithGoogle(Number(organization.id))
+      .then((res) => {
+        Router.push(res.redirectUri)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  const loginWithInstitution = async () => {
+    Router.push(`/api/v1/auth/shibboleth/${organization.id}`)
+  }
 
   function login() {
+    if (organization && !organization.legacyAuthEnabled) {
+      message.error('Organization does not support legacy authentication')
+      return
+    }
+
     const loginRequest = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: uname,
         password: pass,
       }),
-    };
+    }
     fetch(`/api/v1/ubc_login`, loginRequest)
       .then(async (response) => {
-        const data = await response.json();
+        const data = await response.json()
         if (!response.ok) {
           // get error message from body or default to response statusText
-          const error = (data && data.message) || response.statusText;
-          if (data.message === "Invalid credential") {
-            message.error("Invalid password.");
-          } else {
-            message.error("User Not Found");
+          const error = (data && data.message) || response.statusText
+          switch (response.status) {
+            case 401:
+              message.error(data.message)
+              break
+            case 403:
+              setAccountActiveResponse(false)
+              break
+            case 404:
+              message.error('User Not Found')
+              break
+            default:
+              message.error(error)
+              break
           }
-          return Promise.reject(error);
+          return Promise.reject(error)
         } else {
-          Router.push(`/api/v1/login/entry?token=${data.token}`);
+          const lastVisited = localStorage.getItem('lastVisited')
+
+          let redirectURL = `/api/v1/login/entry?token=${data.token}`
+
+          if (lastVisited) {
+            redirectURL += `&redirect=${encodeURIComponent(lastVisited)}`
+            localStorage.removeItem('lastVisited')
+          }
+
+          Router.push(redirectURL)
         }
       })
       .catch((error) => {
-        console.error("There was an error!", error);
-      });
+        console.error('There was an error!', error)
+      })
   }
 
   const onPassChange = (e) => {
-    setPass(e.target.value);
-  };
+    setPass(e.target.value)
+  }
 
   const onUserNameChange = (e) => {
-    setUname(e.target.value);
-  };
+    setUname(e.target.value)
+  }
 
-  return (
+  const showLoginMenu = (value) => {
+    const organization = organizations.find((org) => org.id === value)
+
+    if (!organization) {
+      message.error('Organization not found')
+      return
+    }
+
+    setOrganization(organization)
+    setLoginMenu(true)
+  }
+
+  return organizations ? (
     <>
       <Head>
         <title>Login | HelpMe</title>
       </Head>
       <Container>
-        <Form
-          name="normal_login"
-          className="login-form"
-          initialValues={{ remember: true }}
-          onFinish={login}
-        >
-          <h1>HelpMe</h1>
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: "Please input your Username!" }]}
-          >
-            <Input
-              prefix={<UserOutlined className="site-form-item-icon" />}
-              onChange={onUserNameChange}
-              placeholder="Username"
-            />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: "Please input your Password!" }]}
-          >
-            <Input
-              prefix={<LockOutlined className="site-form-item-icon" />}
-              onChange={onPassChange}
-              type="password"
-              placeholder="Password"
-            />
-          </Form.Item>
+        <Card className="sm:px-2 md:px-6">
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Col xs={{ span: 24 }} sm={{ span: 11 }}>
+              <h2 className="text-left">Hey, hello 👋</h2>
 
-          <Form.Item>
-            <a
-              style={{ float: "right", marginTop: "-10px" }}
-              href="/forgetpassword/forget"
-            >
-              Forgot password
-            </a>
-          </Form.Item>
+              {!loginMenu && (
+                <>
+                  <p className="text-left text-stone-400">
+                    Select your organization to log in.
+                  </p>
 
-          <Form.Item style={{ marginTop: "-15px" }}>
-            <Button
-              style={{ width: "100%", marginTop: "-15px" }}
-              type="primary"
-              htmlType="submit"
-              className="login-form-button"
-            >
-              Log in
-            </Button>
-            Or <a href="/signup/signup">register now!</a>
-          </Form.Item>
-        </Form>
+                  <Select
+                    className="mt-2 w-full text-left"
+                    placeholder="Available Organizations"
+                    options={organizations.map((organization) => {
+                      return {
+                        label: organization.name,
+                        value: organization.id,
+                      }
+                    })}
+                    onChange={(value) => {
+                      showLoginMenu(value)
+                    }}
+                  />
+                </>
+              )}
+
+              {loginMenu && (
+                <>
+                  <Button
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-5 text-left"
+                    onClick={() => setLoginMenu(false)}
+                  >
+                    <LeftOutlined />
+                    <span className="font-semibold"> Go Back</span>
+                  </Button>
+
+                  {organization && organization.googleAuthEnabled && (
+                    <Button
+                      className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-5 text-left"
+                      onClick={() => loginWithGoogle()}
+                    >
+                      <img
+                        className="h-6 w-6"
+                        src="https://www.svgrepo.com/show/475656/google-color.svg"
+                        loading="lazy"
+                        alt="google logo"
+                      />
+                      <span className="font-semibold">Log in with Google</span>
+                    </Button>
+                  )}
+
+                  {organization && organization.ssoEnabled && (
+                    <Button
+                      className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-5 text-left"
+                      onClick={() => loginWithInstitution()}
+                    >
+                      <span className="font-semibold">
+                        Log in with Institution
+                      </span>
+                    </Button>
+                  )}
+
+                  {organization && organization.legacyAuthEnabled && (
+                    <p className="my-5 font-medium uppercase text-stone-400">
+                      Or login with email
+                    </p>
+                  )}
+
+                  {!accountActiveResponse && (
+                    <Alert
+                      message="System Notice"
+                      description="Your account has been deactivated. Please contact your organization admin for more information."
+                      type="error"
+                      style={{ marginBottom: 20, textAlign: 'left' }}
+                    />
+                  )}
+                  {organization && organization.legacyAuthEnabled && (
+                    <Form
+                      name="normal_login"
+                      className="login-form"
+                      initialValues={{ remember: true }}
+                      onFinish={login}
+                    >
+                      <Form.Item
+                        name="username"
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please enter a valid username.',
+                          },
+                        ]}
+                      >
+                        <Input
+                          prefix={
+                            <UserOutlined className="site-form-item-icon" />
+                          }
+                          onChange={onUserNameChange}
+                          className="rounded-lg border px-2 py-2"
+                          placeholder="Username"
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="password"
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please enter a valid password.',
+                          },
+                        ]}
+                      >
+                        <Input
+                          prefix={
+                            <LockOutlined className="site-form-item-icon" />
+                          }
+                          onChange={onPassChange}
+                          type="password"
+                          className="rounded-lg border px-2 py-2"
+                          placeholder="Password"
+                        />
+                      </Form.Item>
+
+                      <Form.Item>
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          className="h-auto w-full items-center justify-center rounded-lg border px-2 py-2 "
+                        >
+                          <span className="font-semibold">Log in</span>
+                        </Button>
+                      </Form.Item>
+
+                      <Form.Item>
+                        <a
+                          style={{ marginTop: '-10px' }}
+                          href="/forgetpassword/forget"
+                        >
+                          Forgot password
+                        </a>
+                      </Form.Item>
+                    </Form>
+                  )}
+                </>
+              )}
+            </Col>
+            <Col xs={{ span: 0 }} sm={{ span: 13 }}>
+              <img src="images/community.svg" style={{ height: '100%' }} />
+            </Col>
+          </Row>
+        </Card>
       </Container>
     </>
-  );
+  ) : (
+    <Spin />
+  )
 }

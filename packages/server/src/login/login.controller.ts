@@ -49,10 +49,22 @@ export class LoginController {
   ): Promise<any> {
     const user = await UserModel.findOne({
       where: { email: body.email },
+      relations: ['organizationUser', 'organizationUser.organization'],
     });
 
     if (!user) {
-      return res.status(404).send({ message: 'User Not found' });
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .send({ message: 'User Not found' });
+    }
+
+    if (
+      user.organizationUser &&
+      user.organizationUser.organization.legacyAuthEnabled === false
+    ) {
+      return res.status(HttpStatus.UNAUTHORIZED).send({
+        message: 'Organization does not allow legacy auth',
+      });
     }
 
     const token = await this.jwtService.signAsync(
@@ -68,15 +80,26 @@ export class LoginController {
       );
     }
 
+    if (user.password === null || user.password === undefined) {
+      return res.status(HttpStatus.UNAUTHORIZED).send({
+        message: 'User did not sign up with legacy account system',
+      });
+    }
+
     bcrypt.compare(body.password, user.password, (err, data) => {
       //if error than throw error
       if (err) throw err;
 
       //if both match than you can do anything
       if (data) {
+        if (user.accountDeactivated) {
+          return res.status(HttpStatus.FORBIDDEN).send({
+            message: 'Account deactivated',
+          });
+        }
         return res.status(200).send({ token, ...body });
       } else {
-        return res.status(401).json({ message: 'Invalid credential' });
+        return res.status(401).json({ message: 'Invalid credentials' });
       }
     });
   }
@@ -89,6 +112,7 @@ export class LoginController {
   async enterUBCOH(
     @Res() res: Response,
     @Query('token') token: string,
+    @Query('redirect') redirect?: string,
   ): Promise<void> {
     const isVerified = await this.jwtService.verifyAsync(token);
 
@@ -97,11 +121,11 @@ export class LoginController {
     }
 
     const payload = this.jwtService.decode(token) as { userId: number };
-    this.enter(res, payload.userId);
+    await this.enter(res, payload.userId, redirect);
   }
 
   // Set cookie and redirect to proper page
-  private async enter(res: Response, userId: number) {
+  private async enter(res: Response, userId: number, redirect?: string) {
     // Expires in 30 days
     const authToken = await this.jwtService.signAsync({
       userId,
@@ -109,7 +133,6 @@ export class LoginController {
     });
 
     if (authToken === null || authToken === undefined) {
-      console.error('Authroziation JWT is invalid');
       throw new HttpException(
         ERROR_MESSAGES.loginController.invalidTempJWTToken,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -119,9 +142,10 @@ export class LoginController {
     const isSecure = this.configService
       .get<string>('DOMAIN')
       .startsWith('https://');
+
     res
       .cookie('auth_token', authToken, { httpOnly: true, secure: isSecure })
-      .redirect(302, `/courses`);
+      .redirect(302, redirect ? redirect : '/courses');
   }
 
   @Get('/logout')

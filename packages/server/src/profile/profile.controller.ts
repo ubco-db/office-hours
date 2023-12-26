@@ -6,6 +6,7 @@ import {
   QuestionStatusKeys,
   UpdateProfileParams,
   PROD_URL,
+  AccountType,
 } from '@koh/common';
 import {
   BadRequestException,
@@ -71,7 +72,7 @@ export class ProfileController {
     UserModel.findOne({
       where: { email: e },
     })
-      .then(async user => {
+      .then(async (user) => {
         if (!user) {
           throw new HttpException(
             ERROR_MESSAGES.profileController.accountNotAvailable,
@@ -91,7 +92,7 @@ export class ProfileController {
         }
         return res.status(200).send({ token, e });
       })
-      .catch(err => {
+      .catch((err) => {
         res.status(500).send({ message: err });
       });
   }
@@ -168,7 +169,7 @@ export class ProfileController {
     const payload = this.jwtService.decode(token) as { userId: number };
     UserModel.findOne({
       where: { id: payload.userId },
-    }).then(async user => {
+    }).then(async (user) => {
       if (!user) {
         throw new NotFoundException();
       } else {
@@ -197,7 +198,7 @@ export class ProfileController {
       },
     });
     if (students) {
-      const temp = students.map(student => {
+      const temp = students.map((student) => {
         return { value: student.user.name, id: student.user.id };
       });
       res.status(200).send(temp);
@@ -274,10 +275,18 @@ export class ProfileController {
         HttpStatus.NOT_FOUND,
       );
     }
+
+    if (user.accountDeactivated) {
+      throw new HttpException(
+        ERROR_MESSAGES.profileController.accountDeactivated,
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     const courses = user.courses
       ? user.courses
-          .filter(userCourse => userCourse?.course?.enabled)
-          .map(userCourse => {
+          .filter((userCourse) => userCourse?.course?.enabled)
+          .map((userCourse) => {
             return {
               course: {
                 id: userCourse.courseId,
@@ -289,7 +298,7 @@ export class ProfileController {
       : [];
 
     const desktopNotifs: DesktopNotifPartial[] = user.desktopNotifs
-      ? user.desktopNotifs.map(d => ({
+      ? user.desktopNotifs.map((d) => ({
           endpoint: d.endpoint,
           id: d.id,
           createdAt: d.createdAt,
@@ -311,6 +320,7 @@ export class ProfileController {
       'phoneNotifsEnabled',
       'insights',
       'userRole',
+      'accountType',
     ]);
 
     if (userResponse === null || userResponse === undefined) {
@@ -322,19 +332,16 @@ export class ProfileController {
     }
 
     const pendingCourses = await this.profileService.getPendingCourses(user.id);
-
-
-    const organizationRole = await this.organizationService.getOrganizationRoleByUserId(
-      user.id,
-    );
     const userOrganization =
       await this.organizationService.getOrganizationAndRoleByUserId(user.id);
 
     const organization = pick(userOrganization, [
       'id',
+      'orgId',
       'organizationName',
       'organizationDescription',
       'organizationLogoUrl',
+      'organizationBannerUrl',
       'organizationRole',
     ]);
 
@@ -351,20 +358,45 @@ export class ProfileController {
   @Patch()
   @UseGuards(JwtAuthGuard)
   async patch(
+    @Res() res: Response,
     @Body() userPatch: UpdateProfileParams,
     @User()
     user: UserModel,
-  ): Promise<GetProfileResponse> {
-    if (userPatch.email) {
+  ): Promise<Response<GetProfileResponse>> {
+    if (user.accountType !== AccountType.LEGACY && userPatch.email) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: ERROR_MESSAGES.profileController.cannotUpdateEmail });
+    }
+
+    if (userPatch.email && userPatch.email !== user.email) {
       const email = await UserModel.findOne({
         where: {
           email: userPatch.email,
         },
       });
+
       if (email) {
-        throw new BadRequestException('Email already in db');
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .send({ message: ERROR_MESSAGES.profileController.emailAlreadyInDb });
       }
     }
+
+    if (userPatch.sid && userPatch.sid !== user.sid) {
+      const sid = await UserModel.findOne({
+        where: {
+          sid: userPatch.sid,
+        },
+      });
+
+      if (sid) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .send({ message: ERROR_MESSAGES.profileController.sidAlreadyInDb });
+      }
+    }
+
     user = Object.assign(user, userPatch);
     // check that the user is trying to update the phone notifs
     if (userPatch.phoneNotifsEnabled && userPatch.phoneNumber) {
@@ -377,11 +409,16 @@ export class ProfileController {
       }
     }
 
-    await user.save().catch(e => {
-      console.log(e);
-    });
+    await user
+      .save()
+      .then(() => {
+        return this.get(user);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
 
-    return this.get(user);
+    return res.status(200).send({ message: 'Profile updated successfully' });
   }
 
   @Post('/upload_picture')
@@ -394,43 +431,41 @@ export class ProfileController {
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @User() user: UserModel,
+    @Res() response: Response,
   ): Promise<void> {
-    if (user.photoURL) {
-      fs.unlink(process.env.UPLOAD_LOCATION + '/' + user.photoURL, err => {
-        console.error(
-          'Error deleting previous picture at: ',
-          user.photoURL,
-          err,
-          'the previous image was at an invalid location?',
+    try {
+      if (user.photoURL && !user.photoURL.startsWith('http')) {
+        fs.unlinkSync(path.join(process.env.UPLOAD_LOCATION, user.photoURL));
+      }
+
+      const spaceLeft = await checkDiskSpace(path.parse(process.cwd()).root);
+
+      if (spaceLeft.free < 1000000000) {
+        // if less than a gigabyte left
+        throw new ServiceUnavailableException(
+          ERROR_MESSAGES.profileController.noDiskSpace,
         );
-      });
+      }
+      const fileName =
+        user.id +
+        '-' +
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15);
+      if (!fs.existsSync(process.env.UPLOAD_LOCATION)) {
+        fs.mkdirSync(process.env.UPLOAD_LOCATION, { recursive: true });
+      }
+
+      const targetPath = path.join(process.env.UPLOAD_LOCATION, fileName);
+
+      await sharp(file.buffer).resize(256).toFile(targetPath);
+      user.photoURL = fileName;
+      await user.save();
+      response.status(200).send({ message: 'Image uploaded successfully' });
+    } catch (error) {
+      response
+        .status(500)
+        .send({ message: 'Image upload failed', error: error.message });
     }
-
-    const spaceLeft = await checkDiskSpace(path.parse(process.cwd()).root);
-
-    if (spaceLeft.free < 1000000000) {
-      // if less than a gigabyte left
-      throw new ServiceUnavailableException(
-        ERROR_MESSAGES.profileController.noDiskSpace,
-      );
-    }
-
-    const fileName =
-      user.id +
-      '-' +
-      Math.random()
-        .toString(36)
-        .substring(2, 15) +
-      Math.random()
-        .toString(36)
-        .substring(2, 15);
-
-    await sharp(file.buffer)
-      .resize(256)
-      .toFile(path.join(process.env.UPLOAD_LOCATION, fileName));
-
-    user.photoURL = fileName;
-    await user.save();
   }
 
   @Get('/get_picture/:photoURL')
@@ -462,23 +497,29 @@ export class ProfileController {
   @UseGuards(JwtAuthGuard)
   async deleteProfilePicture(@User() user: UserModel): Promise<void> {
     if (user.photoURL) {
-      fs.unlink(
-        process.env.UPLOAD_LOCATION + '/' + user.photoURL,
-        async err => {
-          if (err) {
-            const errMessage =
-              'Error deleting previous picture at : ' +
-              user.photoURL +
-              'the previous image was at an invalid location?';
-            console.error(errMessage, err);
-            throw new BadRequestException(errMessage);
-          } else {
-            user.photoURL = null;
-            await user.save();
-            return;
-          }
-        },
-      );
+      if (user.photoURL.startsWith('http')) {
+        user.photoURL = null;
+        await user.save();
+        return;
+      } else {
+        fs.unlink(
+          process.env.UPLOAD_LOCATION + '/' + user.photoURL,
+          async (err) => {
+            if (err) {
+              const errMessage =
+                'Error deleting previous picture at : ' +
+                user.photoURL +
+                'the previous image was at an invalid location?';
+              console.error(errMessage, err);
+              throw new BadRequestException(errMessage);
+            } else {
+              user.photoURL = null;
+              await user.save();
+              return;
+            }
+          },
+        );
+      }
     }
   }
 }

@@ -8,13 +8,13 @@ import { AlertsModule } from 'alerts/alerts.module';
 import { BackfillModule } from 'backfill/backfill.module';
 import { CommandModule } from 'nestjs-command';
 import { RedisModule } from 'nestjs-redis';
-import { ReleaseNotesModule } from 'release-notes/release-notes.module';
 import * as typeormConfig from '../ormconfig';
 import { AdminModule } from './admin/admin.module';
 import { CourseModule } from './course/course.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { HealthcheckModule } from './healthcheck/healthcheck.module';
 import { LoginModule } from './login/login.module';
+import { AuthModule } from 'auth/auth.module';
 import { NotificationModule } from './notification/notification.module';
 import { ProfileModule } from './profile/profile.module';
 import { QuestionModule } from './question/question.module';
@@ -22,11 +22,9 @@ import { QueueModule } from './queue/queue.module';
 import { SeedModule } from './seed/seed.module';
 import { SSEModule } from './sse/sse.module';
 import { SemesterModule } from 'semester/semester.module';
-import { SignupModule } from 'signup/signup.module';
 import { asyncQuestionModule } from 'asyncQuestion/asyncQuestion.module';
 import { ImageModule } from 'images/image.module';
 import { MailModule } from 'mail/mail.module';
-import { SiteAdminModule } from 'site-admin/site-admin.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { OrganizationModule } from 'organization/organization.module';
 @Module({
@@ -34,7 +32,6 @@ import { OrganizationModule } from 'organization/organization.module';
     TypeOrmModule.forRoot(typeormConfig),
     ScheduleModule.forRoot(),
     LoginModule,
-    SignupModule,
     ProfileModule,
     CourseModule,
     QueueModule,
@@ -44,7 +41,6 @@ import { OrganizationModule } from 'organization/organization.module';
     MailModule,
     asyncQuestionModule,
     CalendarModule,
-    SiteAdminModule,
     ConfigModule.forRoot({
       envFilePath: [
         '.env',
@@ -56,7 +52,6 @@ import { OrganizationModule } from 'organization/organization.module';
     CommandModule,
     SSEModule,
     BackfillModule,
-    ReleaseNotesModule,
     InsightsModule,
     ImageModule,
     // Only use 'pub' for publishing events, 'sub' for subscribing, and 'db' for writing to key/value store
@@ -70,6 +65,7 @@ import { OrganizationModule } from 'organization/organization.module';
     SemesterModule,
     ChatbotModule,
     OrganizationModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

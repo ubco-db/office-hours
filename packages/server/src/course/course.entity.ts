@@ -19,15 +19,13 @@ import { UserCourseModel } from '../profile/user-course.entity';
 import { QueueModel } from '../queue/queue.entity';
 import { SemesterModel } from '../semester/semester.entity';
 import { OrganizationCourseModel } from '../organization/organization-course.entity';
+import { ChatbotDocumentModel } from 'chatbot/chatbotDocument.entity';
 @Entity('course_model')
 export class CourseModel extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany(
-    type => QueueModel,
-    q => q.course,
-  )
+  @OneToMany((type) => QueueModel, (q) => q.course)
   queues: QueueModel[];
 
   @Column('text')
@@ -51,17 +49,15 @@ export class CourseModel extends BaseEntity {
   @Exclude()
   questionTimer: number;
 
-  @OneToMany(
-    type => UserCourseModel,
-    ucm => ucm.course,
-  )
-  @Exclude()
-  userCourses: UserCourseModel;
+  @OneToMany((type) => ChatbotDocumentModel, (document) => document.course)
+  @JoinColumn({ name: 'course' })
+  chatbotDocuments: ChatbotDocumentModel[];
 
-  @ManyToOne(
-    type => SemesterModel,
-    semester => semester.courses,
-  )
+  @OneToMany((type) => UserCourseModel, (ucm) => ucm.course)
+  @Exclude()
+  userCourses: UserCourseModel[];
+
+  @ManyToOne((type) => SemesterModel, (semester) => semester.courses)
   @JoinColumn({ name: 'semesterId' })
   @Exclude()
   semester: SemesterModel;
@@ -81,17 +77,11 @@ export class CourseModel extends BaseEntity {
   @Column('text', { nullable: true })
   timezone: string;
 
-  @OneToMany(
-    type => EventModel,
-    event => event.course,
-  )
+  @OneToMany((type) => EventModel, (event) => event.course)
   @Exclude()
   events: EventModel[];
 
-  @OneToMany(
-    type => AlertModel,
-    alert => alert.course,
-  )
+  @OneToMany((type) => AlertModel, (alert) => alert.course)
   @Exclude()
   alerts: AlertModel[];
 
@@ -101,8 +91,8 @@ export class CourseModel extends BaseEntity {
   selfEnroll: boolean;
 
   @OneToMany(
-    type => AsyncQuestionModel,
-    asyncQuestion => asyncQuestion.course,
+    (type) => AsyncQuestionModel,
+    (asyncQuestion) => asyncQuestion.course,
   )
   @Exclude()
   images: AsyncQuestionModel[];
@@ -113,13 +103,12 @@ export class CourseModel extends BaseEntity {
   @DeleteDateColumn()
   deletedAt?: Date;
 
-  @ManyToOne(
-    type => OrganizationCourseModel,
-    organizationCourse => organizationCourse.course,
+  @OneToOne(
+    (type) => OrganizationCourseModel,
+    (organizationCourse) => organizationCourse.course,
   )
-  @Exclude()
   organizationCourse: OrganizationCourseModel;
 
-  @Column({ nullable: true })
-  organizationCourseId: number;
+  @Column('text', { nullable: true })
+  courseInviteCode: string;
 }
