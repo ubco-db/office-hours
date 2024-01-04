@@ -4,23 +4,23 @@ import {
   useEffect,
   useRef,
   useLayoutEffect,
-} from "react";
-import FullCalendar, { EventContentArg } from "@fullcalendar/react"; // must go before plugins
-import timeGridPlugin, { DayTimeColsView } from "@fullcalendar/timegrid";
-import listPlugin from "@fullcalendar/list";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import iCalendarPlugin from "@fullcalendar/icalendar";
-import interactionPlugin from "@fullcalendar/interaction";
-import { Form, Input, Modal, Spin, Switch, Tooltip, message } from "antd";
-import { useRoleInCourse } from "../../hooks/useRoleInCourse";
-import styled from "styled-components";
-import "./fullcalendar.css";
-import { API } from "@koh/api-client";
-import { Role } from "@koh/common";
-import { format } from "date-fns";
+} from 'react'
+import FullCalendar, { EventContentArg } from '@fullcalendar/react' // must go before plugins
+import timeGridPlugin, { DayTimeColsView } from '@fullcalendar/timegrid'
+import listPlugin from '@fullcalendar/list'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import iCalendarPlugin from '@fullcalendar/icalendar'
+import interactionPlugin from '@fullcalendar/interaction'
+import { Form, Input, Modal, Spin, Switch, Tooltip, message } from 'antd'
+import { useRoleInCourse } from '../../hooks/useRoleInCourse'
+import styled from 'styled-components'
+import './fullcalendar.css'
+import { API } from '@koh/api-client'
+import { Role } from '@koh/common'
+import { format } from 'date-fns'
 const CalendarWrapper = styled.div`
   margin-bottom: 20px;
-`;
+`
 const SpinnerContainer = styled.div`
   position: absolute;
   top: 0;
@@ -32,60 +32,67 @@ const SpinnerContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-`;
+`
 
 type ScheduleProps = {
-  courseId: number;
-  defaultView?: "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listWeek";
-};
+  courseId: number
+  defaultView?: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'
+}
 export default function StudentSchedulePanel({
   courseId,
-  defaultView = "timeGridWeek",
+  defaultView = 'timeGridWeek',
 }: ScheduleProps): ReactElement {
-  const [isClientSide, setIsClientSide] = useState(false);
-  const [events, setEvents] = useState([]);
-  const calendarRef = useRef(null);
-  const spinnerRef = useRef(null);
+  const [isClientSide, setIsClientSide] = useState(false)
+  const [events, setEvents] = useState([])
+  const calendarRef = useRef(null)
+  const spinnerRef = useRef(null)
 
   useEffect(() => {
-    setIsClientSide(true);
-  }, []);
+    setIsClientSide(true)
+  }, [])
 
   useEffect(() => {
     if (courseId) {
-      getEvent();
+      getEvent()
     }
-  }, [courseId]);
+  }, [courseId])
 
   const getEvent = async () => {
-    await API.calendar.getEvents(Number(courseId)).then((result) => {
-      const modifiedEvents = result.map((event) => parseEvent(event));
-      setEvents(modifiedEvents);
-    });
-  };
+    try {
+      const result = await API.calendar.getEvents(Number(courseId))
+      const modifiedEvents = result.map((event) => parseEvent(event))
+      setEvents(modifiedEvents)
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        setEvents([])
+      } else {
+        console.error('An error occurred while fetching events:', error)
+      }
+    }
+  }
   const parseEvent = (event) => {
     if (event.daysOfWeek) {
-      const startDate = new Date(event.start);
-      const endDate = new Date(event.end);
+      const startDate = new Date(event.start)
+      const endDate = new Date(event.end)
       return {
         id: event.id,
         title: event.title,
         daysOfWeek: event.daysOfWeek,
-        startTime: format(startDate, "HH:mm"),
-        endTime: format(endDate, "HH:mm"),
-      };
+        startTime: format(startDate, 'HH:mm'),
+        endTime: format(endDate, 'HH:mm'),
+      }
     } else {
       return {
         id: event.id,
         title: event.title,
         start: event.start,
         end: event.end,
-      };
+      }
     }
-  };
+  }
   const renderEventContent = (arg: EventContentArg) => {
-    const data = calendarRef.current.getApi().getCurrentData();
-    const viewSpec = data.viewSpecs[arg.view.type].component;
+    const data = calendarRef.current.getApi().getCurrentData()
+    const viewSpec = data.viewSpecs[arg.view.type].component
     if (viewSpec === DayTimeColsView) {
       return (
         <Tooltip title={`${arg.timeText}: ${arg.event.title}`}>
@@ -93,9 +100,9 @@ export default function StudentSchedulePanel({
             <strong>{arg.timeText}</strong> {arg.event.title}
           </span>
         </Tooltip>
-      );
+      )
     }
-  };
+  }
 
   return (
     <div>
@@ -110,18 +117,18 @@ export default function StudentSchedulePanel({
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
             events={events}
-            scrollTime="10:00:00" // auto set each day's view to begin at 8AM
+            scrollTime="10:00:00" // set view to time
             initialView={defaultView}
             initialEvents={events}
             eventContent={renderEventContent}
             headerToolbar={{
-              start: "title",
-              center: "dayGridMonth timeGridWeek timeGridDay listWeek",
-              end: "today prev,next",
+              start: 'title',
+              center: 'dayGridMonth timeGridWeek timeGridDay listWeek',
+              end: 'today prev,next',
             }}
             loading={(loading) => {
               if (spinnerRef.current)
-                spinnerRef.current.style.display = loading ? "flex" : "none";
+                spinnerRef.current.style.display = loading ? 'flex' : 'none'
             }}
             height="70vh"
             timeZone="local"
@@ -129,5 +136,5 @@ export default function StudentSchedulePanel({
         </CalendarWrapper>
       )}
     </div>
-  );
+  )
 }

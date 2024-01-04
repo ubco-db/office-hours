@@ -8,35 +8,35 @@ import {
   Radio,
   Tooltip,
   message,
-} from "antd";
-import { useEffect, useState } from "react";
-import moment from "moment";
-import { API } from "@koh/api-client";
-import { on } from "events";
-import { calendarEventLocationType } from "@koh/common";
-import { set } from "lodash";
+} from 'antd'
+import { useEffect, useState } from 'react'
+import moment from 'moment'
+import { API } from '@koh/api-client'
+import { on } from 'events'
+import { calendarEventLocationType } from '@koh/common'
+import { set } from 'lodash'
 
 const dayToIntMapping = {
-  Sunday: "0",
-  Monday: "1",
-  Tuesday: "2",
-  Wednesday: "3",
-  Thursday: "4",
-  Friday: "5",
-  Saturday: "6",
-};
+  Sunday: '0',
+  Monday: '1',
+  Tuesday: '2',
+  Wednesday: '3',
+  Thursday: '4',
+  Friday: '5',
+  Saturday: '6',
+}
 const locationTypeMapping = {
-  inperson: 0,
+  'in-person': 0,
   online: 1,
   hybrid: 2,
-};
+}
 
 type EditEventModalProps = {
-  visible: boolean;
-  onClose: () => void;
-  event: any;
-  courseId: number;
-};
+  visible: boolean
+  onClose: () => void
+  event: any
+  courseId: number
+}
 
 const EditEventModal = ({
   visible,
@@ -44,12 +44,12 @@ const EditEventModal = ({
   event,
   courseId,
 }: EditEventModalProps) => {
-  const [form] = Form.useForm();
-  const [isRepeating, setIsRepeating] = useState(false);
+  const [form] = Form.useForm()
+  const [isRepeating, setIsRepeating] = useState(false)
   const [locationType, setLocationType] = useState(
-    locationTypeMapping[event?.locationType]
-  );
-  const [selectedDays, setSelectedDays] = useState(null);
+    locationTypeMapping[event?.locationType],
+  )
+  const [selectedDays, setSelectedDays] = useState(null)
 
   useEffect(() => {
     // Set initial form values with the event data
@@ -59,84 +59,82 @@ const EditEventModal = ({
       locationOnline: event?.locationOnline,
       endDate: event?.endRecur ? moment(event.endRecur) : null,
       locationType: locationTypeMapping[event?.locationType],
-    });
-    setIsRepeating(!!event?.endRecur);
+    })
+    setIsRepeating(!!event?.endRecur)
     if (event && event.daysOfWeek) {
-      setSelectedDays(
-        event.daysOfWeek.map((dayInt) => intToDayMapping[dayInt])
-      );
+      setSelectedDays(event.daysOfWeek.map((dayInt) => intToDayMapping[dayInt]))
     }
-  }, [event, form]);
+  }, [event, form])
   const intToDayMapping = Object.fromEntries(
-    Object.entries(dayToIntMapping).map(([key, value]) => [value, key])
-  );
+    Object.entries(dayToIntMapping).map(([key, value]) => [value, key]),
+  )
 
   const handleDaysChange = (checkedValues) => {
-    if (!checkedValues.includes(moment(event?.start).format("dddd"))) {
-      checkedValues.push(moment(event?.start).format("dddd"));
+    if (!checkedValues.includes(moment(event?.start).format('dddd'))) {
+      checkedValues.push(moment(event?.start).format('dddd'))
     }
-    setSelectedDays(checkedValues);
-  };
+    setSelectedDays(checkedValues)
+  }
   const handleOk = async () => {
     try {
-      const formData = await form.validateFields();
+      const formData = await form.validateFields()
       const eventObject = {
         ...formData,
         cid: courseId,
         start: moment(event.start).toISOString(),
         end: moment(event.end).toISOString(),
-      };
+      }
       switch (locationType) {
         case 0: // In Person
-          eventObject.locationType = calendarEventLocationType.inPerson;
-          eventObject.locationInPerson = formData.locationInPerson;
-          break;
+          eventObject.locationType = calendarEventLocationType.inPerson
+          eventObject.locationInPerson = formData.locationInPerson
+          break
         case 1: // Online
-          eventObject.locationType = calendarEventLocationType.online;
-          eventObject.locationOnline = formData.locationOnline;
-          break;
+          eventObject.locationType = calendarEventLocationType.online
+          eventObject.locationOnline = formData.locationOnline
+          break
         case 2: // Hybrid
-          eventObject.locationType = calendarEventLocationType.hybrid;
-          eventObject.locationInPerson = formData.locationInPerson;
-          eventObject.locationOnline = formData.locationOnline;
-          break;
+          eventObject.locationType = calendarEventLocationType.hybrid
+          eventObject.locationInPerson = formData.locationInPerson
+          eventObject.locationOnline = formData.locationOnline
+          break
         default:
-          message.error("Invalid location type");
-          return; // Prevents the function from continuing
+          message.error('Invalid location type')
+          return // Prevents the function from continuing
       }
 
       // Logic for repeating events
       if (isRepeating) {
         if (formData.endDate && selectedDays) {
           eventObject.daysOfWeek = selectedDays.map(
-            (day) => dayToIntMapping[day]
-          );
-          eventObject.startDate = moment().startOf("day").format("YYYY-MM-DD");
-          eventObject.endDate = moment(formData.endDate).format("YYYY-MM-DD");
+            (day) => dayToIntMapping[day],
+          )
+          eventObject.startDate = moment().startOf('day').format('YYYY-MM-DD')
+          eventObject.endDate = moment(formData.endDate).format('YYYY-MM-DD')
         } else {
-          message.error("Please select all fields for repeating events");
-          return; // Prevents the function from continuing
+          message.error('Please select all fields for repeating events')
+          return // Prevents the function from continuing
         }
       }
-      updateEvent(eventObject);
+      updateEvent(eventObject)
     } catch (validationError) {
-      message.error("Event validation failed");
+      message.error('Event validation failed')
     }
-  };
+  }
 
   const updateEvent = async (updatedEvent) => {
     try {
-      const response = await API.calendar.patchEvent(event.id, updatedEvent);
+      const response = await API.calendar.patchEvent(event.id, updatedEvent)
       if (response) {
-        console.log("Event updated successfully", response);
+        console.log('Event updated successfully', response)
       } else {
-        console.error("Failed to update event");
+        console.error('Failed to update event')
       }
     } catch (err) {
-      console.error("Error updating the event:", err.message || err);
+      console.error('Error updating the event:', err.message || err)
     }
-    onClose();
-  };
+    onClose()
+  }
   return (
     <Modal
       title="Edit Event"
@@ -149,7 +147,7 @@ const EditEventModal = ({
         <Form.Item
           label="Title"
           name="title"
-          rules={[{ required: true, message: "Please input the title!" }]}
+          rules={[{ required: true, message: 'Please input the title!' }]}
         >
           <Input />
         </Form.Item>
@@ -157,7 +155,7 @@ const EditEventModal = ({
         <Form.Item label="Start Time" name="startTime">
           <TimePicker
             defaultValue={
-              event ? moment(event.startTime, "HH:mm:ss") : moment()
+              event ? moment(event.startTime, 'HH:mm:ss') : moment()
             }
             format="HH:mm"
           />
@@ -165,7 +163,7 @@ const EditEventModal = ({
 
         <Form.Item label="End Time" name="endTime">
           <TimePicker
-            defaultValue={event ? moment(event.endTime, "HH:mm:ss") : moment()}
+            defaultValue={event ? moment(event.endTime, 'HH:mm:ss') : moment()}
             format="HH:mm"
           />
         </Form.Item>
@@ -203,7 +201,7 @@ const EditEventModal = ({
           label="Location Type"
           name="locationType"
           rules={[
-            { required: true, message: "Please select the location type!" },
+            { required: true, message: 'Please select the location type!' },
           ]}
         >
           <Radio.Group
@@ -220,7 +218,7 @@ const EditEventModal = ({
           <Form.Item
             label="Location"
             name="locationInPerson"
-            rules={[{ required: true, message: "Please input the location!" }]}
+            rules={[{ required: true, message: 'Please input the location!' }]}
           >
             <Input />
           </Form.Item>
@@ -231,7 +229,7 @@ const EditEventModal = ({
             label="Zoom Link"
             name="locationOnline"
             rules={[
-              { required: true, message: "Please input the meeting link!" },
+              { required: true, message: 'Please input the meeting link!' },
             ]}
           >
             <Input />
@@ -244,7 +242,7 @@ const EditEventModal = ({
               label="Location"
               name="locationInPerson"
               rules={[
-                { required: true, message: "Please input the location!" },
+                { required: true, message: 'Please input the location!' },
               ]}
             >
               <Input />
@@ -253,7 +251,7 @@ const EditEventModal = ({
               label="Zoom Link"
               name="locationOnline"
               rules={[
-                { required: true, message: "Please input the meeting link!" },
+                { required: true, message: 'Please input the meeting link!' },
               ]}
             >
               <Input />
@@ -262,7 +260,7 @@ const EditEventModal = ({
         )}
       </Form>
     </Modal>
-  );
-};
+  )
+}
 
-export default EditEventModal;
+export default EditEventModal
