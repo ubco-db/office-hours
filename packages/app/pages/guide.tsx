@@ -1,7 +1,6 @@
 import { Collapse, Layout } from 'antd'
 import NavBar from '../components/Nav/NavBar'
 import 'antd/dist/antd.css'
-import { P } from '@antv/g2plot'
 
 const { Panel } = Collapse
 const { Content, Footer } = Layout
