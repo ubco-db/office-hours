@@ -12,23 +12,20 @@ import {
   IsOptional,
   IsString,
   ValidateIf,
-  isBoolean,
 } from 'class-validator'
 import 'reflect-metadata'
 import { Cache } from 'cache-manager'
 
 export const PROD_URL = 'https://help.cosc304.ok.ubc.ca'
-export const STAGING_URL = 'https://staging.khouryofficehours.com'
+
 // Get domain. works on node and browser
 const domain = (): string | false =>
   process.env.DOMAIN ||
   (typeof window !== 'undefined' && window?.location?.origin)
-export const getEnv = (): 'production' | 'staging' | 'dev' => {
+export const getEnv = (): 'production' | 'dev' => {
   switch (domain()) {
     case PROD_URL:
       return 'production'
-    case STAGING_URL:
-      return 'staging'
     default:
       return 'dev'
   }
@@ -71,11 +68,24 @@ export class User {
   desktopNotifsEnabled!: boolean
   @Type(() => DesktopNotifPartial)
   desktopNotifs!: DesktopNotifPartial[]
-  phoneNotifsEnabled!: boolean
-  phoneNumber!: string
+  phoneNotifsEnabled?: boolean
+  phoneNumber?: string
   insights!: string[]
   userRole!: string
-  organization!: OrganizationUserPartial
+  organization?: OrganizationUserPartial
+  accountType!: AccountType
+}
+
+export class OrganizationResponse {
+  id!: number
+  name!: string
+  logoUrl?: string
+  bannerUrl?: string
+  websiteUrl?: string
+  ssoEnabled?: boolean
+  legacyAuthEnabled?: boolean
+  googleAuthEnabled?: boolean
+  ssoUrl?: string
 }
 
 export class DesktopNotifPartial {
@@ -97,6 +107,7 @@ export class UserPartial {
   email?: string
   name?: string
   photoURL?: string
+  sid?: number
 }
 
 /**
@@ -119,6 +130,21 @@ export type UserCourse = {
   role: Role
 }
 
+export const COURSE_TIMEZONES = [
+  'America/New_York',
+  'America/Los_Angeles',
+  'America/Chicago',
+  'America/Denver',
+  'America/Phoenix',
+  'America/Anchorage',
+  'America/Honolulu',
+  'Europe/London',
+  'Europe/Paris',
+  'Asia/Tokyo',
+  'Asia/Shanghai',
+  'Australia/Sydney',
+]
+
 /**
  * Represents one of three possible user roles in a course.
  */
@@ -126,6 +152,16 @@ export enum Role {
   STUDENT = 'student',
   TA = 'ta',
   PROFESSOR = 'professor',
+}
+
+/**
+ * Represents a method of authentication for a user.
+ * Legacy account is an account that has been registered with user and password via sign up page.
+ */
+export enum AccountType {
+  LEGACY = 'legacy',
+  GOOGLE = 'google',
+  SHIBBOLETH = 'shibboleth',
 }
 
 // chatbot questions and interactions
@@ -718,6 +754,14 @@ export class GetCourseResponse {
 
   asyncQuestionDisplayTypes?: string[]
 
+  timezone?: string
+
+  semesterId?: number
+
+  sectionGroupName?: string
+
+  enabled?: boolean
+
   @Type(() => OrganizationPartial)
   organizationCourse?: OrganizationPartial
   courseInviteCode!: string
@@ -810,7 +854,7 @@ export class UpdateOrganizationCourseDetailsParams {
 
   @IsString()
   @IsOptional()
-  coordinatorEmail?: string
+  coordinator_email?: string
 
   @IsString()
   @IsOptional()
@@ -827,6 +871,10 @@ export class UpdateOrganizationCourseDetailsParams {
   @IsInt()
   @IsOptional()
   semesterId?: number
+
+  @IsArray()
+  @IsOptional()
+  profIds?: Array<number>
 }
 
 export class ChatBotQuestionParams {
@@ -1066,6 +1114,8 @@ export class OrganizationCourseResponse {
   courseId?: number
 
   course?: GetCourseResponse
+
+  profIds?: number[]
 }
 
 export class OrganizationStatsResponse {
@@ -1301,7 +1351,7 @@ export const ERROR_MESSAGES = {
     userAlreadyInOrganization: 'User is already in organization',
     courseAlreadyInOrganization: 'Course is already in organization',
     organizationNotFound: 'Organization not found',
-    organizationNameTooShort: 'Organization name must be at least 4 characters',
+    organizationNameTooShort: 'Organization name must be at least 3 characters',
     noFileUploaded: 'No file uploaded',
     organizationDescriptionTooShort:
       'Organization description must be at least 10 characters',
@@ -1316,6 +1366,7 @@ export const ERROR_MESSAGES = {
       cannotCheckIntoMultipleQueues:
         'Cannot check into multiple queues at the same time',
     },
+    invalidInviteCode: 'Invalid invite code',
     semesterNotFound: 'Semester not found',
     courseNameTooShort: 'Course name must be at least 1 character',
     coordinatorEmailTooShort: 'Coordinator email must be at least 1 character',
@@ -1429,9 +1480,12 @@ export const ERROR_MESSAGES = {
     mailFailed: 'Mail was not sent to user',
   },
   profileController: {
+    emailAlreadyInDb: 'Email already in database',
+    sidAlreadyInDb: 'Student ID already in database',
+    cannotUpdateEmail: 'Email cannot be updated',
     accountNotAvailable: 'The user account is undefined',
-    accountDeactivated: 'The user account is deactivated',
     userResponseNotFound: 'The user response was not found',
+    accountDeactivated: 'The user account is deactivated',
     firstNameTooShort: 'First name must be at least 1 characters',
     lastNameTooShort: 'Last name must be at least 1 characters',
     emailTooShort: 'Email must be at least 1 characters',

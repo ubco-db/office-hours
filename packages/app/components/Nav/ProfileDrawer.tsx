@@ -110,6 +110,7 @@ export default function ProfileDrawer({
             >
               Help Guide
             </Menu.Item>
+
             <Menu.Item key="2" icon={<LogoutOutlined />}>
               <Link href={'/api/v1/logout'}>
                 <a data-cy="logout-button">Logout</a>
