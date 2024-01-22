@@ -37,7 +37,30 @@ services:
       dockerfile: Dockerfile
     networks:
       - api
-
+  tomcat-server:
+    image: tomcat
+    networks:
+      - api
+  shibboleth-sp:
+    container_name: shibboleth-sp
+    environment:
+      - HOSTNAME=example.com
+      - IDP_ENTITY_ID=https://samltest.id/saml/idp
+      - IDP_METADATA_URL=https://samltest.id/saml/idp
+      - SUPPORT_EMAIL=root@localhost
+      - SHIB_METADATA_BACKUP_URL=https://samltest.id/saml/idp
+      - SHIB_DOWNLOAD_METADATA=true
+    build:
+      context: .
+      dockerfile: local/Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    links:
+      - tomcat-server
+    networks:
+      - api
 volumes:
   pg:
 

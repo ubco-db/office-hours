@@ -1,0 +1,35 @@
+#Install shibboleth
+
+---
+- name: Checking, ( or if not present), Generating the SP keys
+  command: shib-keygen -f -u _shibd -h {{ HOSTNAME }} -y 7 -e https://{{ HOSTNAME }}/shibboleth -o /etc/shibboleth/
+  args:
+    chdir: /etc/shibboleth/
+    creates: /etc/shibboleth/sp-key.pem
+
+- name: Configuring shibboleth2.xml
+  template:
+    src: shibboleth2.xml
+    dest: /etc/shibboleth/shibboleth2.xml
+    group: _shibd
+    owner: _shibd
+    mode: 0644
+  notify: restart shibd
+
+- name: Checking, ( or if not present), Creating /etc/shibboleth/metadata directory
+  file:
+    path: /etc/shibboleth/metadata
+    state: directory
+    mode: 2774
+    group: _shibd
+    owner: _shibd
+
+- name: Downloading metadata into metadata directory as backup
+  get_url:
+    url: "{{ SHIB_METADATA_BACKUP_URL }}"
+    dest: /etc/shibboleth/metadata/idp-metadata.xml
+    mode: 0640
+    group: _shibd
+    owner: _shibd
+  when: SHIB_DOWNLOAD_METADATA
+

@@ -1,0 +1,12 @@
+---
+
+HOSTNAME: "{{ lookup('env','HOSTNAME') }}"
+
+SHIB:
+  SP_ENTITY_ID: "https://{{ HOSTNAME }}/shibboleth"
+  IDP_ENTITY_ID: "{{ lookup('env','IDP_ENTITY_ID') }}"
+  IDP_METADATA_URL: "{{ lookup('env','IDP_METADATA_URL') }}"
+  SUPPORT_EMAIL: "{{ lookup('env','SUPPORT_EMAIL') }}"
+SHIB_TEMPLATE_DIR: '.'
+SHIB_METADATA_BACKUP_URL: "{{ lookup('env','SHIB_METADATA_BACKUP_URL') }}"
+SHIB_DOWNLOAD_METADATA: "{{ lookup('env','SHIB_DOWNLOAD_METADATA') }}"
