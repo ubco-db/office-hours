@@ -223,7 +223,7 @@ export default function ChatbotSettings(): ReactElement {
   const props: UploadProps = {
     name: 'file',
     multiple: true,
-    accept: '.pdf',
+    accept: '.pdf,docx,pptx,txt,csv',
   }
 
   return (
