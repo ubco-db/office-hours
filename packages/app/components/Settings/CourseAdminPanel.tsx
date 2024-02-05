@@ -4,6 +4,10 @@ import {
   QuestionCircleOutlined,
   UploadOutlined,
   DownloadOutlined,
+  AppstoreAddOutlined,
+  RobotOutlined,
+  ScheduleOutlined,
+  TableOutlined,
 } from '@ant-design/icons'
 import { Col, Menu, Row, Space, Tooltip } from 'antd'
 import { useRouter } from 'next/router'
@@ -96,7 +100,7 @@ export default function CourseAdminPanel({
             <>
               <Menu.Item
                 key={CourseAdminOptions.CHECK_IN}
-                icon={<EditOutlined />}
+                icon={<ScheduleOutlined />}
               >
                 TA Check In/Out Times
               </Menu.Item>
@@ -115,6 +119,12 @@ export default function CourseAdminPanel({
               >
                 Update Course Invite Code
               </Menu.Item>
+              <Menu.Item
+                key={CourseAdminOptions.EDIT_COURSE}
+                icon={<AppstoreAddOutlined />}
+              >
+                Enable/Disable Features
+              </Menu.Item>
             </>
           )}
           <Menu.Item
@@ -123,18 +133,18 @@ export default function CourseAdminPanel({
           >
             Export questions
           </Menu.Item>
-          <Menu.Item key={CourseAdminOptions.EDIT} icon={<EditOutlined />}>
+          <Menu.Item key={CourseAdminOptions.EDIT} icon={<TableOutlined />}>
             Edit questions
           </Menu.Item>
           <Menu.Item
             key={CourseAdminOptions.CHATBOT_SETTINGS}
-            icon={<EditOutlined />}
+            icon={<RobotOutlined />}
           >
             Chatbot Settings
           </Menu.Item>
           <Menu.Item
             key={CourseAdminOptions.CHATBOT_QUESTIONS}
-            icon={<EditOutlined />}
+            icon={<RobotOutlined />}
           >
             Chatbot Questions
           </Menu.Item>
