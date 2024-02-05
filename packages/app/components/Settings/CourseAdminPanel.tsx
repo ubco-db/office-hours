@@ -2,7 +2,6 @@ import {
   BellOutlined,
   EditOutlined,
   QuestionCircleOutlined,
-  UploadOutlined,
   DownloadOutlined,
   AppstoreAddOutlined,
   RobotOutlined,
@@ -24,12 +23,15 @@ import { useRoleInCourse } from '../../hooks/useRoleInCourse'
 import { Role } from '@koh/common'
 import ChatbotSettings from './ChatbotSettings'
 import ChatbotQuestions from './ChatbotQuestions'
+import ToggleFeaturesPage from './ToggleFeaturesPage'
 import { ToasterProvider } from '../../providers/toast-provider'
 import EditCourse from './EditCourse'
+
 export enum CourseAdminOptions {
   CHECK_IN = 'CHECK_IN',
   ROSTER = 'ROSTER',
   ADD = 'ADD',
+  FEATURES = 'FEATURES',
   EXPORT = 'EXPORT',
   EDIT = 'EDIT',
   EDIT_COURSE = 'EDIT_COURSE',
@@ -120,10 +122,10 @@ export default function CourseAdminPanel({
                 Update Course Invite Code
               </Menu.Item>
               <Menu.Item
-                key={CourseAdminOptions.EDIT_COURSE}
+                key={CourseAdminOptions.FEATURES}
                 icon={<AppstoreAddOutlined />}
               >
-                Enable/Disable Features
+                Toggle Features
               </Menu.Item>
             </>
           )}
@@ -165,6 +167,9 @@ export default function CourseAdminPanel({
           {/* {currentSettings === CourseAdminOptions.ADD && (
             <AddStudentsToCourse courseId={courseId} />
           )} */}
+          {currentSettings === CourseAdminOptions.FEATURES && (
+            <ToggleFeaturesPage courseId={courseId} />
+          )}
           {currentSettings === CourseAdminOptions.EXPORT && (
             <ExportQuestions courseId={courseId} />
           )}
