@@ -1,106 +1,71 @@
-import { Collapse, Layout } from 'antd'
 import NavBar from '../components/Nav/NavBar'
 import 'antd/dist/antd.css'
 
-const { Panel } = Collapse
-const { Content, Footer } = Layout
-
 const GuidePage = () => {
   return (
-    <Layout className="layout">
+    <div>
       <NavBar />
 
-      <Content style={{ padding: '0 50px' }}>
-        <div className="site-layout-content">
-          <section id="welcome">
-            <h1>Welcome to HelpMe</h1>
-            <h2>For Instructors</h2>
-            <h3> Video to get started</h3>
-            <iframe
-              width="560"
-              height="315"
-              src="https://www.youtube.com/embed/RjNERqpIQaw"
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-            <p>Everything you need to know to get started.</p>
-          </section>
+      <div id="welcome" className="pt-9/16 w-full text-center">
+        <h1 className="mx-auto my-4 text-5xl font-bold">Welcome to HelpMe</h1>
+        <iframe
+          className="min-h-200px mx-auto"
+          src="https://www.youtube.com/embed/RjNERqpIQaw"
+          title="YouTube video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
 
-          <section id="instructors">
-            <p>Learn how to create and manage your courses.</p>
+      <div id="features" className="my-10">
+        <h2 className="my-6 text-center text-3xl font-semibold">
+          Key Features
+        </h2>
+        <div className="flex flex-wrap items-stretch justify-center gap-4">
+          <div className="mb-4 w-[500px] rounded-lg bg-white p-6 shadow-md">
+            <h3 className="mb-3 text-2xl font-semibold">The Chatbot </h3>
+            <ul className="list-none space-y-2 text-lg">
+              <li>Easy management of chatbot</li>
+              <li>Q & A analytics </li>
+              <li>Customized chatbot for every class</li>
+            </ul>
+          </div>
 
-            <Collapse accordion>
-              <Panel header="Update Course Invite Code" key="2">
-                <p>
-                  Update your course invite code, which students can use to
-                  register into the course
-                </p>
-              </Panel>
+          <div className="mb-4 w-[500px] rounded-lg bg-white p-6 shadow-md">
+            <h3 className="mb-3 text-2xl font-semibold">Office hours</h3>
+            <ul className="list-none space-y-2 text-lg">
+              <li>Join office hour queue</li>
+              <li>Visualize queue in each office hour</li>
+              <li>Prephrase questions in queue ticket</li>
+            </ul>
+          </div>
 
-              <Panel header="Chatbot Settings" key="3">
-                <ul>
-                  <p>Change related documents in course admin panel</p>
-                  <p>
-                    The documents are always accompanied by the URl of resource
-                  </p>
-                  <p>Chatbot responses are returned with the URL</p>
-                </ul>
-              </Panel>
+          <div className="mb-4 w-[500px] rounded-lg bg-white p-6 shadow-md">
+            <h3 className="mb-3 text-2xl font-semibold">
+              Async question center
+            </h3>
+            <ul className="list-none space-y-2 text-lg">
+              <li>Ask your question anytime</li>
+              <li>Get answers from all faculties </li>
+              <li>View public questions and answers </li>
+            </ul>
+          </div>
 
-              <Panel header="Manage queue" key="4">
-                <ul>
-                  <li>
-                    <p>
-                      Open any queue, change the queue details to change details
-                    </p>
-                  </li>
-                  <li>
-                    <p>Check in to enable queue or manually enable</p>
-                  </li>
-                  <li>
-                    <p>The last instructor to check out will disable queue</p>
-                  </li>
-                </ul>
-              </Panel>
-
-              <Panel header="View Insights on Insights Page" key="5">
-                <p>View Insights of the the course in course insights page.</p>
-              </Panel>
-            </Collapse>
-          </section>
-          <section id="students">
-            <h2>For Students</h2>
-            <p>Guidelines on how to participate in courses.</p>
-            <h3> Video to get started</h3>
-            <iframe
-              width="560"
-              height="315"
-              src="https://www.youtube.com/embed/jaeivUdjHQ8"
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-            <Collapse accordion>
-              <Panel header="Join a Course" key="1">
-                <p>Join a course using the course invite code</p>
-              </Panel>
-              <Panel header="Ask Questions" key="2">
-                <p>Ask questions in the course queue, </p>
-              </Panel>
-              <Panel header="Chatbot" key="3">
-                <p>Chatbot will respond to your questions</p>
-              </Panel>
-              <Panel header="async questions" key="4">
-                <p>Ask async questions in the course async queue</p>
-              </Panel>
-            </Collapse>
-          </section>
+          <div className="mb-4 w-[500px] rounded-lg bg-white p-6 shadow-md">
+            <h3 className="mb-3 text-2xl font-semibold">Insights</h3>
+            <ul className="list-none space-y-2 text-lg">
+              <li>View student questions</li>
+              <li>Analyze help seeking behavior in any class</li>
+              <li>
+                Anlytics statistics of teaching assistant and student
+                interactions
+              </li>
+            </ul>
+          </div>
         </div>
-      </Content>
-
-      <Footer style={{ textAlign: 'center' }}>HelpMe ©2023 </Footer>
-    </Layout>
+      </div>
+    </div>
   )
 }
 
