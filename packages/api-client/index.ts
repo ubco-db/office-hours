@@ -234,32 +234,6 @@ class APIClient {
           search ? `?search=${search}` : ''
         }`,
       ),
-    getCourseOverrides: async (courseId: number) =>
-      this.req(
-        'GET',
-        `/api/v1/courses/${courseId}/course_override`,
-        GetCourseOverridesResponse,
-      ),
-    addOverride: async (
-      courseId: number,
-      params: UpdateCourseOverrideBody,
-    ): Promise<UpdateCourseOverrideResponse> =>
-      this.req(
-        'POST',
-        `/api/v1/courses/${courseId}/update_override`,
-        UpdateCourseOverrideResponse,
-        params,
-      ),
-    deleteOverride: async (
-      courseId: number,
-      params: UpdateCourseOverrideBody,
-    ): Promise<void> =>
-      this.req(
-        'DELETE',
-        `/api/v1/courses/${courseId}/update_override`,
-        undefined,
-        params,
-      ),
     withdrawCourse: async (courseId: number): Promise<void> =>
       this.req(
         'DELETE',
@@ -304,6 +278,15 @@ class APIClient {
         'GET',
         `/api/v1/courses/limited/${courseId}/${code}`,
         GetLimitedCourseResponse,
+      ),
+    updateUserRole: async (
+      courseId: number,
+      userId: number,
+      role: string,
+    ): Promise<void> =>
+      this.req(
+        'PATCH',
+        `/api/v1/courses/${courseId}/update_user_role/${userId}/${role}`,
       ),
   }
   taStatus = {

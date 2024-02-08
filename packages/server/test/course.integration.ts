@@ -619,61 +619,6 @@ describe('Course Integration', () => {
     });
   });
 
-  describe('POST /courses/:id/update_override', () => {
-    it('tests creating override using the endpoint', async () => {
-      const course = await CourseFactory.create();
-      const user = await UserFactory.create();
-      const professor = await UserFactory.create();
-      await UserCourseFactory.create({
-        user: professor,
-        role: Role.PROFESSOR,
-        course,
-      });
-      await supertest({ userId: professor.id })
-        .post(`/courses/${course.id}/update_override`)
-        .send({ email: user.email, role: Role.STUDENT })
-        .expect(201);
-      const ucm = await UserCourseModel.findOne({
-        where: {
-          userId: user.id,
-        },
-      });
-      expect(ucm.role).toEqual(Role.STUDENT);
-      expect(ucm.override).toBeTruthy();
-    });
-  });
-
-  describe('DELETE /courses/:id/update_override', () => {
-    it('tests deleting override using the endpoint', async () => {
-      const course = await CourseFactory.create();
-      const user = await UserFactory.create();
-      const professor = await UserFactory.create();
-      await UserCourseFactory.create({
-        user: professor,
-        role: Role.PROFESSOR,
-        course,
-      });
-      await UserCourseFactory.create({
-        user: user,
-        role: Role.TA,
-        override: true,
-        course,
-      });
-
-      await supertest({ userId: professor.id })
-        .delete(`/courses/${course.id}/update_override`)
-        .send({ email: user.email, role: Role.STUDENT })
-        .expect(200);
-
-      const ucm = await UserCourseModel.findOne({
-        where: {
-          userId: user.id,
-        },
-      });
-      expect(ucm).toBeUndefined();
-    });
-  });
-
   describe('GET /courses/:id/ta_check_in_times', () => {
     it('tests that events within date range are gotten', async () => {
       const now = new Date();
@@ -1574,6 +1519,43 @@ describe('Course Integration', () => {
         `/courses/${course.id}/add_student/${student.sid}`,
       );
       expect(resp.status).toBe(200);
+    });
+  });
+
+  describe('PATCH /courses/:id/update_user_role/:uid/:role', () => {
+    let user, course, professorUser;
+
+    beforeAll(async () => {
+      user = await UserFactory.create();
+      course = await CourseFactory.create();
+      professorUser = await UserFactory.create();
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+      await UserCourseFactory.create({
+        user,
+        role: Role.STUDENT,
+        course,
+      });
+    });
+
+    it('should return 401 if user is not a professor', async () => {
+      const resp = await supertest({ userId: user.id }).patch(
+        `/courses/${course.id}/update_user_role/${user.id}/${Role.TA}`,
+      );
+
+      expect(resp.status).toBe(401);
+    });
+
+    it('should successfully update user role', async () => {
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${user.id}/${Role.TA}`,
+      );
+
+      expect(resp.status).toBe(200);
+      expect(resp.body.message).toEqual('Updated user course role');
     });
   });
 });

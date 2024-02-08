@@ -1,12 +1,11 @@
-import { SearchOutlined } from '@ant-design/icons'
+import { DownOutlined, SearchOutlined } from '@ant-design/icons'
 import { API } from '@koh/api-client'
 import { Role } from '@koh/common'
-import { Divider, Input, List, Pagination, Spin } from 'antd'
+import { Divider, Dropdown, Input, List, Menu, Pagination, Spin } from 'antd'
 import Avatar from 'antd/lib/avatar/avatar'
-import { useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
-import useSWR from 'swr'
 
 type CourseRosterProps = { courseId: number }
 
@@ -38,7 +37,7 @@ export default function CourseRoster({
         role={Role.PROFESSOR}
         listTitle={'Professors'}
         displaySearchBar={false}
-        searchPlaceholder=""
+        searchPlaceholder="Search Professors"
       />
       <br />
       <RenderTable
@@ -72,6 +71,8 @@ function RenderTable({
   const [page, setPage] = useState(1)
   const [input, setInput] = useState('')
   const [search, setSearch] = useState('')
+  const [users, setUsers] = useState(null)
+
   const handleInput = (event) => {
     event.preventDefault()
     setInput(event.target.value)
@@ -81,11 +82,20 @@ function RenderTable({
     setSearch(event.target.value)
     setPage(1)
   }
-  const { data } = useSWR(
-    `${role}/${page}/${search}`,
-    async () => await API.course.getUserInfo(courseId, page, role, search),
-  )
-  if (!data) {
+  const fetchUsers = async () => {
+    const data = await API.course.getUserInfo(courseId, page, role, search)
+    setUsers(data.users)
+  }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [page, search, role, courseId])
+
+  const handleRoleChange = async (userId, newRole) => {
+    await API.course.updateUserRole(courseId, userId, newRole)
+  }
+
+  if (!users) {
     return <Spin tip="Loading..." size="large" />
   } else {
     return (
@@ -112,26 +122,51 @@ function RenderTable({
             />
           )}
           <List
-            dataSource={data.users}
+            dataSource={users}
             renderItem={(item) => (
-              <List.Item key={item.id}>
+              <List.Item
+                key={item.id}
+                className="flex items-center justify-between"
+              >
                 <List.Item.Meta
                   avatar={<Avatar src={item.photoURL} />}
-                  title={item.name}
+                  title={<span className="mr-2">{item.name}</span>}
+                  className="flex-grow"
                 />
-                <div>{item.email}</div>
+                <span className="flex-grow justify-center">{item.email}</span>
+                <Dropdown
+                  overlay={
+                    <Menu
+                      onClick={async (e) => {
+                        handleRoleChange(item.id, e.key)
+                      }}
+                    >
+                      <Menu.Item key={Role.PROFESSOR}>Professor</Menu.Item>
+                      <Menu.Item key={Role.TA}>Teaching Assistant</Menu.Item>
+                      <Menu.Item key={Role.STUDENT}>Student</Menu.Item>
+                    </Menu>
+                  }
+                  className="flex-grow-0"
+                >
+                  <a
+                    className="ant-dropdown-link"
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    Change Role <DownOutlined />
+                  </a>
+                </Dropdown>
               </List.Item>
             )}
             bordered
           />
         </TableBackground>
         <br />
-        {data.total > 50 && (
+        {users.total > 50 && (
           <Pagination
             style={{ float: 'right' }}
             current={page}
             pageSize={50}
-            total={data.total}
+            total={users.total}
             onChange={(page) => setPage(page)}
             showSizeChanger={false}
           />
