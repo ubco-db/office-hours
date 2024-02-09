@@ -9,7 +9,7 @@ import React, { ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { StandardPageContainer } from '../../../components/common/PageContainer'
 import NavBar from '../../../components/Nav/NavBar'
-import SchedulePanel from '../../../components/Schedule/SchedulePanel'
+// import SchedulePanel from '../../../components/Schedule/SchedulePanel'
 import QueueCard, {
   QueueCardSkeleton,
 } from '../../../components/Today/QueueCard'
