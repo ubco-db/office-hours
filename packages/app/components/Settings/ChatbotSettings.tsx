@@ -223,7 +223,7 @@ export default function ChatbotSettings(): ReactElement {
   const props: UploadProps = {
     name: 'file',
     multiple: true,
-    accept: '.pdf',
+    accept: '.docx,.pptx,.txt,.csv,.pdf',
   }
 
   return (
@@ -282,8 +282,7 @@ export default function ChatbotSettings(): ReactElement {
                 rules={[
                   {
                     required: true,
-                    message:
-                      'Please provide a document URL. (link to pdf files only)',
+                    message: 'Please provide a document URL.',
                   },
                 ]}
               >
@@ -301,6 +300,12 @@ export default function ChatbotSettings(): ReactElement {
                     },
                   ]}
                 >
+                  <div>
+                    <p>
+                      <strong>Accepted File Types:</strong> .docx, .pptx, .txt,
+                      .csv, .pdf
+                    </p>
+                  </div>
                   <Dragger {...props}>
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
@@ -316,7 +321,7 @@ export default function ChatbotSettings(): ReactElement {
                 </Form.Item>
                 <Tooltip
                   title={
-                    'This preview URL will be used to redirect your students to view this file.'
+                    'This preview URL will be used to redirect your students to view this file. Make sure to include http header unless you want to redirect route on this site.'
                   }
                 >
                   <p>
