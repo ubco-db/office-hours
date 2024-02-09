@@ -144,7 +144,6 @@ export class SeedController {
         user: user2,
         role: Role.STUDENT,
         course: course,
-        override: true,
       });
 
       // TA 1

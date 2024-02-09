@@ -7,7 +7,6 @@ import {
   DesktopNotifBody,
   DesktopNotifPartial,
   GetAlertsResponse,
-  GetCourseOverridesResponse,
   GetCourseResponse,
   GetInsightOutputResponse,
   GetProfileResponse,
@@ -23,8 +22,6 @@ import {
   TACheckinTimesResponse,
   TACheckoutResponse,
   TAUpdateStatusResponse,
-  UpdateCourseOverrideBody,
-  UpdateCourseOverrideResponse,
   UpdateProfileParams,
   UpdateQuestionParams,
   UpdateQuestionResponse,
@@ -268,8 +265,6 @@ class APIClient {
       this.req('POST', `/api/v1/courses/${courseId}/self_enroll`),
     selfEnrollCourses: async (): Promise<GetSelfEnrollResponse> =>
       this.req('GET', '/api/v1/self_enroll_courses'),
-    createSelfEnrollOverride: async (courseId: number): Promise<void> =>
-      this.req('POST', `/api/v1/create_self_enroll_override/${courseId}`),
     getLimitedCourseResponse: async (
       courseId: number,
       code: string,

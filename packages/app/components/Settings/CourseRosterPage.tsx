@@ -1,5 +1,4 @@
 import { ReactElement } from 'react'
-import CourseOverrideSettings from './CourseOverrideSettings'
 import styled from 'styled-components'
 import CourseRoster from './CourseRoster'
 

@@ -1523,10 +1523,10 @@ describe('Course Integration', () => {
   });
 
   describe('PATCH /courses/:id/update_user_role/:uid/:role', () => {
-    let user, course, professorUser;
+    let studentUser, course, professorUser;
 
     beforeAll(async () => {
-      user = await UserFactory.create();
+      studentUser = await UserFactory.create();
       course = await CourseFactory.create();
       professorUser = await UserFactory.create();
       await UserCourseFactory.create({
@@ -1535,15 +1535,15 @@ describe('Course Integration', () => {
         course,
       });
       await UserCourseFactory.create({
-        user,
+        user: studentUser,
         role: Role.STUDENT,
         course,
       });
     });
 
     it('should return 401 if user is not a professor', async () => {
-      const resp = await supertest({ userId: user.id }).patch(
-        `/courses/${course.id}/update_user_role/${user.id}/${Role.TA}`,
+      const resp = await supertest({ userId: studentUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${studentUser.id}/${Role.TA}`,
       );
 
       expect(resp.status).toBe(401);
@@ -1551,7 +1551,7 @@ describe('Course Integration', () => {
 
     it('should successfully update user role', async () => {
       const resp = await supertest({ userId: professorUser.id }).patch(
-        `/courses/${course.id}/update_user_role/${user.id}/${Role.TA}`,
+        `/courses/${course.id}/update_user_role/${studentUser.id}/${Role.TA}`,
       );
 
       expect(resp.status).toBe(200);
