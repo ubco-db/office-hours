@@ -116,7 +116,7 @@ export class CourseModel extends BaseEntity {
   @OneToOne(
     (type) => CourseSettingsModel,
     (courseSettings) => courseSettings.course,
+    { cascade: true },
   )
-  @JoinColumn({ name: 'courseSettingsId' })
   courseSettings: CourseSettingsModel;
 }
