@@ -119,7 +119,7 @@ export class SeedController {
       where: { name: 'CS 304' },
     });
 
-    const courseSettings = await CourseSettingsFactory.create({
+    await CourseSettingsFactory.create({
       course: course,
       chatBotEnabled: true,
       asyncQueueEnabled: true,

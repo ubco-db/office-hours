@@ -56,6 +56,7 @@ import { HeatmapService } from './heatmap.service';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
+import { CourseSettingsModel } from './course_settings.entity';
 
 @Controller('courses')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -893,4 +894,40 @@ export class CourseController {
       });
     return;
   }
+
+  // UPDATE course_settings_model SET selectedFeature = false WHERE courseId = selectedCourseId;
+  @Post(':id/toggle_feature/:feature')
+  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @Roles(Role.PROFESSOR)
+  async enableDisableFeature(
+    @Param('id') courseId: number,
+    @Param('feature') feature: string,
+    @Body() body: { value: boolean },
+  ): Promise<void> {
+    const courseSettings = await CourseSettingsModel.findOne({
+      where: { courseId },
+    });
+    if (!courseSettings) {
+      throw new NotFoundException();
+    }
+    switch (feature) {
+      case 'chatBotEnabled':
+        courseSettings.chatBotEnabled = body.value;
+        break;
+      case 'asyncQueueEnabled':
+        courseSettings.asyncQueueEnabled = body.value;
+        break;
+      case 'adsEnabled':
+        courseSettings.adsEnabled = body.value;
+        break;
+      case 'queueEnabled':
+        courseSettings.queueEnabled = body.value;
+        break;
+      default:
+        throw new BadRequestException('Invalid feature');
+    }
+    await courseSettings.save();
+  }
+  // SELECT * FROM course_settings_model WHERE courseId = selectedCourseId;
+  //@Get(':id/get_features')
 }

@@ -25,6 +25,7 @@ import {
   TACourseFactory,
   UserCourseFactory,
   UserFactory,
+  CourseSettingsFactory,
 } from './util/factories';
 import { setupIntegrationTest } from './util/testUtils';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
@@ -1574,6 +1575,45 @@ describe('Course Integration', () => {
         `/courses/${course.id}/add_student/${student.sid}`,
       );
       expect(resp.status).toBe(200);
+    });
+  });
+
+  // course settings
+  describe('POST /courses/:id/toggle_feature/:feature', () => {
+    it('should return 401 if user is not authorized', async () => {
+      await supertest()
+        .post(`/courses/1/toggle_feature/queue`)
+        .send({ enabled: true })
+        .expect(401);
+    });
+
+    it('should return 404 if course is not found', async () => {
+      const resp = await supertest({ userId: 1 })
+        .post(`/courses/6969/toggle_feature/queue`)
+        .send({ enabled: true })
+        .expect(404);
+
+      expect(resp.body.message).toEqual('Course not found');
+    });
+
+    it('should return 400 if feature is not valid', async () => {
+      const course = await CourseFactory.create();
+      const resp = await supertest({ userId: 1 })
+        .post(`/courses/${course.id}/toggle_feature/invalid_feature`)
+        .send({ enabled: true })
+        .expect(400);
+
+      expect(resp.body.message).toEqual('Invalid feature');
+    });
+
+    it('should return 200 if feature is toggled successfully', async () => {
+      const course = await CourseFactory.create();
+      const resp = await supertest({ userId: 1 })
+        .post(`/courses/${course.id}/toggle_feature/queue`)
+        .send({ enabled: true })
+        .expect(200);
+
+      expect(resp.body.message).toEqual('Feature toggled successfully');
     });
   });
 });

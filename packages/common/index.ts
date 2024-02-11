@@ -12,6 +12,7 @@ import {
   IsOptional,
   IsString,
   ValidateIf,
+  isNumber,
 } from 'class-validator'
 import 'reflect-metadata'
 import { Cache } from 'cache-manager'
@@ -1392,6 +1393,24 @@ export type sendEmailAsync = {
   subject: string
   type: asyncQuestionEventType
 }
+
+export class CourseSettings {
+  @IsInt()
+  courseId!: number
+
+  @IsBoolean()
+  chatBotEnabled!: boolean
+
+  @IsBoolean()
+  asyncQueueEnabled!: boolean
+
+  @IsBoolean()
+  adsEnabled!: boolean
+
+  @IsBoolean()
+  queueEnabled!: boolean
+}
+
 export const ERROR_MESSAGES = {
   common: {
     pageOutOfBounds: "Can't retrieve out of bounds page.",

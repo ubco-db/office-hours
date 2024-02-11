@@ -305,7 +305,16 @@ class APIClient {
         `/api/v1/courses/limited/${courseId}/${code}`,
         GetLimitedCourseResponse,
       ),
+    setCourseFeature: async (
+      courseId: number,
+      feature: string,
+      enabled: boolean,
+    ): Promise<void> =>
+      this.req('POST', `/api/v1/courses/${courseId}/${feature}`, undefined, {
+        enabled,
+      }),
   }
+
   taStatus = {
     checkIn: async (
       courseId: number,
