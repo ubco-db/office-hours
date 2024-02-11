@@ -117,6 +117,6 @@ export class CourseModel extends BaseEntity {
     (type) => CourseSettingsModel,
     (courseSettings) => courseSettings.course,
   )
-  @JoinColumn({ name: 'courseId' })
+  @JoinColumn({ name: 'courseSettingsId' })
   courseSettings: CourseSettingsModel;
 }
