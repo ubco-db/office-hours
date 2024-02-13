@@ -1,9 +1,18 @@
 import { DownOutlined, SearchOutlined } from '@ant-design/icons'
 import { API } from '@koh/api-client'
 import { Role } from '@koh/common'
-import { Divider, Dropdown, Input, List, Menu, Pagination, Spin } from 'antd'
+import {
+  Divider,
+  Dropdown,
+  message,
+  Input,
+  List,
+  Menu,
+  Pagination,
+  Spin,
+} from 'antd'
 import Avatar from 'antd/lib/avatar/avatar'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 
@@ -15,6 +24,13 @@ type RenderTableProps = {
   listTitle: string
   displaySearchBar: boolean
   searchPlaceholder: string
+}
+
+interface UserButSmaller {
+  id: string
+  photoURL: string
+  name: string
+  email: string
 }
 
 const CourseRosterComponent = styled.div`
@@ -91,8 +107,13 @@ function RenderTable({
     fetchUsers()
   }, [page, search, role, courseId])
 
-  const handleRoleChange = async (userId, newRole) => {
-    await API.course.updateUserRole(courseId, userId, newRole)
+  const handleRoleChange = async (userId, newRole, userName) => {
+    try {
+      await API.course.updateUserRole(courseId, userId, newRole)
+      message.success(`${userName} successfully updated to ${newRole} role`)
+    } catch (error) {
+      message.error(`Failed to update ${userName} to ${newRole}`)
+    }
   }
 
   if (!users) {
@@ -123,7 +144,7 @@ function RenderTable({
           )}
           <List
             dataSource={users}
-            renderItem={(item) => (
+            renderItem={(item: UserButSmaller) => (
               <List.Item
                 key={item.id}
                 className="flex items-center justify-between"
@@ -138,7 +159,7 @@ function RenderTable({
                   overlay={
                     <Menu
                       onClick={async (e) => {
-                        handleRoleChange(item.id, e.key)
+                        handleRoleChange(item.id, e.key, item.name)
                       }}
                     >
                       <Menu.Item key={Role.PROFESSOR}>Professor</Menu.Item>
