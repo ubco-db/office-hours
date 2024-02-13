@@ -26,7 +26,7 @@ type RenderTableProps = {
   searchPlaceholder: string
 }
 
-interface UserButSmaller {
+interface UserPartial {
   id: string
   photoURL: string
   name: string
@@ -144,7 +144,7 @@ function RenderTable({
           )}
           <List
             dataSource={users}
-            renderItem={(item: UserButSmaller) => (
+            renderItem={(item: UserPartial) => (
               <List.Item
                 key={item.id}
                 className="flex items-center justify-between"
@@ -162,9 +162,15 @@ function RenderTable({
                         handleRoleChange(item.id, e.key, item.name)
                       }}
                     >
-                      <Menu.Item key={Role.PROFESSOR}>Professor</Menu.Item>
-                      <Menu.Item key={Role.TA}>Teaching Assistant</Menu.Item>
-                      <Menu.Item key={Role.STUDENT}>Student</Menu.Item>
+                      {role !== Role.PROFESSOR ? (
+                        <Menu.Item key={Role.PROFESSOR}>Professor</Menu.Item>
+                      ) : null}
+                      {role !== Role.TA ? (
+                        <Menu.Item key={Role.TA}>Teaching Assistant</Menu.Item>
+                      ) : null}
+                      {role !== Role.STUDENT ? (
+                        <Menu.Item key={Role.STUDENT}>Student</Menu.Item>
+                      ) : null}
                     </Menu>
                   }
                   className="flex-grow-0"
