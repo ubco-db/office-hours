@@ -27,4 +27,6 @@ jobs:
         with:
           node-version: 14
       - uses: bahmutov/npm-install@v1
-      - run: POSTGRES_USER=postgres yarn test
+      - run: yarn test
+        env:
+          POSTGRES_USER: postgres
