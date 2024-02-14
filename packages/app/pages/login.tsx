@@ -1,5 +1,5 @@
 import Router from 'next/router'
-import { ReactElement, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import { LeftOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
 import { message, Button, Form, Input, Card, Select, Spin, Alert } from 'antd'
 import styled from 'styled-components'
@@ -126,6 +126,14 @@ export default function Login(): ReactElement {
     setLoginMenu(true)
   }
 
+  useEffect(() => {
+    if (organizations && organizations.length === 1) {
+      setOrganization(organizations[0])
+      setLoginMenu(true)
+      localStorage.setItem('organizationId', `${organizations[0].id}`)
+    }
+  }, [organizations, setLoginMenu])
+
   return organizations ? (
     <>
       <Head>
@@ -159,13 +167,15 @@ export default function Login(): ReactElement {
 
           {loginMenu && (
             <>
-              <Button
-                className="flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-5 text-left"
-                onClick={() => setLoginMenu(false)}
-              >
-                <LeftOutlined />
-                <span className="font-semibold"> Go Back</span>
-              </Button>
+              {organizations && organizations.length > 1 && (
+                <Button
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-5 text-left"
+                  onClick={() => setLoginMenu(false)}
+                >
+                  <LeftOutlined />
+                  <span className="font-semibold"> Go Back</span>
+                </Button>
+              )}
 
               {organization && organization.googleAuthEnabled && (
                 <Button
