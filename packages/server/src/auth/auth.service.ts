@@ -7,6 +7,7 @@ import {
 import { OAuth2Client } from 'google-auth-library';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 import { UserModel } from 'profile/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -130,5 +131,69 @@ export class AuthService {
     } catch (err) {
       throw new BadRequestException(err.message);
     }
+  }
+
+  async register(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    sid: number,
+    organizationId: number,
+  ): Promise<number> {
+    try {
+      const user = await UserModel.findOne({ email });
+
+      if (user) {
+        throw new BadRequestException('Email already exists');
+      }
+
+      let newUser: UserModel;
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      if (sid == -1) {
+        newUser = await UserModel.create({
+          courses: [],
+          email,
+          firstName,
+          lastName,
+          password: hashedPassword,
+          hideInsights: [],
+        }).save();
+      } else {
+        newUser = await UserModel.create({
+          courses: [],
+          email,
+          firstName,
+          lastName,
+          password: hashedPassword,
+          sid,
+          hideInsights: [],
+        }).save();
+      }
+
+      const userId = newUser.id;
+
+      await OrganizationUserModel.create({
+        organizationId,
+        userId,
+        role: OrganizationRole.MEMBER,
+      }).save();
+
+      return userId;
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  async studentIdExists(sid: number, oid: number): Promise<boolean> {
+    const user = await UserModel.findOne({
+      where: { sid },
+      relations: ['organizationUser'],
+    });
+
+    return user && user.organizationUser.organizationId === oid ? true : false;
   }
 }

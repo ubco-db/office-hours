@@ -1242,6 +1242,30 @@ export class RegisterCourseParams {
   timezone!: string
 }
 
+export class AccountRegistrationParams {
+  @IsString()
+  firstName!: string
+
+  @IsString()
+  lastName!: string
+
+  @IsString()
+  email!: string
+
+  @IsString()
+  password!: string
+
+  @IsString()
+  confirmPassword!: string
+
+  @IsNumber()
+  organizationId!: number
+
+  @IsNumber()
+  @IsOptional()
+  sid?: number
+}
+
 export class EditCourseInfoParams {
   @IsNumber()
   courseId?: number

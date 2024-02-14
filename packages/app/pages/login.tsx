@@ -1,18 +1,7 @@
 import Router from 'next/router'
 import { ReactElement, useState } from 'react'
 import { LeftOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
-import {
-  message,
-  Button,
-  Form,
-  Input,
-  Card,
-  Row,
-  Col,
-  Select,
-  Spin,
-  Alert,
-} from 'antd'
+import { message, Button, Form, Input, Card, Select, Spin, Alert } from 'antd'
 import styled from 'styled-components'
 import Head from 'next/head'
 import { API } from '@koh/api-client'
@@ -126,6 +115,8 @@ export default function Login(): ReactElement {
   const showLoginMenu = (value) => {
     const organization = organizations.find((org) => org.id === value)
 
+    localStorage.setItem('organizationId', `${organization.id}`)
+
     if (!organization) {
       message.error('Organization not found')
       return
@@ -142,7 +133,7 @@ export default function Login(): ReactElement {
       </Head>
       <Container>
         <Card className="mx-auto max-w-md sm:px-2 md:px-6">
-          <h2 className="text-left">Login</h2>
+          <h2 className="my-4 text-left">Login</h2>
 
           {!loginMenu && (
             <>
@@ -266,14 +257,10 @@ export default function Login(): ReactElement {
                     </Button>
                   </Form.Item>
 
-                  <Form.Item>
-                    <a
-                      style={{ marginTop: '-10px' }}
-                      href="/forgetpassword/forget"
-                    >
-                      Forgot password
-                    </a>
-                  </Form.Item>
+                  <div className="d-flex flex-row space-x-8 text-center">
+                    <a href="/forgetpassword/forget">Forgot password</a>
+                    <a href="/register">Create account</a>
+                  </div>
                 </Form>
               )}
             </>

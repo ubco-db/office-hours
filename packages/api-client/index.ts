@@ -54,6 +54,7 @@ import {
   OrganizationStatsResponse,
   AddQuestionTypeParams,
   UBCOuserParam,
+  AccountRegistrationParams,
 } from '@koh/common'
 import Axios, { AxiosInstance, Method } from 'axios'
 import { plainToClass } from 'class-transformer'

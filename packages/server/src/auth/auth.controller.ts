@@ -6,11 +6,13 @@ import {
   Query,
   Req,
   Res,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { ERROR_MESSAGES } from '@koh/common';
+import { AccountRegistrationParams, ERROR_MESSAGES } from '@koh/common';
 import { JwtService } from '@nestjs/jwt';
 import { OrganizationModel } from 'organization/organization.entity';
 
@@ -91,6 +93,105 @@ export class AuthController {
     }
   }
 
+  @Post('register')
+  async register(
+    @Body() body: AccountRegistrationParams,
+    @Res() res: Response,
+  ): Promise<Response<void>> {
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      sid,
+      organizationId,
+    } = body;
+
+    if (firstName.trim().length < 1 || lastName.trim().length < 1) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'First and last name must be at least 1 character' });
+    }
+
+    if (firstName.trim().length > 32 || lastName.trim().length > 32) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'First and last name must be at most 32 characters' });
+    }
+
+    if (email.trim().length < 4 || email.trim().length > 64) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Email must be between 4 and 64 characters' });
+    }
+
+    if (password.trim().length < 6 || password.trim().length > 32) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Password must be between 6 and 32 characters' });
+    }
+
+    if (password !== confirmPassword) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Passwords do not match' });
+    }
+
+    const organization = await OrganizationModel.findOne({
+      where: { id: organizationId },
+    });
+
+    if (!organization) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Organization not found' });
+    }
+
+    if (sid) {
+      const result = await this.authService.studentIdExists(
+        sid,
+        organizationId,
+      );
+      if (result) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .send({ message: 'Student ID already exists' });
+      }
+    }
+
+    try {
+      const userId = await this.authService.register(
+        firstName,
+        lastName,
+        email,
+        password,
+        sid ? sid : -1,
+        organizationId,
+      );
+
+      const authToken = await this.createAuthToken(userId);
+
+      if (authToken === null || authToken === undefined) {
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .send({
+            message: ERROR_MESSAGES.loginController.invalidTempJWTToken,
+          });
+      }
+
+      return res
+        .cookie('auth_token', authToken, {
+          httpOnly: true,
+          secure: this.isSecure(),
+        })
+        .send({ message: 'Account created' });
+    } catch (err) {
+      console.log(err);
+      return res.status(HttpStatus.BAD_REQUEST).send({ message: err.message });
+    }
+  }
+
   @Get('callback/:method')
   async callback(
     @Res() res: Response,
@@ -148,11 +249,7 @@ export class AuthController {
   }
 
   private async enter(res: Response, userId: number) {
-    // Expires in 30 days
-    const authToken = await this.jwtService.signAsync({
-      userId,
-      expiresIn: 60 * 60 * 24 * 30,
-    });
+    const authToken = await this.createAuthToken(userId);
 
     if (authToken === null || authToken === undefined) {
       return res
@@ -160,12 +257,20 @@ export class AuthController {
         .send({ message: ERROR_MESSAGES.loginController.invalidTempJWTToken });
     }
 
-    const isSecure = this.configService
-      .get<string>('DOMAIN')
-      .startsWith('https://');
     res
-      .cookie('auth_token', authToken, { httpOnly: true, secure: isSecure })
+      .cookie('auth_token', authToken, {
+        httpOnly: true,
+        secure: this.isSecure(),
+      })
       .redirect(HttpStatus.FOUND, `/courses`);
+  }
+
+  private async createAuthToken(userId: number): Promise<string> {
+    // Expires in 30 days
+    return await this.jwtService.signAsync({
+      userId,
+      expiresIn: 60 * 60 * 24 * 30,
+    });
   }
 
   private isSecure(): boolean {
