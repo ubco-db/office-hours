@@ -2,6 +2,8 @@ import {
   AsyncQuestionResponse,
   asyncQuestionStatus,
   CoursePartial,
+  CourseSettingsRequestBody,
+  CourseSettingsResponse,
   EditCourseInfoParams,
   ERROR_MESSAGES,
   GetCourseOverridesResponse,
@@ -36,6 +38,7 @@ import {
   UnauthorizedException,
   UseGuards,
   UseInterceptors,
+  Put,
 } from '@nestjs/common';
 import async from 'async';
 import { Response, Request } from 'express';
@@ -896,38 +899,81 @@ export class CourseController {
   }
 
   // UPDATE course_settings_model SET selectedFeature = false WHERE courseId = selectedCourseId;
-  @Post(':id/toggle_feature/:feature')
+  // will also create a new course settings record if it doesn't exist for the course
+  @Put(':id/features')
   @UseGuards(JwtAuthGuard, CourseRolesGuard)
   @Roles(Role.PROFESSOR)
   async enableDisableFeature(
     @Param('id') courseId: number,
-    @Param('feature') feature: string,
-    @Body() body: { value: boolean },
+    @Body() body: CourseSettingsRequestBody,
   ): Promise<void> {
+    // fetch existing course settings
+    let courseSettings = await CourseSettingsModel.findOne({
+      where: { courseId: courseId },
+    });
+
+    // if no course settings exist yet, create new course settings for the course
+    if (!courseSettings) {
+      // first make sure the course exists in course table (this check might not be needed as the guards already make sure the user is in the course (therefore the course must exist), but this is a rare function to be called so the small performance hit is acceptable for later safety)
+      const course = await CourseModel.findOne({
+        where: { id: courseId },
+      });
+      if (!course) {
+        throw new NotFoundException(
+          'Error while creating course settings: Course not found',
+        );
+      }
+      courseSettings = new CourseSettingsModel(); // all features are enabled by default, adjust in CourseSettingsModel as needed
+      courseSettings.courseId = courseId;
+    }
+
+    // then, toggle the requested feature
+    try {
+      courseSettings[body.feature] = body.value;
+    } catch (err) {
+      throw new BadRequestException('Invalid feature');
+    }
+
+    try {
+      await courseSettings.save();
+    } catch (err) {
+      throw new HttpException(
+        'Error while saving course settings',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // SELECT * FROM course_settings_model WHERE courseId = selectedCourseId;
+  // if no settings for the courseid, return all true
+  @Get(':id/features')
+  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @Roles(Role.PROFESSOR, Role.STUDENT, Role.TA)
+  async getFeatures(
+    @Param('id') courseId: number,
+  ): Promise<CourseSettingsResponse> {
     const courseSettings = await CourseSettingsModel.findOne({
       where: { courseId },
     });
+
     if (!courseSettings) {
-      throw new NotFoundException();
+      return new CourseSettingsResponse({
+        courseId: courseId,
+        chatBotEnabled: true,
+        asyncQueueEnabled: true,
+        adsEnabled: true,
+        queueEnabled: true,
+        settingsFound: false,
+      });
     }
-    switch (feature) {
-      case 'chatBotEnabled':
-        courseSettings.chatBotEnabled = body.value;
-        break;
-      case 'asyncQueueEnabled':
-        courseSettings.asyncQueueEnabled = body.value;
-        break;
-      case 'adsEnabled':
-        courseSettings.adsEnabled = body.value;
-        break;
-      case 'queueEnabled':
-        courseSettings.queueEnabled = body.value;
-        break;
-      default:
-        throw new BadRequestException('Invalid feature');
-    }
-    await courseSettings.save();
+
+    return new CourseSettingsResponse({
+      courseId: courseId,
+      chatBotEnabled: courseSettings.chatBotEnabled,
+      asyncQueueEnabled: courseSettings.asyncQueueEnabled,
+      adsEnabled: courseSettings.adsEnabled,
+      queueEnabled: courseSettings.queueEnabled,
+      settingsFound: true,
+    });
   }
-  // SELECT * FROM course_settings_model WHERE courseId = selectedCourseId;
-  //@Get(':id/get_features')
 }

@@ -29,6 +29,7 @@ import {
 } from './util/factories';
 import { setupIntegrationTest } from './util/testUtils';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import { CourseSettingsModel } from 'course/course_settings.entity';
 
 describe('Course Integration', () => {
   const supertest = setupIntegrationTest(CourseModule);
@@ -1579,41 +1580,227 @@ describe('Course Integration', () => {
   });
 
   // course settings
-  describe('POST /courses/:id/toggle_feature/:feature', () => {
+  describe('PUT /courses/:id/features', () => {
+    let course;
+    let student;
+    let professor;
+    let courseSettings;
+
+    beforeEach(async () => {
+      course = await CourseFactory.create();
+      courseSettings = await CourseSettingsFactory.create({
+        course: course,
+      });
+
+      //create users
+      student = await UserFactory.create();
+      professor = await UserFactory.create();
+      // assign users to course
+      await UserCourseFactory.create({
+        user: student,
+        role: Role.STUDENT,
+        course: course,
+      });
+      await UserCourseFactory.create({
+        user: professor,
+        role: Role.PROFESSOR,
+        course: course,
+      });
+    });
+
     it('should return 401 if user is not authorized', async () => {
       await supertest()
-        .post(`/courses/1/toggle_feature/queue`)
-        .send({ enabled: true })
+        .put(`/courses/1/features`)
+        .send({ value: false, feature: 'chatBotEnabled' })
         .expect(401);
     });
 
-    it('should return 404 if course is not found', async () => {
-      const resp = await supertest({ userId: 1 })
-        .post(`/courses/6969/toggle_feature/queue`)
-        .send({ enabled: true })
-        .expect(404);
+    it('should return "Not In This Course" if user is not in the course', async () => {
+      const testcourse = await CourseFactory.create();
+      const user = await UserFactory.create();
+      const resp = await supertest({ userId: user.id })
+        .put(`/courses/${testcourse.id}/features`)
+        .send({ value: true, feature: 'chatBotEnabled' });
 
-      expect(resp.body.message).toEqual('Course not found');
+      expect(resp.body.message).toEqual('Not In This Course');
+      expect(resp.status).toBe(404);
     });
 
-    it('should return 400 if feature is not valid', async () => {
-      const course = await CourseFactory.create();
-      const resp = await supertest({ userId: 1 })
-        .post(`/courses/${course.id}/toggle_feature/invalid_feature`)
-        .send({ enabled: true })
-        .expect(400);
+    it('should return 404 if the course is not found', async () => {
+      const resp = await supertest({ userId: professor.id })
+        .put(`/courses/6969/features`)
+        .send({ value: true, feature: 'chatBotEnabled' });
 
-      expect(resp.body.message).toEqual('Invalid feature');
+      expect([
+        'Error while creating course settings: Course not found',
+        'Not In This Course',
+      ]).toContain(resp.body.message);
+      expect(resp.status).toBe(404);
     });
 
-    it('should return 200 if feature is toggled successfully', async () => {
-      const course = await CourseFactory.create();
-      const resp = await supertest({ userId: 1 })
-        .post(`/courses/${course.id}/toggle_feature/queue`)
-        .send({ enabled: true })
-        .expect(200);
+    it('should return 400 if the feature is not valid', async () => {
+      const resp = await supertest({ userId: professor.id })
+        .put(`/courses/${course.id}/features`)
+        .send({ value: true, feature: 'invalidFeature' });
 
-      expect(resp.body.message).toEqual('Feature toggled successfully');
+      expect(resp.body.message).toEqual([
+        'feature must be one of the following values: chatBotEnabled,asyncQueueEnabled,adsEnabled,queueEnabled',
+      ]);
+      expect(resp.status).toBe(400);
+    });
+
+    it('should return 200 if course settings are updated successfully', async () => {
+      //  DISABLE CHATBOT
+      let resp = await supertest({ userId: professor.id })
+        .put(`/courses/${course.id}/features`)
+        .send({ value: false, feature: 'chatBotEnabled' });
+
+      expect(resp.status).toBe(200);
+
+      // Fetch the updated courseSettings from the database
+      let updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: course.id },
+      });
+
+      expect(updatedCourseSettings.chatBotEnabled).toEqual(false);
+      expect(updatedCourseSettings.asyncQueueEnabled).toEqual(true);
+      expect(updatedCourseSettings.adsEnabled).toEqual(true);
+      expect(updatedCourseSettings.queueEnabled).toEqual(true);
+
+      //  DISABLE ASYNC QUEUE
+      resp = await supertest({ userId: professor.id })
+        .put(`/courses/${course.id}/features`)
+        .send({ value: false, feature: 'asyncQueueEnabled' });
+
+      expect(resp.status).toBe(200);
+
+      // Fetch the updated courseSettings from the database
+      updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: course.id },
+      });
+
+      expect(updatedCourseSettings.chatBotEnabled).toEqual(false);
+      expect(updatedCourseSettings.asyncQueueEnabled).toEqual(false);
+      expect(updatedCourseSettings.adsEnabled).toEqual(true);
+      expect(updatedCourseSettings.queueEnabled).toEqual(true);
+
+      // DISABLE ADS
+      resp = await supertest({ userId: professor.id })
+        .put(`/courses/${course.id}/features`)
+        .send({ value: false, feature: 'adsEnabled' });
+
+      expect(resp.status).toBe(200);
+
+      // Fetch the updated courseSettings from the database
+      updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: course.id },
+      });
+
+      expect(updatedCourseSettings.chatBotEnabled).toEqual(false);
+      expect(updatedCourseSettings.asyncQueueEnabled).toEqual(false);
+      expect(updatedCourseSettings.adsEnabled).toEqual(false);
+      expect(updatedCourseSettings.queueEnabled).toEqual(true);
+
+      // DISABLE QUEUE
+      resp = await supertest({ userId: professor.id })
+        .put(`/courses/${course.id}/features`)
+        .send({ value: false, feature: 'queueEnabled' });
+
+      expect(resp.status).toBe(200);
+
+      // Fetch the updated courseSettings from the database
+      updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: course.id },
+      });
+
+      expect(updatedCourseSettings.chatBotEnabled).toEqual(false);
+      expect(updatedCourseSettings.asyncQueueEnabled).toEqual(false);
+      expect(updatedCourseSettings.adsEnabled).toEqual(false);
+      expect(updatedCourseSettings.queueEnabled).toEqual(false);
+
+      // ENABLE CHATBOT
+      resp = await supertest({ userId: professor.id })
+        .put(`/courses/${course.id}/features`)
+        .send({ value: true, feature: 'chatBotEnabled' });
+
+      expect(resp.status).toBe(200);
+
+      // Fetch the updated courseSettings from the database
+      updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: course.id },
+      });
+
+      expect(updatedCourseSettings.chatBotEnabled).toEqual(true);
+      expect(updatedCourseSettings.asyncQueueEnabled).toEqual(false);
+      expect(updatedCourseSettings.adsEnabled).toEqual(false);
+      expect(updatedCourseSettings.queueEnabled).toEqual(false);
+    });
+  });
+
+  describe('GET /courses/:id/features', () => {
+    it('should return 401 if user is not authorized', async () => {
+      await supertest().get(`/courses/1/features`).expect(401);
+    });
+
+    it('should return "Not In This Course" if user is not in the course', async () => {
+      const course = await CourseFactory.create();
+      const user = await UserFactory.create();
+      const resp = await supertest({ userId: user.id }).get(
+        `/courses/${course.id}/features`,
+      );
+
+      expect(resp.body.message).toEqual('Not In This Course');
+      expect(resp.status).toBe(404);
+    });
+
+    it('should return 200 if course settings is not found and show all features', async () => {
+      const course = await CourseFactory.create();
+      const professor = await UserCourseFactory.create({
+        user: await UserFactory.create(),
+        role: Role.PROFESSOR,
+        course: course,
+      });
+      const resp = await supertest({ userId: professor.id }).get(
+        `/courses/${course.id}/features`,
+      );
+
+      expect(resp.status).toBe(200);
+      expect(resp.body).toEqual({
+        courseId: course.id,
+        chatBotEnabled: true,
+        asyncQueueEnabled: true,
+        adsEnabled: true,
+        queueEnabled: true,
+        settingsFound: false,
+      });
+    });
+
+    it('should return 200 and all features if features are fetched successfully', async () => {
+      const course = await CourseFactory.create();
+      const student = await UserCourseFactory.create({
+        user: await UserFactory.create(),
+        course: course,
+      });
+      await CourseSettingsFactory.create({
+        course: course,
+        chatBotEnabled: false,
+        asyncQueueEnabled: false,
+        adsEnabled: false,
+        queueEnabled: false,
+      });
+      const resp = await supertest({ userId: student.id }).get(
+        `/courses/${course.id}/features`,
+      );
+
+      expect(resp.status).toBe(200);
+      expect(resp.body).toEqual({
+        courseId: course.id,
+        chatBotEnabled: false,
+        asyncQueueEnabled: false,
+        adsEnabled: false,
+        queueEnabled: false,
+        settingsFound: true,
+      });
     });
   });
 });

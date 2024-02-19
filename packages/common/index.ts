@@ -5,6 +5,7 @@ import {
   IsDate,
   IsDefined,
   IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -12,7 +13,6 @@ import {
   IsOptional,
   IsString,
   ValidateIf,
-  isNumber,
 } from 'class-validator'
 import 'reflect-metadata'
 import { Cache } from 'cache-manager'
@@ -1394,7 +1394,7 @@ export type sendEmailAsync = {
   type: asyncQuestionEventType
 }
 
-export class CourseSettings {
+export class CourseSettingsResponse {
   @IsInt()
   courseId!: number
 
@@ -1409,6 +1409,22 @@ export class CourseSettings {
 
   @IsBoolean()
   queueEnabled!: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  settingsFound?: boolean = true //this is mostly just for debugging purposes by viewing network responses
+
+  constructor(init?: Partial<CourseSettingsResponse>) {
+    Object.assign(this, init)
+  }
+}
+
+export class CourseSettingsRequestBody {
+  @IsBoolean()
+  value!: boolean
+
+  @IsIn(['chatBotEnabled', 'asyncQueueEnabled', 'adsEnabled', 'queueEnabled'])
+  feature!: string
 }
 
 export const ERROR_MESSAGES = {

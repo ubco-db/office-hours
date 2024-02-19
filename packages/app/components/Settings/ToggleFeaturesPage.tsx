@@ -1,7 +1,8 @@
-import { Form, Checkbox, Spin } from 'antd'
+import { API } from '@koh/api-client'
+import { Form, Checkbox, Spin, message } from 'antd'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
-import useSWR from 'swr'
+import useSWR, { mutate } from 'swr'
 
 type ToggleFeaturesPageProps = { courseId: number }
 
@@ -25,11 +26,11 @@ const CustomFormItem = styled(Form.Item)`
 export default function ToggleFeaturesPage({
   courseId,
 }: ToggleFeaturesPageProps): ReactElement {
-  const { data } = useSWR(
-    `${role}/${page}/${search}`,
-    async () => await API.course.getUserInfo(courseId, page, role, search),
+  const { data: courseFeatures } = useSWR(
+    `${courseId}/features`,
+    async () => await API.course.getCourseFeatures(courseId),
   )
-  if (!data) {
+  if (!courseFeatures) {
     return <Spin tip="Loading..." size="large" />
   } else {
     return (
@@ -38,16 +39,101 @@ export default function ToggleFeaturesPage({
 
         <Form className="ml-2 !text-2xl">
           <CustomFormItem>
-            <Checkbox defaultChecked>Asynchronous Question Center</Checkbox>
+            <Checkbox
+              defaultChecked={courseFeatures.asyncQueueEnabled}
+              onChange={async (e) => {
+                await API.course
+                  .setCourseFeature(
+                    courseId,
+                    'asyncQueueEnabled',
+                    e.target.checked,
+                  )
+                  .then(() => {
+                    message.success(
+                      'Successfully set async queue feature to ' +
+                        e.target.checked,
+                    )
+                    mutate(`${courseId}/features`)
+                  })
+                  .catch((error) => {
+                    message.error(
+                      `An error occured while toggling async question centre: ${error.message}`,
+                    )
+                  })
+              }}
+            >
+              Asynchronous Question Center
+            </Checkbox>
           </CustomFormItem>
           <CustomFormItem>
-            <Checkbox defaultChecked>Chatbot</Checkbox>
+            <Checkbox
+              defaultChecked={courseFeatures.chatBotEnabled}
+              onChange={async (e) => {
+                await API.course
+                  .setCourseFeature(
+                    courseId,
+                    'chatBotEnabled',
+                    e.target.checked,
+                  )
+                  .then(() => {
+                    message.success(
+                      'Successfully set chatbot feature to ' + e.target.checked,
+                    )
+                    mutate(`${courseId}/features`)
+                  })
+                  .catch((error) => {
+                    message.error(
+                      `An error occured while toggling chatbot: ${error.message}`,
+                    )
+                  })
+              }}
+            >
+              Chatbot
+            </Checkbox>
           </CustomFormItem>
           <CustomFormItem>
-            <Checkbox defaultChecked>Queues</Checkbox>
+            <Checkbox
+              defaultChecked={courseFeatures.queueEnabled}
+              onChange={async (e) => {
+                await API.course
+                  .setCourseFeature(courseId, 'queueEnabled', e.target.checked)
+                  .then(() => {
+                    message.success(
+                      'Successfully set queue feature to ' + e.target.checked,
+                    )
+                    mutate(`${courseId}/features`)
+                  })
+                  .catch((error) => {
+                    message.error(
+                      `An error occured while toggling queue: ${error.message}`,
+                    )
+                  })
+              }}
+            >
+              Queues
+            </Checkbox>
           </CustomFormItem>
           <CustomFormItem>
-            <Checkbox defaultChecked>Ads</Checkbox>
+            <Checkbox
+              defaultChecked={courseFeatures.adsEnabled}
+              onChange={async (e) => {
+                await API.course
+                  .setCourseFeature(courseId, 'adsEnabled', e.target.checked)
+                  .then(() => {
+                    message.success(
+                      'Successfully set ads feature to ' + e.target.checked,
+                    )
+                    mutate(`${courseId}/features`)
+                  })
+                  .catch((error) => {
+                    message.error(
+                      `An error occured while toggling ads: ${error.message}`,
+                    )
+                  })
+              }}
+            >
+              Ads
+            </Checkbox>
           </CustomFormItem>
         </Form>
       </ToggleFeaturesPageComponent>
