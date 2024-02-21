@@ -50,7 +50,21 @@ export default function ChatbotSettings(): ReactElement {
   const [pageSize, setPageSize] = useState(10)
   const [loading, setLoading] = useState(false)
   const [totalDocuments, setTotalDocuments] = useState(0)
-  const [chatbotDocuments, setChatbotDocuments] = useState()
+  const [chatbotDocuments, setChatbotDocuments] = useState([])
+
+  const [fileList, setFileList] = useState([])
+
+  const props = {
+    name: 'file',
+    multiple: true,
+    accept: '.docx,.pptx,.txt,.csv,.pdf',
+    fileList,
+    onChange(info) {
+      setFileList(info.fileList)
+      // Optionally, if you're managing form values manually, update them here
+    },
+    beforeUpload: () => false, // Prevent automatic upload
+  }
 
   const columns: ColumnsType<ChatbotDocument> = [
     {
@@ -207,23 +221,18 @@ export default function ChatbotSettings(): ReactElement {
       }
 
       if (documentType === 'FILE') {
-        const files = formData.files.fileList.map((file) => file.originFileObj)
+        const files = fileList.map((file) => file.originFileObj)
         await uploadFiles(files, formData.source)
       }
 
       setAddDocumentModalOpen(false)
       setLoading(false)
+      setFileList([])
       form.resetFields()
       getDocuments()
     } finally {
       setLoading(false)
     }
-  }
-
-  const props: UploadProps = {
-    name: 'file',
-    multiple: true,
-    accept: '.docx,.pptx,.txt,.csv,.pdf',
   }
 
   return (
@@ -293,12 +302,13 @@ export default function ChatbotSettings(): ReactElement {
               <>
                 <Form.Item
                   name="files"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please provide document files.',
-                    },
-                  ]}
+
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: 'Please provide document files.',
+                  //   },
+                  // ]}
                 >
                   <div>
                     <p>
