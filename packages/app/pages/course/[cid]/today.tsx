@@ -20,6 +20,7 @@ import PopularTimes from '../../../components/Today/PopularTimes/PopularTimes'
 import AsyncQuestionCard from '../../../components/AsyncQuestion/AsyncQuestionCard'
 import { orderBy } from 'lodash'
 import { ChatbotToday } from '../../../components/Today/ChatbotToday'
+import useSWR from 'swr'
 
 const Container = styled.div`
   margin-top: 32px;
@@ -89,6 +90,11 @@ export default function Today(): ReactElement {
   const { course, mutateCourse } = useCourse(Number(cid))
   const [createQueueModalVisible, setCreateQueueModalVisible] = useState(false)
 
+  const { data: courseFeatures } = useSWR(
+    `${Number(cid)}/features`,
+    async () => await API.course.getCourseFeatures(Number(cid)),
+  )
+
   const sortByProfOrder = role == Role.PROFESSOR ? 'desc' : 'asc'
   const sortedQueues =
     course?.queues &&
@@ -113,7 +119,7 @@ export default function Today(): ReactElement {
     })
     mutateCourse()
   }
-  if (!course) {
+  if (!course || !courseFeatures) {
     return <Spin tip="Loading..." size="large" />
   } else {
     return (
@@ -127,10 +133,12 @@ export default function Today(): ReactElement {
             <TodayCol md={12} xs={24}>
               <Row justify="space-between">
                 <Title>{course?.name} Help Centre</Title>
-                <TodayPageCheckinButton
-                  createQueueModalVisible={createQueueModalVisible}
-                  setCreateQueueModalVisible={setCreateQueueModalVisible}
-                />
+                {courseFeatures.queueEnabled && (
+                  <TodayPageCheckinButton
+                    createQueueModalVisible={createQueueModalVisible}
+                    setCreateQueueModalVisible={setCreateQueueModalVisible}
+                  />
+                )}
               </Row>
               <Row>
                 <div>
@@ -141,27 +149,34 @@ export default function Today(): ReactElement {
                   </i>
                 </div>
               </Row>
-              {course?.queues?.length === 0 ? (
-                <>
-                  {' '}
-                  <h1 style={{ paddingTop: '100px' }}>
-                    There are no queues for this course, try asking async
-                    questions
-                  </h1>
-                </>
-              ) : (
-                sortedQueues?.map((q) => (
-                  <QueueCard
-                    key={q.id}
-                    queue={q}
-                    isTA={role === Role.TA || role === Role.PROFESSOR}
-                    updateQueueNotes={updateQueueNotes}
-                  />
-                ))
-              )}
+
+              {courseFeatures.queueEnabled &&
+                (course?.queues?.length === 0 ? (
+                  <>
+                    {' '}
+                    <h1 style={{ paddingTop: '100px' }}>
+                      There are no queues for this course, try asking async
+                      questions
+                    </h1>
+                  </>
+                ) : (
+                  sortedQueues?.map((q) => (
+                    <QueueCard
+                      key={q.id}
+                      queue={q}
+                      isTA={role === Role.TA || role === Role.PROFESSOR}
+                      updateQueueNotes={updateQueueNotes}
+                    />
+                  ))
+                ))}
+
               {!course && <QueueCardSkeleton />}
-              <AsyncQuestionCard></AsyncQuestionCard>
-              {role !== Role.STUDENT && (
+
+              {courseFeatures.asyncQueueEnabled && (
+                <AsyncQuestionCard></AsyncQuestionCard>
+              )}
+
+              {role !== Role.STUDENT && courseFeatures.queueEnabled && (
                 <Row>
                   <CreateQueueButton
                     onClick={() => setCreateQueueModalVisible(true)}
@@ -172,7 +187,7 @@ export default function Today(): ReactElement {
               )}
               {
                 // This only works with UTC offsets in the form N:00, to help with other offsets, the size of the array might have to change to a size of 24*7*4 (for every 15 min interval)
-                course && course.heatmap && (
+                course && course.heatmap && courseFeatures.queueEnabled && (
                   <PopularTimes
                     heatmap={collapseHeatmap(
                       arrayRotate(
@@ -185,7 +200,7 @@ export default function Today(): ReactElement {
               }
             </TodayCol>
             <TodayCol md={12} sm={24} className="h-[100vh]">
-              <ChatbotToday />
+              {courseFeatures.chatBotEnabled && <ChatbotToday />}
             </TodayCol>
           </Row>
         </Container>

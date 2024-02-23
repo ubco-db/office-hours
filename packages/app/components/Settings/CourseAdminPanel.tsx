@@ -26,6 +26,8 @@ import ChatbotQuestions from './ChatbotQuestions'
 import ToggleFeaturesPage from './ToggleFeaturesPage'
 import { ToasterProvider } from '../../providers/toast-provider'
 import EditCourse from './EditCourse'
+import useSWR from 'swr'
+import { API } from '@koh/api-client'
 
 export enum CourseAdminOptions {
   CHECK_IN = 'CHECK_IN',
@@ -61,8 +63,15 @@ export default function CourseAdminPanel({
 }: CourseAdminPageProps): ReactElement {
   const role = useRoleInCourse(Number(courseId))
   const profile = useProfile()
+  const { data: courseFeatures } = useSWR(
+    `${Number(courseId)}/features`,
+    async () => await API.course.getCourseFeatures(Number(courseId)),
+  )
   const [currentSettings, setCurrentSettings] = useState(
-    defaultPage || CourseAdminOptions.CHECK_IN,
+    defaultPage ||
+      (courseFeatures.queueEnabled
+        ? CourseAdminOptions.CHECK_IN
+        : CourseAdminOptions.ROSTER),
   )
 
   const router = useRouter()
@@ -100,12 +109,14 @@ export default function CourseAdminPanel({
         >
           {role === Role.PROFESSOR && (
             <>
-              <Menu.Item
-                key={CourseAdminOptions.CHECK_IN}
-                icon={<ScheduleOutlined />}
-              >
-                TA Check In/Out Times
-              </Menu.Item>
+              {courseFeatures?.queueEnabled && (
+                <Menu.Item
+                  key={CourseAdminOptions.CHECK_IN}
+                  icon={<ScheduleOutlined />}
+                >
+                  TA Check In/Out Times
+                </Menu.Item>
+              )}
               <Menu.Item
                 key={CourseAdminOptions.ROSTER}
                 icon={<BellOutlined />}
