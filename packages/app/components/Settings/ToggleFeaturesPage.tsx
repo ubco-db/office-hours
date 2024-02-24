@@ -1,5 +1,5 @@
 import { API } from '@koh/api-client'
-import { Form, Checkbox, Spin, message } from 'antd'
+import { Form, Checkbox, Spin, message, Switch } from 'antd'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 import useSWR, { mutate } from 'swr'
@@ -17,10 +17,17 @@ const CustomFormItem = styled(Form.Item)`
   padding-bottom: 1rem;
   margin-bottom: 1rem;
 
+  font-size: 1rem;
+  line-height: 0.5rem;
+
   &:last-child {
     padding-bottom: 0;
     margin-bottom: 0;
   }
+`
+
+const CustomSwitch = styled(Switch)`
+  margin-right: 1rem;
 `
 
 export default function ToggleFeaturesPage({
@@ -37,21 +44,20 @@ export default function ToggleFeaturesPage({
       <ToggleFeaturesPageComponent>
         <h2>Enable/Disable Features for this Course</h2>
 
-        <Form className="ml-2 !text-2xl">
+        <Form className="ml-2">
           <CustomFormItem>
-            <Checkbox
+            <CustomSwitch
               defaultChecked={courseFeatures.asyncQueueEnabled}
               onChange={async (e) => {
                 await API.course
                   .setCourseFeature(
                     courseId,
                     'asyncQueueEnabled',
-                    e.target.checked,
+                    e.valueOf() as boolean,
                   )
                   .then(() => {
                     message.success(
-                      'Successfully set async queue feature to ' +
-                        e.target.checked,
+                      'Successfully set async queue feature to ' + e.valueOf(),
                     )
                     mutate(`${courseId}/features`)
                   })
@@ -61,23 +67,22 @@ export default function ToggleFeaturesPage({
                     )
                   })
               }}
-            >
-              Asynchronous Question Centre
-            </Checkbox>
+            />
+            Asynchronous Question Centre
           </CustomFormItem>
           <CustomFormItem>
-            <Checkbox
+            <CustomSwitch
               defaultChecked={courseFeatures.chatBotEnabled}
               onChange={async (e) => {
                 await API.course
                   .setCourseFeature(
                     courseId,
                     'chatBotEnabled',
-                    e.target.checked,
+                    e.valueOf() as boolean,
                   )
                   .then(() => {
                     message.success(
-                      'Successfully set chatbot feature to ' + e.target.checked,
+                      'Successfully set chatbot feature to ' + e.valueOf(),
                     )
                     mutate(`${courseId}/features`)
                   })
@@ -87,41 +92,47 @@ export default function ToggleFeaturesPage({
                     )
                   })
               }}
-            >
-              Chatbot
-            </Checkbox>
+            />
+            Chatbot
           </CustomFormItem>
           <CustomFormItem>
-            <Checkbox
+            <CustomSwitch
               defaultChecked={courseFeatures.queueEnabled}
               onChange={async (e) => {
                 await API.course
-                  .setCourseFeature(courseId, 'queueEnabled', e.target.checked)
+                  .setCourseFeature(
+                    courseId,
+                    'queueEnabled',
+                    e.valueOf() as boolean,
+                  )
                   .then(() => {
                     message.success(
-                      'Successfully set queue feature to ' + e.target.checked,
+                      'Successfully set queues feature to ' + e.valueOf(),
                     )
                     mutate(`${courseId}/features`)
                   })
                   .catch((error) => {
                     message.error(
-                      `An error occured while toggling queue: ${error.message}`,
+                      `An error occured while toggling queues feature: ${error.message}`,
                     )
                   })
               }}
-            >
-              Queues
-            </Checkbox>
+            />
+            Queues
           </CustomFormItem>
           <CustomFormItem>
-            <Checkbox
+            <CustomSwitch
               defaultChecked={courseFeatures.adsEnabled}
               onChange={async (e) => {
                 await API.course
-                  .setCourseFeature(courseId, 'adsEnabled', e.target.checked)
+                  .setCourseFeature(
+                    courseId,
+                    'adsEnabled',
+                    e.valueOf() as boolean,
+                  )
                   .then(() => {
                     message.success(
-                      'Successfully set ads feature to ' + e.target.checked,
+                      'Successfully set ads feature to ' + e.valueOf(),
                     )
                     mutate(`${courseId}/features`)
                   })
@@ -131,9 +142,8 @@ export default function ToggleFeaturesPage({
                     )
                   })
               }}
-            >
-              Ads
-            </Checkbox>
+            />
+            Ads
           </CustomFormItem>
         </Form>
       </ToggleFeaturesPageComponent>
