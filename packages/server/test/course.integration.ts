@@ -1608,6 +1608,13 @@ describe('Course Integration', () => {
       });
     });
 
+    it('should return 401 if user is not a professor', async () => {
+      await supertest({ userId: student.id })
+        .put(`/courses/1/features`)
+        .send({ value: false, feature: 'chatBotEnabled' })
+        .expect(401);
+    });
+
     it('should return 401 if user is not authorized', async () => {
       await supertest()
         .put(`/courses/1/features`)
