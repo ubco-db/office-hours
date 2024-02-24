@@ -95,6 +95,11 @@ export default function Today(): ReactElement {
     async () => await API.course.getCourseFeatures(Number(cid)),
   )
 
+  const onlyChatBotEnabled =
+    courseFeatures?.chatBotEnabled &&
+    !courseFeatures?.queueEnabled &&
+    !courseFeatures?.asyncQueueEnabled
+
   const sortByProfOrder = role == Role.PROFESSOR ? 'desc' : 'asc'
   const sortedQueues =
     course?.queues &&
@@ -128,82 +133,90 @@ export default function Today(): ReactElement {
           <title>{course?.name} | UBC Office Hours</title>
         </Head>
         <NavBar courseId={Number(cid)} />
-        <Container>
-          <Row gutter={64}>
-            <TodayCol md={12} xs={24}>
-              <Row justify="space-between">
-                <Title>{course?.name} Help Centre</Title>
-                {courseFeatures.queueEnabled && (
-                  <TodayPageCheckinButton
-                    createQueueModalVisible={createQueueModalVisible}
-                    setCreateQueueModalVisible={setCreateQueueModalVisible}
-                  />
-                )}
-              </Row>
-              <Row>
-                <div>
-                  <i>
-                    You are a{' '}
-                    <RoleColorSpan>{roleToString(role)}</RoleColorSpan> for this
-                    course
-                  </i>
-                </div>
-              </Row>
 
-              {courseFeatures.queueEnabled &&
-                (course?.queues?.length === 0 ? (
-                  <>
-                    {' '}
-                    <h1 style={{ paddingTop: '100px' }}>
-                      There are no queues for this course, try asking async
-                      questions
-                    </h1>
-                  </>
-                ) : (
-                  sortedQueues?.map((q) => (
-                    <QueueCard
-                      key={q.id}
-                      queue={q}
-                      isTA={role === Role.TA || role === Role.PROFESSOR}
-                      updateQueueNotes={updateQueueNotes}
+        {(!onlyChatBotEnabled && (
+          <Container>
+            <Row gutter={64}>
+              <TodayCol md={12} xs={24}>
+                <Row justify="space-between">
+                  <Title>{course?.name} Help Centre</Title>
+                  {courseFeatures.queueEnabled && (
+                    <TodayPageCheckinButton
+                      createQueueModalVisible={createQueueModalVisible}
+                      setCreateQueueModalVisible={setCreateQueueModalVisible}
                     />
-                  ))
-                ))}
-
-              {!course && <QueueCardSkeleton />}
-
-              {courseFeatures.asyncQueueEnabled && (
-                <AsyncQuestionCard></AsyncQuestionCard>
-              )}
-
-              {role !== Role.STUDENT && courseFeatures.queueEnabled && (
-                <Row>
-                  <CreateQueueButton
-                    onClick={() => setCreateQueueModalVisible(true)}
-                  >
-                    + Create Queue
-                  </CreateQueueButton>
+                  )}
                 </Row>
-              )}
-              {
-                // This only works with UTC offsets in the form N:00, to help with other offsets, the size of the array might have to change to a size of 24*7*4 (for every 15 min interval)
-                course && course.heatmap && courseFeatures.queueEnabled && (
-                  <PopularTimes
-                    heatmap={collapseHeatmap(
-                      arrayRotate(
-                        course.heatmap,
-                        -Math.floor(moment().utcOffset() / 15),
-                      ),
-                    )}
-                  />
-                )
-              }
-            </TodayCol>
-            <TodayCol md={12} sm={24} className="h-[100vh]">
-              {courseFeatures.chatBotEnabled && <ChatbotToday />}
-            </TodayCol>
-          </Row>
-        </Container>
+                <Row>
+                  <div>
+                    <i>
+                      You are a{' '}
+                      <RoleColorSpan>{roleToString(role)}</RoleColorSpan> for
+                      this course
+                    </i>
+                  </div>
+                </Row>
+
+                {courseFeatures.queueEnabled &&
+                  (course?.queues?.length === 0 ? (
+                    <>
+                      {' '}
+                      <h1 style={{ paddingTop: '100px' }}>
+                        There are no queues for this course, try asking async
+                        questions
+                      </h1>
+                    </>
+                  ) : (
+                    sortedQueues?.map((q) => (
+                      <QueueCard
+                        key={q.id}
+                        queue={q}
+                        isTA={role === Role.TA || role === Role.PROFESSOR}
+                        updateQueueNotes={updateQueueNotes}
+                      />
+                    ))
+                  ))}
+
+                {!course && <QueueCardSkeleton />}
+
+                {courseFeatures.asyncQueueEnabled && (
+                  <AsyncQuestionCard></AsyncQuestionCard>
+                )}
+
+                {role !== Role.STUDENT && courseFeatures.queueEnabled && (
+                  <Row>
+                    <CreateQueueButton
+                      onClick={() => setCreateQueueModalVisible(true)}
+                    >
+                      + Create Queue
+                    </CreateQueueButton>
+                  </Row>
+                )}
+                {
+                  // This only works with UTC offsets in the form N:00, to help with other offsets, the size of the array might have to change to a size of 24*7*4 (for every 15 min interval)
+                  course && course.heatmap && courseFeatures.queueEnabled && (
+                    <PopularTimes
+                      heatmap={collapseHeatmap(
+                        arrayRotate(
+                          course.heatmap,
+                          -Math.floor(moment().utcOffset() / 15),
+                        ),
+                      )}
+                    />
+                  )
+                }
+              </TodayCol>
+              <TodayCol md={12} sm={24} className="h-[100vh]">
+                {courseFeatures.chatBotEnabled && <ChatbotToday />}
+              </TodayCol>
+            </Row>
+          </Container>
+        )) || (
+          // only show if only the chatbot is enabled
+          <div className="mt-3 flex h-[100vh] flex-col items-center justify-items-end">
+            <ChatbotToday />
+          </div>
+        )}
       </StandardPageContainer>
     )
   }

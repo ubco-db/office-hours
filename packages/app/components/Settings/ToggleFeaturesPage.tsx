@@ -62,7 +62,7 @@ export default function ToggleFeaturesPage({
                   })
               }}
             >
-              Asynchronous Question Center
+              Asynchronous Question Centre
             </Checkbox>
           </CustomFormItem>
           <CustomFormItem>
