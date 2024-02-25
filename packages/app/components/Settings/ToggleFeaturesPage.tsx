@@ -1,5 +1,5 @@
 import { API } from '@koh/api-client'
-import { Form, Checkbox, Spin, message, Switch } from 'antd'
+import { Form, Spin, message, Switch } from 'antd'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 import useSWR, { mutate } from 'swr'

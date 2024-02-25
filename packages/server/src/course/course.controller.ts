@@ -956,6 +956,7 @@ export class CourseController {
       where: { courseId },
     });
 
+    // if no settings found, do default
     if (!courseSettings) {
       return new CourseSettingsResponse({
         courseId: courseId,
