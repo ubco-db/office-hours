@@ -69,7 +69,7 @@ export default function CourseAdminPanel({
   )
   const [currentSettings, setCurrentSettings] = useState(
     defaultPage ||
-      (courseFeatures.queueEnabled
+      (courseFeatures?.queueEnabled
         ? CourseAdminOptions.CHECK_IN
         : CourseAdminOptions.ROSTER),
   )

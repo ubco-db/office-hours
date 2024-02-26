@@ -1,5 +1,6 @@
+import { QuestionCircleOutlined } from '@ant-design/icons'
 import { API } from '@koh/api-client'
-import { Form, Spin, message, Switch } from 'antd'
+import { Form, Spin, message, Switch, Tooltip } from 'antd'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 import useSWR, { mutate } from 'swr'
@@ -68,7 +69,16 @@ export default function ToggleFeaturesPage({
                   })
               }}
             />
-            Asynchronous Question Centre
+            <span>
+              Asynchronous Question Centre&nbsp;
+              <Tooltip
+                title={
+                  'This feature allows students to ask questions asynchronously (e.g. outside of office hours or labs) that can then be responded to by the professor. It also features automatic AI-generated answers based on uploaded course content.'
+                }
+              >
+                <QuestionCircleOutlined />
+              </Tooltip>
+            </span>
           </CustomFormItem>
           <CustomFormItem>
             <CustomSwitch
@@ -93,7 +103,16 @@ export default function ToggleFeaturesPage({
                   })
               }}
             />
-            Chatbot
+            <span>
+              Chatbot&nbsp;
+              <Tooltip
+                title={
+                  'This feature allows students to ask questions to an AI chatbot that will answer their questions based on uploaded lab content.'
+                }
+              >
+                <QuestionCircleOutlined />
+              </Tooltip>
+            </span>
           </CustomFormItem>
           <CustomFormItem>
             <CustomSwitch
@@ -118,7 +137,16 @@ export default function ToggleFeaturesPage({
                   })
               }}
             />
-            Queues
+            <span>
+              Queues&nbsp;
+              <Tooltip
+                title={
+                  'This feature allows students to ask questions in a queue that can then be answered by the professor or a TA. Suitable for online, hybrid, and in-person office hours and labs.'
+                }
+              >
+                <QuestionCircleOutlined />
+              </Tooltip>
+            </span>
           </CustomFormItem>
           <CustomFormItem>
             <CustomSwitch
@@ -143,7 +171,16 @@ export default function ToggleFeaturesPage({
                   })
               }}
             />
-            Ads
+            <span>
+              Advertisements (Not currently implemented)&nbsp;
+              <Tooltip
+                title={
+                  'Displays non-intrusive advertisements to help keep the servers running (and to keep us from going bankrupt from those darn OpenAI API fees).'
+                }
+              >
+                <QuestionCircleOutlined />
+              </Tooltip>
+            </span>
           </CustomFormItem>
         </Form>
       </ToggleFeaturesPageComponent>
