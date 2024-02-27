@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useState } from 'react'
 import { useQueue } from '../../hooks/useQueue'
 import { useQuestions } from '../../hooks/useQuestions'
 import { useProfile } from '../../hooks/useProfile'
@@ -36,6 +36,7 @@ import { AddStudentsModal } from './TA/TAAddStudent'
 import { EditQueueModal } from './TA/EditQueueModal'
 import PropTypes from 'prop-types'
 import { EditOutlined, LoginOutlined, PlusOutlined } from '@ant-design/icons'
+import { NextRouter } from 'next/router'
 
 const EditQueueButton = styled(QueueInfoColumnButton)`
   color: #212934;
@@ -108,6 +109,10 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
     'isFirstQuestion',
     true,
   )
+
+  useEffect(() => {
+    console.log(`popupEditQuestion is now set to ${popupEditQuestion}`)
+  }, [popupEditQuestion])
 
   const helpingQuestions = questions?.questionsGettingHelp?.filter(
     (q) => q.taHelped.id === profile.id,
@@ -289,7 +294,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       text: string,
       qt: AddQuestionTypeParams[],
       groupable: false,
-      router: Router,
+      router: NextRouter,
       cid: number,
       location: string,
     ) => {
@@ -527,7 +532,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
         <>
           <QuestionForm
             visible={
-              (questions && !studentQuestion && isJoining) ||
+              // (questions && !studentQuestion && isJoining) || // this causes the modal to open once the queue empties? idk why this is here
               // && studentQuestion.status !== QuestionStatusKeys.Drafting)
               popupEditQuestion
             }
