@@ -234,7 +234,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
   }, [qid])
 
   const closeEditModal = useCallback(() => {
-    console.log('closeEditModal')
     setPopupEditQuestion(false)
     setIsJoining(false)
   }, [])
@@ -324,6 +323,15 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
   )
 
   function RenderQueueInfoCol(): ReactElement {
+    const [isJoinQueueModalLoading, setIsJoinQueueModalLoading] =
+      useState(false)
+
+    const joinQueue = useCallback(async () => {
+      setIsJoinQueueModalLoading(true)
+      await joinQueueOpenModal(false)
+      setIsJoinQueueModalLoading(false)
+    }, [joinQueueOpenModal])
+
     return isStaff ? (
       <QueueInfoColumn
         queueId={qid}
@@ -394,11 +402,13 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
             >
               <JoinButton
                 type="primary"
-                disabled={!queue?.allowQuestions || queue?.isDisabled}
-                data-cy="join-queue-button"
-                onClick={async () =>
-                  setShowJoinPopconfirm(!(await joinQueueOpenModal(false)))
+                disabled={
+                  !queue?.allowQuestions ||
+                  queue?.isDisabled ||
+                  isJoinQueueModalLoading
                 }
+                data-cy="join-queue-button"
+                onClick={joinQueue}
                 icon={<LoginOutlined />}
               >
                 Join Queue

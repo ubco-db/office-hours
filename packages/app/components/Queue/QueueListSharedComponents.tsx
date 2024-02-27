@@ -17,6 +17,7 @@ import { TAStatuses } from './TAStatuses'
 import { API } from '@koh/api-client'
 import Router from 'next/router'
 import { Text } from './QueueCardSharedComponents'
+import { AddQuestionTypeParams } from '@koh/common'
 
 export const Container = styled.div`
   display: flex;
@@ -362,6 +363,10 @@ export const disableQueue = async (
   await Router.push('/')
 }
 
+//
+// QUESTION TYPES
+//
+
 interface QuestionTypeProps {
   typeName: string
   typeColor: string
@@ -395,6 +400,104 @@ export function QuestionType({
       onClick={onClick}
     >
       <Text style={{ fontSize: 'smaller', color: textColor }}>{typeName}</Text>{' '}
+    </div>
+  )
+}
+
+//
+// CHECKABLE (like checkbox) QUESTION TYPES
+//
+
+interface CheckableQuestionTypeProps {
+  typeName: string
+  typeColor: string
+  typeID: number
+  onChange: (typeID: number, checked: boolean) => void
+  checked: boolean
+}
+
+export function CheckableQuestionType({
+  typeName,
+  typeColor,
+  typeID,
+  onChange,
+  checked,
+}: CheckableQuestionTypeProps): React.ReactElement {
+  function getBrightness(color: string): number {
+    const rgb = parseInt(color.slice(1), 16)
+    const r = (rgb >> 16) & 0xff
+    const g = (rgb >> 8) & 0xff
+    const b = (rgb >> 0) & 0xff
+    return (r * 299 + g * 587 + b * 114) / 1000
+  }
+  const textColor = checked
+    ? getBrightness(typeColor) < 128
+      ? 'white'
+      : 'black'
+    : 'gray'
+
+  const handleClick = () => {
+    onChange(typeID, !checked)
+  }
+
+  return (
+    <div
+      style={{
+        backgroundColor: checked ? typeColor : undefined,
+        borderRadius: '15px',
+        padding: '0px 7px',
+        margin: '2px',
+        display: 'inline-block',
+        cursor: 'pointer',
+        border: `1px solid ${typeColor}`,
+      }}
+      onClick={handleClick}
+    >
+      <Text style={{ fontSize: 'smaller', color: textColor }}>{typeName}</Text>{' '}
+    </div>
+  )
+}
+
+//
+// QUESTION TYPE SELECTOR
+//
+
+interface QuestionTypeSelectorProps {
+  questionTypes: AddQuestionTypeParams[]
+  onChange: (newSelectedTypes: number[]) => void
+  value: number[]
+  className?: string
+}
+
+export function QuestionTypeSelector({
+  questionTypes,
+  onChange,
+  value,
+  className,
+}: QuestionTypeSelectorProps): React.ReactElement {
+  const [selectedTypes, setSelectedTypes] = useState(value || [])
+
+  const handleTagClick = (typeID, checked) => {
+    const newSelectedTypes = checked
+      ? [...selectedTypes, typeID]
+      : selectedTypes.filter((id) => id !== typeID)
+
+    setSelectedTypes(newSelectedTypes)
+    onChange(newSelectedTypes)
+  }
+
+  return (
+    <div className={className}>
+      {questionTypes.map((type) => (
+        <CheckableQuestionType
+          key={type.id}
+          typeName={type.name}
+          typeColor={type.color}
+          typeID={type.id}
+          checked={selectedTypes.includes(type.id)}
+          onChange={handleTagClick}
+        />
+      ))}
     </div>
   )
 }
