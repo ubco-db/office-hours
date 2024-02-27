@@ -59,6 +59,7 @@ interface QuestionFormProps {
     router: NextRouter,
     courseId: number,
     location: string,
+    groupable?: boolean,
   ) => void
   position: number
   cancel: () => void

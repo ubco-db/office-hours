@@ -18,7 +18,7 @@ import {
   QueueInfoColumn,
   QueueInfoColumnButton,
 } from './QueueListSharedComponents'
-import { Popconfirm, Tooltip, message, notification } from 'antd'
+import { Popconfirm, Spin, Tooltip, message, notification } from 'antd'
 import TACheckinButton from '../Today/TACheckinButton'
 import styled from 'styled-components'
 import { useStudentQuestion } from '../../hooks/useStudentQuestion'
@@ -110,10 +110,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
     true,
   )
 
-  useEffect(() => {
-    console.log(`popupEditQuestion is now set to ${popupEditQuestion}`)
-  }, [popupEditQuestion])
-
   const helpingQuestions = questions?.questionsGettingHelp?.filter(
     (q) => q.taHelped.id === profile.id,
   )
@@ -129,16 +125,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       q.id !== qid &&
       q.staffList.some((staffMember) => staffMember.id === profile?.id),
   )
-
-  let isStaff = false
-  profile.courses.forEach((course) => {
-    if (
-      course.course.id === cid &&
-      (course.role === Role.PROFESSOR || course.role === Role.TA)
-    ) {
-      isStaff = true
-    }
-  })
 
   const studentQuestionId = studentQuestion?.id
   const studentQuestionStatus = studentQuestion?.status
@@ -289,14 +275,29 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
     [studentQuestionStatus, studentQuestionId, questions, mutateQuestions],
   )
 
+  const [isStaff, setIsStaff] = useState(false)
+
+  useEffect(() => {
+    if (profile && profile.courses) {
+      profile.courses.forEach((course) => {
+        if (
+          course.course.id === cid &&
+          (course.role === Role.PROFESSOR || course.role === Role.TA)
+        ) {
+          setIsStaff(true)
+        }
+      })
+    }
+  }, [profile, cid])
+
   const finishQuestionAndClose = useCallback(
     (
       text: string,
       qt: AddQuestionTypeParams[],
-      groupable: false,
       router: NextRouter,
       cid: number,
       location: string,
+      groupable: false,
     ) => {
       deleteDraftQuestion()
       finishQuestion(text, qt, groupable, location)
@@ -424,6 +425,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       />
     )
   }
+
   const QueueHeader = styled.h2`
     font-weight: 500;
     font-size: 24px;
@@ -480,82 +482,86 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
     )
   }
 
-  return (
-    <>
-      <Container>
-        <RenderQueueInfoCol />
-        <VerticalDivider />
-        <QueueListContainer>
-          {isStaff && helpingQuestions && helpingQuestions.length > 0 ? (
-            <>
-              <QueueHeader>You are Currently Helping</QueueHeader>
+  if (!role || !queue || !profile) {
+    return <Spin />
+  } else {
+    return (
+      <>
+        <Container>
+          <RenderQueueInfoCol />
+          <VerticalDivider />
+          <QueueListContainer>
+            {isStaff && helpingQuestions && helpingQuestions.length > 0 ? (
+              <>
+                <QueueHeader>You are Currently Helping</QueueHeader>
 
-              {helpingQuestions?.map((question: Question, index: number) => {
-                return (
-                  <StudentQueueCard
-                    key={question.id}
-                    rank={index + 1}
-                    question={question}
-                    cid={cid}
-                    qid={qid}
-                    isStaff={isStaff}
-                  />
-                )
-              })}
-            </>
-          ) : (
-            <>
-              <StudentBanner
-                queueId={qid}
-                editQuestion={openEditModal}
-                leaveQueue={leaveQueue}
-              />
-            </>
-          )}
-          <RenderQueueQuestions questions={questions?.queue} />
-        </QueueListContainer>
-      </Container>
-      {isStaff ? (
-        <>
-          <EditQueueModal
-            queueId={qid}
-            visible={queueSettingsModal}
-            onClose={() => setQueueSettingsModal(false)}
-          />
-          <AddStudentsModal
-            queueId={qid}
-            visible={addStudentsModal}
-            onClose={() => setAddStudentsModal(false)}
-          />
-        </>
-      ) : (
-        <>
-          <QuestionForm
-            visible={
-              // (questions && !studentQuestion && isJoining) || // this causes the modal to open once the queue empties? idk why this is here
-              // && studentQuestion.status !== QuestionStatusKeys.Drafting)
-              popupEditQuestion
-            }
-            question={studentQuestion}
-            leaveQueue={leaveQueueAndClose}
-            finishQuestion={finishQuestionAndClose}
-            position={studentQuestionIndex + 1}
-            cancel={closeEditModal}
-          />
-          <CantFindModal
-            visible={studentQuestion?.status === LimboQuestionStatus.CantFind}
-            leaveQueue={leaveQueue}
-            rejoinQueue={rejoinQueue}
-          />
-          <StudentRemovedFromQueueModal
-            question={studentQuestion}
-            leaveQueue={leaveQueue}
-            joinQueue={joinQueueAfterDeletion}
-          />
-        </>
-      )}
-    </>
-  )
+                {helpingQuestions?.map((question: Question, index: number) => {
+                  return (
+                    <StudentQueueCard
+                      key={question.id}
+                      rank={index + 1}
+                      question={question}
+                      cid={cid}
+                      qid={qid}
+                      isStaff={isStaff}
+                    />
+                  )
+                })}
+              </>
+            ) : (
+              <>
+                <StudentBanner
+                  queueId={qid}
+                  editQuestion={openEditModal}
+                  leaveQueue={leaveQueue}
+                />
+              </>
+            )}
+            <RenderQueueQuestions questions={questions?.queue} />
+          </QueueListContainer>
+        </Container>
+        {isStaff ? (
+          <>
+            <EditQueueModal
+              queueId={qid}
+              visible={queueSettingsModal}
+              onClose={() => setQueueSettingsModal(false)}
+            />
+            <AddStudentsModal
+              queueId={qid}
+              visible={addStudentsModal}
+              onClose={() => setAddStudentsModal(false)}
+            />
+          </>
+        ) : (
+          <>
+            <QuestionForm
+              visible={
+                // (questions && !studentQuestion && isJoining) || // this causes the modal to open once the queue empties? idk why this is here
+                // && studentQuestion.status !== QuestionStatusKeys.Drafting)
+                popupEditQuestion
+              }
+              question={studentQuestion}
+              leaveQueue={leaveQueueAndClose}
+              finishQuestion={finishQuestionAndClose}
+              position={studentQuestionIndex + 1}
+              cancel={closeEditModal}
+            />
+            <CantFindModal
+              visible={studentQuestion?.status === LimboQuestionStatus.CantFind}
+              leaveQueue={leaveQueue}
+              rejoinQueue={rejoinQueue}
+            />
+            <StudentRemovedFromQueueModal
+              question={studentQuestion}
+              leaveQueue={leaveQueue}
+              joinQueue={joinQueueAfterDeletion}
+            />
+          </>
+        )}
+      </>
+    )
+  }
 }
 
 QueuePage.propTypes = {
