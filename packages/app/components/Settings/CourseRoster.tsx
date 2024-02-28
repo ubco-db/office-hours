@@ -10,11 +10,13 @@ import {
   Menu,
   Pagination,
   Spin,
+  Modal,
 } from 'antd'
 import Avatar from 'antd/lib/avatar/avatar'
 import { useEffect, useState } from 'react'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
+import { useProfile } from '../../hooks/useProfile'
 
 type CourseRosterProps = { courseId: number }
 
@@ -24,6 +26,7 @@ type RenderTableProps = {
   listTitle: string
   displaySearchBar: boolean
   searchPlaceholder: string
+  userId: number
 }
 
 interface UserPartial {
@@ -45,6 +48,8 @@ const TableBackground = styled.div`
 export default function CourseRoster({
   courseId,
 }: CourseRosterProps): ReactElement {
+  const profile = useProfile()
+  const userId = profile.id
   return (
     <CourseRosterComponent>
       <h1>Course Roster</h1>
@@ -54,6 +59,7 @@ export default function CourseRoster({
         listTitle={'Professors'}
         displaySearchBar={false}
         searchPlaceholder="Search Professors"
+        userId={userId}
       />
       <br />
       <RenderTable
@@ -62,6 +68,7 @@ export default function CourseRoster({
         listTitle={'Teaching Assistants'}
         displaySearchBar={true}
         searchPlaceholder="Search TAs"
+        userId={userId}
       />
       <br />
       <RenderTable
@@ -70,6 +77,7 @@ export default function CourseRoster({
         listTitle={'Students'}
         displaySearchBar={true}
         searchPlaceholder="Search students"
+        userId={userId}
       />
       <br />
       <Divider />
@@ -83,6 +91,7 @@ function RenderTable({
   listTitle,
   displaySearchBar,
   searchPlaceholder,
+  userId,
 }: RenderTableProps): ReactElement {
   const [page, setPage] = useState(1)
   const [input, setInput] = useState('')
@@ -158,8 +167,32 @@ function RenderTable({
                 <Dropdown
                   overlay={
                     <Menu
-                      onClick={async (e) => {
-                        handleRoleChange(item.id, e.key, item.name)
+                      onClick={(e) => {
+                        const confirmRoleChange = () => {
+                          handleRoleChange(item.id, e.key, item.name)
+                        }
+
+                        if (userId === Number(item.id)) {
+                          Modal.confirm({
+                            title: <strong>Warning</strong>,
+                            content: (
+                              <div>
+                                You are about to change your own role to{' '}
+                                {e.key.toUpperCase()}
+                                <br />
+                                Are you sure you want to proceed?
+                              </div>
+                            ),
+                            okText: 'Yes',
+                            okType: 'danger',
+                            cancelText: 'No',
+                            onOk() {
+                              confirmRoleChange()
+                            },
+                          })
+                        } else {
+                          confirmRoleChange()
+                        }
                       }}
                     >
                       {role !== Role.PROFESSOR ? (
