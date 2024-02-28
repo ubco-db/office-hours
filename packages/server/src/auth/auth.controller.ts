@@ -162,12 +162,15 @@ export class AuthController {
         .send({ message: ERROR_MESSAGES.loginController.invalidTempJWTToken });
     }
 
+    const redirectUrl =
+      lastVisited && lastVisited !== 'undefined' ? lastVisited : '/courses';
+
     const isSecure = this.configService
       .get<string>('DOMAIN')
       .startsWith('https://');
     res
       .cookie('auth_token', authToken, { httpOnly: true, secure: isSecure })
-      .redirect(HttpStatus.FOUND, lastVisited || `/courses`);
+      .redirect(HttpStatus.FOUND, redirectUrl);
   }
 
   private isSecure(): boolean {
