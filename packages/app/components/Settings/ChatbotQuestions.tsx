@@ -4,7 +4,7 @@ import { API } from '@koh/api-client'
 import toast from 'react-hot-toast'
 import ExpandableText from '../common/ExpandableText'
 import EditChatbotQuestionModal from './EditChatbotQuestionModal'
-import { set } from 'lodash'
+import { get, set } from 'lodash'
 
 interface Loc {
   pageNumber: number
@@ -317,6 +317,7 @@ export default function ChatbotQuestions({
         editingRecord={editingRecord}
         visible={editRecordModalVisible}
         setEditingRecord={setEditRecordModalVisible}
+        onSuccessfulUpdate={getQuestions}
       />
       <Pagination
         style={{ float: 'right' }}

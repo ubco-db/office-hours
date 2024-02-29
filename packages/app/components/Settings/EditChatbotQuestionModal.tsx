@@ -3,15 +3,17 @@ import { Modal, Form, Input, Button, Checkbox, Collapse, Select } from 'antd'
 import router from 'next/router'
 const { Panel } = Collapse
 interface EditChatbotQuestionModalProps {
-  editingRecord: any // Specify a more precise type if possible
+  editingRecord: any
   visible: boolean
-  setEditingRecord: (record: any) => void // Specify the correct argument type
+  setEditingRecord: (record: any) => void
+  onSuccessfulUpdate: () => void
 }
 
 const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
   editingRecord,
   visible,
   setEditingRecord,
+  onSuccessfulUpdate,
 }) => {
   const [form] = Form.useForm()
   const { cid } = router.query
@@ -33,6 +35,13 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
       })
   }, [cid, visible])
 
+  useEffect(() => {
+    // Reset form with new editing record when visible or editingRecord changes
+    if (visible && editingRecord) {
+      form.resetFields()
+      form.setFieldsValue(editingRecord)
+    }
+  }, [editingRecord, visible, form])
   const onFormSubmit = async (values) => {
     const formattedSelectedDocuments = selectedDocuments.map((doc) => ({
       docName: doc.docName,
@@ -51,7 +60,7 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
     }
     console.log('valuesWithId', valuesWithId)
     try {
-      const response = await fetch(`/chat/ask`, {
+      const response = await fetch(`/chat/question`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -59,6 +68,7 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
         body: JSON.stringify(valuesWithId),
       })
       const json = await response.json()
+      onSuccessfulUpdate()
       return json
     } catch (error) {
       console.error('Error fetching from API:', error)
@@ -76,7 +86,10 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
     <Modal
       title="Edit Question"
       open={visible}
-      onCancel={() => setEditingRecord(false)}
+      onCancel={() => {
+        setEditingRecord(null)
+        form.resetFields()
+      }}
       footer={null}
     >
       <Form
