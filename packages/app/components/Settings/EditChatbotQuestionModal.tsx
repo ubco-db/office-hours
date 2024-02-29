@@ -78,10 +78,6 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
     }
   }
 
-  function add(): void {
-    throw new Error('Function not implemented.')
-  }
-
   return (
     <Modal
       title="Edit Question"
