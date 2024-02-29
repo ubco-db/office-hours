@@ -2,7 +2,6 @@ import { DownOutlined, SearchOutlined } from '@ant-design/icons'
 import { API } from '@koh/api-client'
 import { Role } from '@koh/common'
 import {
-  Divider,
   Dropdown,
   message,
   Input,
@@ -27,6 +26,8 @@ type RenderTableProps = {
   displaySearchBar: boolean
   searchPlaceholder: string
   userId: number
+  onRoleChange: () => void
+  updateFlag: boolean
 }
 
 interface UserPartial {
@@ -50,6 +51,13 @@ export default function CourseRoster({
 }: CourseRosterProps): ReactElement {
   const profile = useProfile()
   const userId = profile.id
+
+  // used to update all RenderTables when a role change occurs
+  const [updateFlag, setUpdateFlag] = useState(false)
+  const refreshTables = () => {
+    setUpdateFlag((prevFlag) => !prevFlag) // toggle flag to trigger update
+  }
+
   return (
     <CourseRosterComponent>
       <h1>Course Roster</h1>
@@ -60,6 +68,8 @@ export default function CourseRoster({
         displaySearchBar={false}
         searchPlaceholder="Search Professors"
         userId={userId}
+        onRoleChange={refreshTables}
+        updateFlag={updateFlag}
       />
       <br />
       <RenderTable
@@ -69,6 +79,8 @@ export default function CourseRoster({
         displaySearchBar={true}
         searchPlaceholder="Search TAs"
         userId={userId}
+        onRoleChange={refreshTables}
+        updateFlag={updateFlag}
       />
       <br />
       <RenderTable
@@ -78,9 +90,10 @@ export default function CourseRoster({
         displaySearchBar={true}
         searchPlaceholder="Search students"
         userId={userId}
+        onRoleChange={refreshTables}
+        updateFlag={updateFlag}
       />
       <br />
-      <Divider />
     </CourseRosterComponent>
   )
 }
@@ -92,6 +105,8 @@ function RenderTable({
   displaySearchBar,
   searchPlaceholder,
   userId,
+  onRoleChange,
+  updateFlag,
 }: RenderTableProps): ReactElement {
   const [page, setPage] = useState(1)
   const [input, setInput] = useState('')
@@ -116,10 +131,16 @@ function RenderTable({
     fetchUsers()
   }, [page, search, role, courseId])
 
+  // everytime updateFlag changes, refresh the tables
+  useEffect(() => {
+    fetchUsers()
+  }, [updateFlag])
+
   const handleRoleChange = async (userId, newRole, userName) => {
     try {
       await API.course.updateUserRole(courseId, userId, newRole)
       message.success(`${userName} successfully updated to ${newRole} role`)
+      onRoleChange() // In order to bubble-up and tell the other tables to update: running this function will run the refreshTables callback function, which updates the updateFlag, which causes all tables to refresh themselves
     } catch (error) {
       message.error(`Failed to update ${userName} to ${newRole}`)
     }
