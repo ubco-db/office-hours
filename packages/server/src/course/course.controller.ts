@@ -797,6 +797,13 @@ export class CourseController {
     @Param('role') role: Role,
     @Res() res: Response,
   ): Promise<void> {
+    const user = await UserCourseModel.findOne({ userId, courseId });
+
+    if (!user) {
+      res.status(HttpStatus.NOT_FOUND).send({ message: 'User not found' });
+      return;
+    }
+
     try {
       await UserCourseModel.update({ courseId, userId }, { role });
     } catch (err) {

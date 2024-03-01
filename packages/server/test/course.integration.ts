@@ -1524,6 +1524,60 @@ describe('Course Integration', () => {
   });
 
   describe('PATCH /courses/:id/update_user_role/:uid/:role', () => {
+    it('should return 404 with invalid course', async () => {
+      const professorUser = await UserFactory.create();
+      const course = await CourseFactory.create();
+
+      const notFoundCourseId = 123;
+
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${notFoundCourseId}/update_user_role/${professorUser.id}/${Role.TA}`,
+      );
+      expect(resp.status).toBe(404);
+    });
+
+    it('should return 404 with invalid user', async () => {
+      const professorUser = await UserFactory.create();
+      const course = await CourseFactory.create();
+
+      const notFoundUserId = 123;
+
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${notFoundUserId}/${Role.TA}`,
+      );
+      expect(resp.status).toBe(404);
+    });
+
+    it('should return 400 with invalid role', async () => {
+      const professorUser = await UserFactory.create();
+      const course = await CourseFactory.create();
+
+      const invalidRole = 'invalid_role';
+
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${professorUser.id}/${invalidRole}`,
+      );
+      expect(resp.status).toBe(400);
+    });
+
     it('should return 401 if user is not a professor', async () => {
       const studentUser = await UserFactory.create();
       const course = await CourseFactory.create();
