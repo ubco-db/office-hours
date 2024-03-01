@@ -6,6 +6,7 @@ import { UserOutlined, RobotOutlined } from '@ant-design/icons'
 import router from 'next/router'
 import { useProfile } from '../../hooks/useProfile'
 import { Feedback } from '../Chatbot/components/Feedback'
+
 const ChatbotContainer = styled.div`
   width: 100%;
   @media (min-width: 650px) {
@@ -23,14 +24,10 @@ const StyledInput = styled(Input)`
     width: 80%;
   }
 `
-interface Part {
-  pageNumber: number
-  source: string
-}
-
-interface SourceDocument {
-  name: string
-  parts: Part[]
+export interface SourceDocument {
+  docName: string
+  sourceLink: string
+  pageNumbers: number[]
 }
 
 interface PreDeterminedQuestion {
@@ -41,6 +38,7 @@ interface PreDeterminedQuestion {
 export interface Message {
   type: 'apiMessage' | 'userMessage'
   message: string | void
+  verified?: boolean
   sourceDocuments?: SourceDocument[]
   questionId?: number
 }
@@ -53,6 +51,7 @@ export const ChatbotToday: React.FC = () => {
   const [interactionId, setInteractionId] = useState<number | null>(null)
   const [preDeterminedQuestions, setPreDeterminedQuestions] =
     useState<PreDeterminedQuestion[]>(null)
+
   const [messages, setMessages] = useState<Message[]>([
     {
       type: 'apiMessage',
@@ -60,6 +59,7 @@ export const ChatbotToday: React.FC = () => {
         'Hello, how can I assist you? I can help with anything course related.',
     },
   ])
+  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -92,33 +92,34 @@ export const ChatbotToday: React.FC = () => {
     setIsLoading(true)
 
     const result = await query()
+    console.log('result', result)
     const answer = result.answer || "Sorry, I couldn't find the answer"
     const sourceDocuments = result.sourceDocuments || []
+    //currently not using interactions and questions in the office hour repo
+    // let currentInteractionId = interactionId
 
-    let currentInteractionId = interactionId // start with the current state value
+    // if (!interactionId) {
+    //   const interaction = await API.chatbot.createInteraction({
+    //     courseId: Number(cid),
+    //     userId: profile.id,
+    //   })
+    //   setInteractionId(interaction.id)
 
-    if (!interactionId) {
-      const interaction = await API.chatbot.createInteraction({
-        courseId: Number(cid),
-        userId: profile.id,
-      })
-      setInteractionId(interaction.id)
+    //   currentInteractionId = interaction.id // Update the current value if a new interaction was created
+    // }
 
-      currentInteractionId = interaction.id // Update the current value if a new interaction was created
-    }
+    // const sourceDocumentPages = sourceDocuments.map((sourceDocument) => ({
+    //   ...sourceDocument,
+    //   parts: sourceDocument.parts.map((part) => part.pageNumber),
+    // }))
 
-    const sourceDocumentPages = sourceDocuments.map((sourceDocument) => ({
-      ...sourceDocument,
-      parts: sourceDocument.parts.map((part) => part.pageNumber),
-    }))
-
-    const question = await API.chatbot.createQuestion({
-      interactionId: currentInteractionId,
-      questionText: input,
-      responseText: answer,
-      sourceDocuments: sourceDocumentPages,
-      vectorStoreId: result.questionId,
-    })
+    // const question = await API.chatbot.createQuestion({
+    //   interactionId: currentInteractionId,
+    //   questionText: input,
+    //   responseText: answer,
+    //   sourceDocuments: sourceDocumentPages,
+    //   vectorStoreId: result.questionId,
+    // })
 
     setMessages([
       ...messages,
@@ -126,8 +127,9 @@ export const ChatbotToday: React.FC = () => {
       {
         type: 'apiMessage',
         message: answer,
+        verified: result.verified,
         sourceDocuments: sourceDocuments,
-        questionId: question.id,
+        questionId: result.questionId,
       },
     ])
 
@@ -206,28 +208,30 @@ export const ChatbotToday: React.FC = () => {
                             item.sourceDocuments.map((sourceDocument) => (
                               <div
                                 className="align-items-start flex h-fit w-fit max-w-[280px] justify-start gap-3 rounded-xl bg-slate-100 p-1 font-semibold"
-                                key={sourceDocument.name}
+                                key={sourceDocument.docName}
                               >
                                 <p className="px-2 py-1">
-                                  {sourceDocument.name}
+                                  {sourceDocument.docName}
                                 </p>
                                 <div className="flex gap-1">
-                                  {sourceDocument.parts &&
-                                    sourceDocument.parts.map((part) => (
+                                  {sourceDocument.pageNumbers &&
+                                    sourceDocument.pageNumbers.map((part) => (
                                       <div
                                         className={`flex flex-grow items-center justify-center rounded-lg bg-blue-100 px-3 py-2 font-semibold transition ${
-                                          part.source &&
-                                          'cursor-pointer hover:bg-blue-800 hover:text-white'
+                                          sourceDocument.sourceLink &&
+                                          'hover:bg-black-300 cursor-pointer hover:text-white'
                                         }`}
-                                        key={`${sourceDocument.name}-${part.pageNumber}`}
+                                        key={`${sourceDocument.docName}-${part}`}
                                         onClick={() => {
-                                          if (part.source) {
-                                            window.open(part.source)
+                                          if (sourceDocument.sourceLink) {
+                                            window.open(
+                                              sourceDocument.sourceLink,
+                                            )
                                           }
                                         }}
                                       >
                                         <p className="h-fit w-fit text-xs leading-4">
-                                          {`p. ${part.pageNumber}`}
+                                          {`p. ${part}`}
                                         </p>
                                       </div>
                                     ))}
