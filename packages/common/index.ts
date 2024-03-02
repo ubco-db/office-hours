@@ -1096,6 +1096,14 @@ export class QuestionTypeParams {
   @IsString()
   @IsOptional()
   color?: string
+
+  @IsBoolean()
+  @IsOptional()
+  forAsync?: boolean
+
+  @IsBoolean()
+  @IsOptional()
+  forQueue?: boolean
 }
 
 export class TACheckinTimesResponse {

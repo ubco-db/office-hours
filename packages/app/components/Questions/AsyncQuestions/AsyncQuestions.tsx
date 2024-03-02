@@ -255,19 +255,6 @@ export default function AsyncQuestionsPage({
     )
   }
 
-  const RenderCreatorFilter = () => {
-    return (
-      <>
-        <Select
-          id="creator-filter-select"
-          value={creatorFilter}
-          onChange={(value) => setCreatorFilter(value)}
-          className="select-filter"
-        ></Select>
-      </>
-    )
-  }
-
   const RenderFilters = () => {
     return (
       <>

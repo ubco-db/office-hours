@@ -23,4 +23,10 @@ export class QuestionTypeModel extends BaseEntity {
 
   @ManyToMany(() => QuestionModel, (question) => question.questionTypes)
   questions: QuestionModel[];
+
+  @Column({ type: 'boolean', nullable: false, default: false })
+  forAsync: boolean;
+
+  @Column({ type: 'boolean', nullable: false, default: false })
+  forQueue: boolean;
 }

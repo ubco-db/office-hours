@@ -484,6 +484,8 @@ export class QuestionController {
         cid: course,
         name: newQuestionType.name,
         color: newQuestionType.color,
+        forAsync: newQuestionType.forAsync,
+        forQueue: newQuestionType.forQueue,
       }).save();
       res.status(200).send('success');
       return;
@@ -493,14 +495,18 @@ export class QuestionController {
     }
   }
 
-  @Get(':c/questionType')
+  @Get(':c/questionType/:forAsync/:forQueue')
   async getQuestionType(
     @Res() res: Response,
     @Param('c') course: number,
+    @Param('forAsync') forAsync: boolean,
+    @Param('forQueue') forQueue: boolean,
   ): Promise<QuestionTypeModel[]> {
     const questions = await QuestionTypeModel.find({
       where: {
         cid: course,
+        forAsync,
+        forQueue,
       },
     });
     if (!questions) {
@@ -510,15 +516,13 @@ export class QuestionController {
     res.status(200).send(questions);
   }
 
-  @Delete(':c/:questionType')
+  @Delete(':questionTypeId')
   async deleteQuestionType(
     @Res() res: Response,
-    @Param('c') course: number,
-    @Param('questionType') questionType: string,
+    @Param('questionTypeId') questionTypeId: number,
   ): Promise<void> {
     await QuestionTypeModel.delete({
-      cid: course,
-      name: questionType,
+      id: questionTypeId,
     });
     res.status(200).send('success');
     return;
