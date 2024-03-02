@@ -80,14 +80,15 @@ export default function AsyncQuestionsPage({
       ? [...questions.helpedQuestions, ...questions.waitingQuestions]
       : []
 
-    let displayedQuestions = []
-    if (isStaff) {
-      displayedQuestions = allQuestionsList
-    } else {
-      displayedQuestions = allQuestionsList.filter(
-        (question) => question.visible || question.creatorId === profile?.id,
-      )
-    }
+    let displayedQuestions = allQuestionsList
+
+    // if (isStaff) {
+    //   displayedQuestions = allQuestionsList
+    // } else {
+    //   displayedQuestions = allQuestionsList.filter(
+    //     (question) => question.visible || question.creatorId === profile?.id,
+    //   )
+    // }
 
     if (statusFilter === 'helped') {
       displayedQuestions = displayedQuestions.filter(
@@ -165,28 +166,29 @@ export default function AsyncQuestionsPage({
 
     return (
       <>
-        {questions.map((question) => (
-          <StudentAsyncCard
-            key={question.id}
-            question={question}
-            cid={courseId}
-            qid={undefined}
-            isStaff={isStaff}
-            userId={profile?.id}
-            onQuestionTypeClick={(questionType) => {
-              setQuestionTypeInput((prevInput) => {
-                const index = prevInput.indexOf(questionType)
-                if (index > -1) {
-                  // questionType is in the array, remove it
-                  return prevInput.filter((qt) => qt !== questionType)
-                } else {
-                  // questionType is not in the array, add it
-                  return [...prevInput, questionType]
-                }
-              })
-            }}
-          />
-        ))}
+        {profile &&
+          questions.map((question) => (
+            <StudentAsyncCard
+              key={question.id}
+              question={question}
+              cid={courseId}
+              qid={undefined} // If qid is always undefined, consider removing it if not used.
+              isStaff={isStaff}
+              userId={profile.id} // Safe to directly access since it's in the condition above.
+              onQuestionTypeClick={(questionType) => {
+                setQuestionTypeInput((prevInput) => {
+                  const index = prevInput.indexOf(questionType)
+                  if (index > -1) {
+                    // questionType is in the array, remove it
+                    return prevInput.filter((qt) => qt !== questionType)
+                  } else {
+                    // questionType is not in the array, add it
+                    return [...prevInput, questionType]
+                  }
+                })
+              }}
+            />
+          ))}
       </>
     )
   }

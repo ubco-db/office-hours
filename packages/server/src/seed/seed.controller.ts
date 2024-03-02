@@ -35,6 +35,9 @@ import { SeedService } from './seed.service';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 import { QuestionTypeModel } from 'question/question-type.entity';
+import { InteractionModel } from 'chatbot/interaction.entity';
+import Chat from 'twilio/lib/rest/Chat';
+import { ChatbotQuestionModel } from 'chatbot/question.entity';
 
 @UseGuards(NonProductionGuard)
 @Controller('seeds')
@@ -62,11 +65,14 @@ export class SeedController {
     await this.seedService.deleteAll(DesktopNotifModel);
     await this.seedService.deleteAll(PhoneNotifModel);
     await this.seedService.deleteAll(AlertModel);
+    await this.seedService.deleteAll(ChatbotQuestionModel);
+    await this.seedService.deleteAll(InteractionModel);
     await this.seedService.deleteAll(UserModel);
     await this.seedService.deleteAll(CourseSectionMappingModel);
     await this.seedService.deleteAll(CourseModel);
     await this.seedService.deleteAll(SemesterModel);
     await this.seedService.deleteAll(OrganizationModel);
+    await this.seedService.deleteAll(QuestionTypeModel);
     const manager = getManager();
     manager.query('ALTER SEQUENCE user_model_id_seq RESTART WITH 1;');
     manager.query('ALTER SEQUENCE organization_model_id_seq RESTART WITH 1;');
