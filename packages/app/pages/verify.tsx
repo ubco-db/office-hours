@@ -12,7 +12,7 @@ export default function Verify(): ReactElement {
       <Head>
         <title>Verify Email Address</title>
       </Head>
-      <div className="mx-auto mt-40 flex items-center justify-center md:w-2/5">
+      <div className="mx-auto mt-40 flex items-center justify-center md:w-4/5 lg:w-2/5 2xl:w-3/5">
         <Card>
           <h1>Verify your email address</h1>
           <p className="mt-4">
@@ -20,7 +20,7 @@ export default function Verify(): ReactElement {
             <strong>{profile.email}</strong>. Please check your email and enter
             the verification code below.
           </p>
-          <Form className="mx-auto mt-5 w-4/5">
+          <Form className="mx-auto mt-5 md:w-3/5 lg:w-4/5 2xl:w-3/5">
             <Form.Item
               name="verificationCode"
               rules={[
@@ -29,20 +29,20 @@ export default function Verify(): ReactElement {
                   message: 'Please input your verification code',
                 },
                 {
-                  min: 7,
-                  message: 'Verification code must be at least 7 characters',
+                  min: 8,
+                  message: 'Verification code must be at least 8 characters',
                 },
                 {
-                  max: 7,
-                  message: 'Verification code must be at most 7 characters',
+                  max: 8,
+                  message: 'Verification code must be at most 8 characters',
                 },
               ]}
             >
               <Input
                 type="text"
-                placeholder="A2C1E0E"
-                maxLength={7}
-                className="fs-5 p-5 text-center text-2xl tracking-[.55em]"
+                placeholder="A2C1E0ED"
+                maxLength={8}
+                className="fs-5 p-5 text-center text-2xl uppercase tracking-[.50em] caret-transparent"
               />
             </Form.Item>
 

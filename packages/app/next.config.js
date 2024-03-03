@@ -30,6 +30,10 @@ const config = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  i18n: {
+    locales: ["en"],
+    defaultLocale: "en",
+  },
   generateInDevMode: true,
   experimental: {
     productionBrowserSourceMaps: true,
