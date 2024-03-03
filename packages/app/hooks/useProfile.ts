@@ -17,6 +17,11 @@ export const useProfile: Hook = () => {
   } else if (error?.response?.status === 403 && pathname !== '/login') {
     Router.push('/api/v1/logout')
   } else if (data) {
-    return data
+    console.log(pathname)
+    if (data.emailVerified === false && !pathname.includes('verify')) {
+      Router.push('/verify')
+    } else {
+      return data
+    }
   }
 }

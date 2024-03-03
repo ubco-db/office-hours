@@ -4,6 +4,8 @@ import Router from 'next/router'
 import Head from 'next/head'
 import { ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
+import ReCAPTCHA from 'react-google-recaptcha'
+import React from 'react'
 
 const Container = styled.div`
   margin-left: auto;
@@ -32,6 +34,8 @@ export default function Register(): ReactElement {
 
   const [registerForm] = Form.useForm()
 
+  const recaptchaRef = React.createRef()
+
   const createAccount = async () => {
     const formValues = await registerForm.validateFields()
     const { firstName, lastName, email, password, confirmPassword, sid } =
@@ -53,6 +57,8 @@ export default function Register(): ReactElement {
     }
     const studentId = sid ? parseInt(sid) : null
 
+    const token = await recaptchaRef.current.executeAsync()
+
     fetch('/api/v1/auth/register', {
       method: 'POST',
       headers: {
@@ -66,6 +72,7 @@ export default function Register(): ReactElement {
         confirmPassword,
         sid: studentId,
         organizationId,
+        recaptchaToken: token,
       }),
     })
       .then(async (res) => {
@@ -88,6 +95,14 @@ export default function Register(): ReactElement {
         message.error('Unknown error occurred. Please try again.')
         return
       })
+  }
+
+  const onReCAPTCHAChange = (captchaCode) => {
+    if (!captchaCode) {
+      return
+    }
+
+    recaptchaRef.current.reset()
   }
 
   return (
@@ -120,6 +135,12 @@ export default function Register(): ReactElement {
             initialValues={{ remember: true }}
             onFinish={createAccount}
           >
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              size="invisible"
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+              onChange={onReCAPTCHAChange}
+            />
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col xs={{ span: 24 }} sm={{ span: 12 }}>
                 <Form.Item
@@ -231,7 +252,7 @@ export default function Register(): ReactElement {
             <Button
               type="primary"
               htmlType="submit"
-              className="h-auto w-full items-center justify-center rounded-lg border px-2 py-2 "
+              className="h-auto w-full items-center justify-center rounded-lg border px-2 py-2"
             >
               <span className="font-semibold">Sign up</span>
             </Button>

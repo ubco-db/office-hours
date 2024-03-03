@@ -10,6 +10,15 @@ import { setupIntegrationTest } from './util/testUtils';
 import * as bcrypt from 'bcrypt';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 
+jest.mock('superagent', () => ({
+  post: jest.fn().mockImplementation((url) => {
+    if (url.includes('invalid')) {
+      return { body: { success: false } };
+    }
+    return { body: { success: true } };
+  }),
+}));
+
 const mockJWT = {
   signAsync: async (payload) => JSON.stringify(payload),
   verifyAsync: async (payload) => JSON.parse(payload).token !== 'INVALID_TOKEN',
@@ -27,14 +36,29 @@ describe('Login Integration', () => {
     it('returns 400 if no email is provided', async () => {
       await supertest()
         .post('/ubc_login')
-        .send({ password: 'fake_password' })
+        .send({ password: 'fake_password', recaptchaToken: 'token' })
+        .expect(400);
+    });
+
+    it('returns 400 if recaptcha returned response false', async () => {
+      await supertest()
+        .post('/ubc_login')
+        .send({
+          email: 'fake_email@ubc.ca',
+          password: 'fake_password',
+          recaptchaToken: 'invalid',
+        })
         .expect(400);
     });
 
     it('returns 404 if user not found', async () => {
       await supertest()
         .post('/ubc_login')
-        .send({ email: 'fake_email@ubc.ca', password: 'fake_password' })
+        .send({
+          email: 'fake_email@ubc.ca',
+          password: 'fake_password',
+          recaptchaToken: 'token',
+        })
         .expect(404);
     });
 
@@ -44,7 +68,11 @@ describe('Login Integration', () => {
 
       await supertest()
         .post('/ubc_login')
-        .send({ email: user.email, password: 'invalid_password' })
+        .send({
+          email: user.email,
+          password: 'invalid_password',
+          recaptchaToken: 'token',
+        })
         .expect(401);
     });
 
@@ -60,7 +88,11 @@ describe('Login Integration', () => {
 
       await supertest()
         .post('/ubc_login')
-        .send({ email: user.email, password: 'realpassword' })
+        .send({
+          email: user.email,
+          password: 'realpassword',
+          recaptchaToken: 'token',
+        })
         .expect(403);
     });
 
@@ -73,10 +105,60 @@ describe('Login Integration', () => {
 
       const res = await supertest()
         .post('/ubc_login')
-        .send({ email: user.email, password: 'realpassword' });
+        .send({
+          email: user.email,
+          password: 'realpassword',
+          recaptchaToken: 'token',
+        });
 
       expect(res.body).toMatchSnapshot();
       expect(res.status).toBe(200);
+    });
+
+    it('returns 401 when organization does not allow legacy auth', async () => {
+      const organization = await OrganizationFactory.create({
+        legacyAuthEnabled: false,
+      });
+      const user = await UserFactory.create({ password: 'real_password' });
+
+      await OrganizationUserModel.create({
+        userId: user.id,
+        organizationId: organization.id,
+      }).save();
+
+      await mockJWT.signAsync({ userId: user.id });
+
+      await supertest()
+        .post('/ubc_login')
+        .send({
+          email: user.email,
+          password: 'real_password',
+          recaptchaToken: 'token',
+        })
+        .expect(401);
+    });
+
+    it('returns 401 when user did not sign up with legacy account system', async () => {
+      const organization = await OrganizationFactory.create({
+        legacyAuthEnabled: false,
+      });
+      const user = await UserFactory.create({ password: null });
+
+      await OrganizationUserModel.create({
+        userId: user.id,
+        organizationId: organization.id,
+      }).save();
+
+      await mockJWT.signAsync({ userId: user.id });
+
+      await supertest()
+        .post('/ubc_login')
+        .send({
+          email: user.email,
+          password: 'real_password',
+          recaptchaToken: 'token',
+        })
+        .expect(401);
     });
   });
 
@@ -109,85 +191,6 @@ describe('Login Integration', () => {
       const token = await mockJWT.signAsync({ token: 'INVALID_TOKEN' });
 
       await supertest().get(`/login/entry?token=${token}`).expect(401);
-    });
-  });
-
-  describe('POST /ubc_login', () => {
-    it('returns 400 if no email is provided', async () => {
-      await supertest()
-        .post('/ubc_login')
-        .send({ password: 'fake_password' })
-        .expect(400);
-    });
-
-    it('returns 404 if user not found', async () => {
-      await supertest()
-        .post('/ubc_login')
-        .send({ email: 'fake_email@ubc.ca', password: 'fake_password' })
-        .expect(404);
-    });
-
-    it('returns 401 if password is incorrect', async () => {
-      const user = await UserFactory.create({ password: 'real_password' });
-      await mockJWT.signAsync({ userId: user.id });
-
-      await supertest()
-        .post('/ubc_login')
-        .send({ email: user.email, password: 'invalid_password' })
-        .expect(401);
-    });
-
-    it('returns 401 when organization does not allow legacy auth', async () => {
-      const organization = await OrganizationFactory.create({
-        legacyAuthEnabled: false,
-      });
-      const user = await UserFactory.create({ password: 'real_password' });
-
-      await OrganizationUserModel.create({
-        userId: user.id,
-        organizationId: organization.id,
-      }).save();
-
-      await mockJWT.signAsync({ userId: user.id });
-
-      await supertest()
-        .post('/ubc_login')
-        .send({ email: user.email, password: 'real_password' })
-        .expect(401);
-    });
-
-    it('returns 401 when user did not sign up with legacy account system', async () => {
-      const organization = await OrganizationFactory.create({
-        legacyAuthEnabled: false,
-      });
-      const user = await UserFactory.create({ password: null });
-
-      await OrganizationUserModel.create({
-        userId: user.id,
-        organizationId: organization.id,
-      }).save();
-
-      await mockJWT.signAsync({ userId: user.id });
-
-      await supertest()
-        .post('/ubc_login')
-        .send({ email: user.email, password: 'real_password' })
-        .expect(401);
-    });
-
-    it('returns 200 if password is correct', async () => {
-      const salt = await bcrypt.genSalt(10);
-      const password = await bcrypt.hash('realpassword', salt);
-
-      const user = await UserFactory.create({ password: password });
-      await mockJWT.signAsync({ userId: user.id });
-
-      const res = await supertest()
-        .post('/ubc_login')
-        .send({ email: user.email, password: 'realpassword' });
-
-      expect(res.body).toMatchSnapshot();
-      expect(res.status).toBe(200);
     });
   });
 

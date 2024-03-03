@@ -3,7 +3,11 @@ import { AuthModule } from 'auth/auth.module';
 import { setupIntegrationTest } from './util/testUtils';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { OrganizationFactory, UserFactory } from './util/factories';
+import {
+  OrganizationFactory,
+  OrganizationUserFactory,
+  UserFactory,
+} from './util/factories';
 import { AuthService } from 'auth/auth.service';
 import { AccountType } from '@koh/common';
 
@@ -12,6 +16,15 @@ const mockJWT = {
   verifyAsync: async (payload) => JSON.parse(payload).token !== 'INVALID_TOKEN',
   decode: (payload) => JSON.parse(payload),
 };
+
+jest.mock('superagent', () => ({
+  post: jest.fn().mockImplementation((url) => {
+    if (url.includes('invalid')) {
+      return { body: { success: false } };
+    }
+    return { body: { success: true } };
+  }),
+}));
 
 const mockAuthService = {
   // Needed to mock the AuthService
@@ -33,6 +46,24 @@ const mockAuthService = {
     if (mail == 'failing_email@ubc.ca') {
       throw new Error('Some error');
     }
+    return 1;
+  },
+
+  studentIdExists: async (sid: number, organizationId: number) => {
+    if (sid === 1 && organizationId === 1) {
+      return true;
+    }
+    return false;
+  },
+
+  register: async (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    sid: number,
+    organizationId: number,
+  ) => {
     return 1;
   },
 };
@@ -161,6 +192,251 @@ describe('Auth Integration', () => {
 
       expect(res.status).toBe(302);
       expect(res.header['location']).toBe('/courses');
+    });
+  });
+
+  describe('POST register', () => {
+    it('should return BAD REQUEST when Google returned false for recaptcha', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'email.com',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'invalid',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when firstName is shorter than 1 character', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: '',
+          lastName: 'Doe',
+          email: 'email.com',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when firsName is longer than 32 characters', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'a'.repeat(33),
+          lastName: 'Doe',
+          email: 'email.com',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when lastName is shorter than 1 character', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: '',
+          email: 'email.com',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when lastName is longer than 32 characters', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'a'.repeat(33),
+          email: 'email.com',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when email is shorter than 4 characters', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'a@b.c',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when email is longer than 64 characters', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'a'.repeat(65) + '@b.c',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when password is shorter than 6 characters', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'email.com',
+          password: '12345',
+          confirmPassword: '12345',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when password is longer than 32 characters', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'email.com',
+          password: 'a'.repeat(33),
+          confirmPassword: 'a'.repeat(33),
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when passwords do not match', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'email.com',
+          password: 'password',
+          confirmPassword: 'password1',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when organization does not exist', () => {
+      return supertest()
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'email.com',
+          password: 'password',
+          confirmPassword: 'password',
+          sid: 1,
+          organizationId: 1,
+          recaptchaToken: 'token',
+        })
+        .expect(400);
+    });
+
+    it('should return BAD REQUEST when email already exists', async () => {
+      const organization = await OrganizationFactory.create();
+      await UserFactory.create({
+        email: 'email@email.com',
+      });
+
+      const res = await supertest().post('/auth/register').send({
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'email@email.com',
+        password: 'password',
+        confirmPassword: 'password',
+        sid: 1,
+        organizationId: organization.id,
+        recaptchaToken: 'token',
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return BAD REQUEST when student id exists in organization', async () => {
+      const organization = await OrganizationFactory.create();
+
+      const user = await UserFactory.create({
+        email: 'user@email.com',
+        sid: 1,
+      });
+
+      await OrganizationUserFactory.create({
+        userId: user.id,
+        organizationId: organization.id,
+      });
+
+      const res = await supertest().post('/auth/register').send({
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'new@email.com',
+        password: 'password',
+        confirmPassword: 'password',
+        sid: 1,
+        organizationId: organization.id,
+        recaptchaToken: 'token',
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return cookie with auth_token when user is registered', async () => {
+      const organization = await OrganizationFactory.create();
+
+      await mockJWT.signAsync({ userId: 1 });
+
+      const res = await supertest().post('/auth/register').send({
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'email@email.com',
+        password: 'password',
+        confirmPassword: 'password',
+        sid: 2,
+        organizationId: organization.id,
+        recaptchaToken: 'token',
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.get('Set-Cookie')[0]).toContain('auth_token');
     });
   });
 });

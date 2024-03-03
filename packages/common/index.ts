@@ -74,6 +74,7 @@ export class User {
   userRole!: string
   organization?: OrganizationUserPartial
   accountType!: AccountType
+  emailVerified!: boolean
 }
 
 export class OrganizationResponse {
@@ -521,8 +522,12 @@ export class GetProfileResponse extends User {}
 export class UBCOloginParam {
   @IsString()
   email!: string
+
   @IsString()
   password!: string
+
+  @IsString()
+  recaptchaToken!: string
 }
 export class UBCOuserParam {
   @IsString()
@@ -1264,6 +1269,9 @@ export class AccountRegistrationParams {
   @IsNumber()
   @IsOptional()
   sid?: number
+
+  @IsString()
+  recaptchaToken!: string
 }
 
 export class EditCourseInfoParams {

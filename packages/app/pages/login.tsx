@@ -6,6 +6,8 @@ import styled from 'styled-components'
 import Head from 'next/head'
 import { API } from '@koh/api-client'
 import useSWR from 'swr'
+import ReCAPTCHA from 'react-google-recaptcha'
+import React from 'react'
 
 const Container = styled.div`
   margin-left: auto;
@@ -32,6 +34,8 @@ export default function Login(): ReactElement {
   const [loginMenu, setLoginMenu] = useState(false)
   const [organization, setOrganization] = useState(null)
 
+  const recaptchaRef = React.createRef()
+
   const { data: organizations } = useSWR(`api/v1/organization`, async () =>
     API.organizations.getOrganizations(),
   )
@@ -51,7 +55,9 @@ export default function Login(): ReactElement {
     Router.push(`/api/v1/auth/shibboleth/${organization.id}`)
   }
 
-  function login() {
+  async function login() {
+    const token = await recaptchaRef.current.executeAsync()
+
     if (organization && !organization.legacyAuthEnabled) {
       message.error('Organization does not support legacy authentication')
       return
@@ -63,6 +69,7 @@ export default function Login(): ReactElement {
       body: JSON.stringify({
         email: uname,
         password: pass,
+        recaptchaToken: token,
       }),
     }
     fetch(`/api/v1/ubc_login`, loginRequest)
@@ -124,6 +131,14 @@ export default function Login(): ReactElement {
 
     setOrganization(organization)
     setLoginMenu(true)
+  }
+
+  const onReCAPTCHAChange = (captchaCode) => {
+    if (!captchaCode) {
+      return
+    }
+
+    recaptchaRef.current.reset()
   }
 
   useEffect(() => {
@@ -222,6 +237,12 @@ export default function Login(): ReactElement {
                   initialValues={{ remember: true }}
                   onFinish={login}
                 >
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    size="invisible"
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    onChange={onReCAPTCHAChange}
+                  />
                   <Form.Item
                     name="username"
                     rules={[

@@ -45,6 +45,9 @@ export class UserModel extends BaseEntity {
   @Column('text', { nullable: true })
   photoURL: string | null;
 
+  @Column('boolean', { default: false })
+  emailVerified: boolean;
+
   @Column('text', { nullable: true })
   defaultMessage: string | null;
 

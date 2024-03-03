@@ -15,6 +15,8 @@ import { AuthService } from './auth.service';
 import { AccountRegistrationParams, ERROR_MESSAGES } from '@koh/common';
 import { JwtService } from '@nestjs/jwt';
 import { OrganizationModel } from 'organization/organization.entity';
+import { UserModel } from 'profile/user.entity';
+import * as request from 'superagent';
 
 @Controller('auth')
 export class AuthController {
@@ -106,7 +108,24 @@ export class AuthController {
       confirmPassword,
       sid,
       organizationId,
+      recaptchaToken,
     } = body;
+
+    if (!recaptchaToken) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Invalid recaptcha token' });
+    }
+
+    const response = await request.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.PRIVATE_RECAPTCHA_SITE_KEY}&response=${recaptchaToken}`,
+    );
+
+    if (!response.body.success) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Recaptcha token invalid',
+      });
+    }
 
     if (firstName.trim().length < 1 || lastName.trim().length < 1) {
       return res
@@ -148,6 +167,14 @@ export class AuthController {
         .send({ message: 'Organization not found' });
     }
 
+    const user = await UserModel.findOne({ where: { email } });
+
+    if (user) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Email already exists' });
+    }
+
     if (sid) {
       const result = await this.authService.studentIdExists(
         sid,
@@ -173,11 +200,9 @@ export class AuthController {
       const authToken = await this.createAuthToken(userId);
 
       if (authToken === null || authToken === undefined) {
-        return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .send({
-            message: ERROR_MESSAGES.loginController.invalidTempJWTToken,
-          });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          message: ERROR_MESSAGES.loginController.invalidTempJWTToken,
+        });
       }
 
       return res

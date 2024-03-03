@@ -5,6 +5,7 @@ import { UserModel } from 'profile/user.entity';
 import { Connection } from 'typeorm';
 import { OrganizationFactory } from '../../test/util/factories';
 import { AccountType } from '@koh/common';
+import { OrganizationUserModel } from 'organization/organization-user.entity';
 
 // Extend the OAuth2Client mock with additional methods
 jest.mock('google-auth-library', () => {
@@ -193,6 +194,109 @@ describe('AuthService', () => {
       );
       const user = await UserModel.findOne(userId);
       expect(user).toMatchSnapshot();
+    });
+  });
+
+  describe('studentIdExists', () => {
+    it('should return false when student id does not exist in organization', async () => {
+      const organization = await OrganizationFactory.create();
+
+      const result = await service.studentIdExists(-1, organization.id);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when studnet id exists but in different organization', async () => {
+      const organization = await OrganizationFactory.create();
+      const otherOrganization = await OrganizationFactory.create();
+
+      const user = await UserModel.create({
+        email: 'test@email.com',
+        sid: 123456789,
+      }).save();
+
+      await OrganizationUserModel.create({
+        userId: user.id,
+        organizationId: otherOrganization.id,
+      }).save();
+
+      const result = await service.studentIdExists(user.sid, organization.id);
+      expect(result).toBe(false);
+    });
+
+    it('should return true when student id exists in organization', async () => {
+      const organization = await OrganizationFactory.create();
+
+      const user = await UserModel.create({
+        email: 'test@email.com',
+        sid: 123456789,
+      }).save();
+
+      await OrganizationUserModel.create({
+        userId: user.id,
+        organizationId: organization.id,
+      }).save();
+
+      const result = await service.studentIdExists(user.sid, organization.id);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('register', () => {
+    it('should throw an error when email already exists', async () => {
+      await UserModel.create({
+        email: 'existingEmail@mail.com',
+      }).save();
+
+      await expect(
+        service.register(
+          'John',
+          'Doe',
+          'existingEmail@mail.com',
+          'password',
+          -1,
+          1,
+        ),
+      ).rejects.toThrowError('Email already exists');
+    });
+
+    it('should create a new user when email does not exist with empty sid', async () => {
+      const organization = await OrganizationFactory.create();
+
+      const userId = await service.register(
+        'John',
+        'Doe',
+        'email@mail.com',
+        'password',
+        -1,
+        organization.id,
+      );
+
+      const user = await UserModel.findOne(userId);
+      expect(userId == user.id).toBe(true);
+    });
+
+    it('should create a new user when email does not exist with sid', async () => {
+      const organization = await OrganizationFactory.create();
+
+      const userId = await service.register(
+        'John',
+        'Doe',
+        'email@mail.com',
+        'password',
+        123456,
+        organization.id,
+      );
+
+      const user = await UserModel.findOne(userId);
+
+      expect(userId == user.id).toBe(true);
+      expect(user.sid).toBe(123456);
+    });
+
+    it('should throw an error when unexpected error occurs', async () => {
+      await expect(
+        service.register('John', 'Doe', 'email@mail.com', 'password', -1, 1),
+      ).rejects.toThrowError;
     });
   });
 });

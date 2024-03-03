@@ -53,6 +53,7 @@ export class AuthService {
           firstName: givenName,
           lastName: lastName,
           accountType: AccountType.SHIBBOLETH,
+          emailVerified: true,
         }).save();
 
         const userId = newUser.id;
@@ -115,6 +116,7 @@ export class AuthService {
           lastName: payload.family_name,
           photoURL: payload.picture,
           accountType: AccountType.GOOGLE,
+          emailVerified: true,
         }).save();
 
         const userId = newUser.id;
@@ -193,7 +195,6 @@ export class AuthService {
       where: { sid },
       relations: ['organizationUser'],
     });
-
     return user && user.organizationUser.organizationId === oid ? true : false;
   }
 }

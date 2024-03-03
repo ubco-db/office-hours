@@ -19,6 +19,7 @@ const {
   NEXT_PUBLIC_SERVICE_VERSION: SERVICE_VERSION,
   SENTRY_AUTH_TOKEN,
   NODE_ENV,
+  NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
 } = process.env;
 
 const SENTRY_DSN =
@@ -61,4 +62,4 @@ const config = {
   },
 };
 
-module.exports = withPlugins(plugins, config,);
+module.exports = withPlugins(plugins, config);

@@ -321,6 +321,7 @@ export class ProfileController {
       'insights',
       'userRole',
       'accountType',
+      'emailVerified',
     ]);
 
     if (userResponse === null || userResponse === undefined) {
