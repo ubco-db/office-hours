@@ -53,6 +53,17 @@ export default function Verify(): ReactElement {
             >
               <span>Confirm Email Address</span>
             </Button>
+
+            <Button
+              type="primary"
+              className="mt-3 h-auto w-full items-center justify-center border px-2 py-2"
+            >
+              <span>Re-send Confirmation Code</span>
+            </Button>
+
+            <div className="mt-4 text-center">
+              <a href="/api/v1/logout">Logout</a>
+            </div>
           </Form>
         </Card>
       </div>

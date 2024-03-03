@@ -9,6 +9,7 @@ Object {
     "accountType": "legacy",
     "defaultMessage": null,
     "email": "user@ubc.ca",
+    "emailVerified": false,
     "firstName": "User",
     "id": 1,
     "includeDefaultMessage": true,
