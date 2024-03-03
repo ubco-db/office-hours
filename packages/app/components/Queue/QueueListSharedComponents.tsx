@@ -488,16 +488,18 @@ export function QuestionTypeSelector({
 
   return (
     <div className={className}>
-      {questionTypes.map((type) => (
-        <CheckableQuestionType
-          key={type.id}
-          typeName={type.name}
-          typeColor={type.color}
-          typeID={type.id}
-          checked={selectedTypes.includes(type.id)}
-          onChange={handleTagClick}
-        />
-      ))}
+      {questionTypes.map((type) =>
+        type.name ? ( // don't display question types with no name (e.g. glitched ones)
+          <CheckableQuestionType
+            key={type.id}
+            typeName={type.name}
+            typeColor={type.color}
+            typeID={type.id}
+            checked={selectedTypes.includes(type.id)}
+            onChange={handleTagClick}
+          />
+        ) : null,
+      )}
     </div>
   )
 }
