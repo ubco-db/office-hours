@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Input, Button, Card, Avatar, Spin } from 'antd'
+import { Input, Button, Card, Avatar, Spin, Tooltip } from 'antd'
 import styled from 'styled-components'
 import { API } from '@koh/api-client'
-import { UserOutlined, RobotOutlined } from '@ant-design/icons'
+import {
+  UserOutlined,
+  RobotOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons'
 import router from 'next/router'
 import { useProfile } from '../../hooks/useProfile'
 import { Feedback } from '../Chatbot/components/Feedback'
@@ -188,9 +192,22 @@ export const ChatbotToday: React.FC = () => {
                       <Avatar size="small" icon={<RobotOutlined />} />
                       <div className="ml-2 flex flex-col gap-1">
                         <div className="flex items-start gap-2">
-                          <div className="max-w-[280px] rounded-xl bg-slate-100 px-3 py-2">
-                            {' '}
+                          <div
+                            className={`max-w-[280px] rounded-xl px-3 py-2 ${
+                              item.verified ? 'bg-green-100' : 'bg-slate-100'
+                            }`}
+                          >
                             {item.message}
+                            {item.verified && (
+                              <div className=" rounded-xl bg-slate-100">
+                                <Tooltip title="A similar question has been asked before, and the answer has been verified by a faculty">
+                                  <CheckCircleOutlined
+                                    style={{ color: 'green', fontSize: '20px' }}
+                                  />
+                                  <span> See why this is verified </span>
+                                </Tooltip>
+                              </div>
+                            )}
                           </div>
                           {item.questionId && (
                             <div className="hidden items-center justify-end gap-2 group-hover:flex">

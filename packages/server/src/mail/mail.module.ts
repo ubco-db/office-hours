@@ -2,7 +2,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 // import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
-// import { join } from 'path';
+import { config } from 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailController } from './mail.controller';
 @Global() // 👈 global module
@@ -17,8 +17,8 @@ import { MailController } from './mail.controller';
         transport: {
           service: 'gmail',
           auth: {
-            user: 'ubchelpme@gmail.com',
-            pass: 'geelhkocdxiwqlwa',
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASS,
           },
         },
       }),

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Input, Button, Card, Avatar, Spin } from 'antd'
+import { Input, Button, Card, Avatar, Spin, Tooltip } from 'antd'
+import { CheckCircleOutlined } from '@ant-design/icons'
 import styled from 'styled-components'
 import { API } from '@koh/api-client'
 import { UserOutlined, RobotOutlined } from '@ant-design/icons'
@@ -83,7 +84,7 @@ export const ChatbotComponent: React.FC = () => {
     setIsLoading(true)
 
     const result = await query()
-    console.log('result', result)
+
     const answer = result.answer || "Sorry, I couldn't find the answer"
     const sourceDocuments = result.sourceDocuments || []
     //currently not using interactions and questions in the office hour repo
@@ -179,10 +180,24 @@ export const ChatbotComponent: React.FC = () => {
                       <Avatar size="small" icon={<RobotOutlined />} />
                       <div className="ml-2 flex flex-col gap-1">
                         <div className="flex items-start gap-2">
-                          <div className="max-w-[280px] rounded-xl bg-slate-100 px-3 py-2">
-                            {' '}
+                          <div
+                            className={`max-w-[280px] rounded-xl px-3 py-2 ${
+                              item.verified ? 'bg-green-100' : 'bg-slate-100'
+                            }`}
+                          >
                             {item.message}
+                            {item.verified && (
+                              <div className=" rounded-xl bg-slate-100">
+                                <Tooltip title="A similar question has been asked before, and the answer has been verified by a faculty">
+                                  <CheckCircleOutlined
+                                    style={{ color: 'green', fontSize: '20px' }}
+                                  />
+                                  <span> See why this is verified </span>
+                                </Tooltip>
+                              </div>
+                            )}
                           </div>
+
                           {item.questionId && (
                             <div className="hidden items-center justify-end gap-2 group-hover:flex">
                               <div className="flex w-fit gap-2 rounded-xl bg-slate-100 px-3 py-2">
