@@ -111,7 +111,7 @@ To watch them actually run interactively, you can use `yarn cypress open`. Be aw
 
 If your tests are failing with a message about "deadlock something whatever", do `yarn test --run-in-band`. This makes the tests run sequentially.
 
-To run the tests of a specific file (e.g. course.integration.ts), you can use `yarn test course` 
+If `yarn test` is not running all of the tests, navigate to `server/test` folder and run `yarn jest --config ./test/jest-integration.json -i --run-in-band` if you would like to run all the tests. To run the tests of a specific file (e.g. course.integration.ts), you can use `yarn jest --config ./test/jest-integration.json -i --run-in-band course` 
 
 {% note %}
 

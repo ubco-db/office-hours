@@ -12,6 +12,8 @@ import { OrganizationRole, UserRole } from '@koh/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { UserCourseModel } from 'profile/user-course.entity';
+import { CourseSettingsModel } from 'course/course_settings.entity';
+import { CourseModel } from 'course/course.entity';
 
 describe('Organization Integration', () => {
   const supertest = setupIntegrationTest(OrganizationModule);
@@ -2386,6 +2388,159 @@ describe('Organization Integration', () => {
       expect(res.status).toBe(400);
     });
 
+    it('should return 202 when no professors are given', async () => {
+      const user = await UserFactory.create();
+      const organization = await OrganizationFactory.create();
+      const course = await CourseFactory.create();
+      const semester = await SemesterFactory.create();
+
+      await SemesterFactory.create();
+
+      await OrganizationUserModel.create({
+        userId: user.id,
+        organizationId: organization.id,
+        role: OrganizationRole.ADMIN,
+      }).save();
+      await OrganizationCourseModel.create({
+        courseId: course.id,
+        organizationId: organization.id,
+      }).save();
+
+      const res = await supertest({ userId: user.id })
+        .post(`/organization/${organization.id}/create_course`)
+        .send({
+          name: 'newName',
+          timezone: 'America/Los_Angeles',
+          sectionGroupName: 'test',
+          semesterId: semester.id,
+          courseSettings: [
+            {
+              feature: 'asyncQueueEnabled',
+              value: false,
+            },
+          ],
+        });
+
+      expect(res.body.message).toBe(
+        'Course created successfully. No professors given.',
+      );
+      expect(res.status).toBe(202);
+    });
+
+    it('should return 400 when course settings is invalid', async () => {
+      const user = await UserFactory.create();
+      const organization = await OrganizationFactory.create();
+      const course = await CourseFactory.create();
+      const semester = await SemesterFactory.create();
+      const professor1 = await UserFactory.create();
+
+      await SemesterFactory.create();
+
+      await OrganizationUserModel.create({
+        userId: user.id,
+        organizationId: organization.id,
+        role: OrganizationRole.ADMIN,
+      }).save();
+      await OrganizationCourseModel.create({
+        courseId: course.id,
+        organizationId: organization.id,
+      }).save();
+
+      let res = await supertest({ userId: user.id })
+        .post(`/organization/${organization.id}/create_course`)
+        .send({
+          name: 'newName',
+          timezone: 'America/Los_Angeles',
+          sectionGroupName: 'test',
+          semesterId: semester.id,
+          profIds: [professor1.id],
+          courseSettings: {
+            invalidSetting: true,
+          },
+        });
+
+      expect(res.body.message).toEqual(['courseSettings must be an array']);
+      expect(res.status).toBe(400);
+
+      res = await supertest({ userId: user.id })
+        .post(`/organization/${organization.id}/create_course`)
+        .send({
+          name: 'newName',
+          timezone: 'America/Los_Angeles',
+          sectionGroupName: 'test',
+          semesterId: semester.id,
+          profIds: [professor1.id],
+          courseSettings: [
+            {
+              feature: 'invalidFeature',
+              value: true,
+            },
+          ],
+        });
+
+      // print output of courseSettings for debugging
+      // get the newly created course
+      const newCourse = await CourseModel.findOne({
+        where: { name: 'newName' },
+      });
+      // get course settings
+      const updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: newCourse.id },
+      });
+      console.log(updatedCourseSettings);
+
+      expect(res.body.message).toEqual('invalid feature');
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 202 when a course is created with no course settings provided (which will use defaults)', async () => {
+      const user = await UserFactory.create();
+      const organization = await OrganizationFactory.create();
+      const course = await CourseFactory.create();
+      const semester = await SemesterFactory.create();
+      const professor1 = await UserFactory.create();
+
+      await OrganizationUserModel.create({
+        userId: user.id,
+        organizationId: organization.id,
+        role: OrganizationRole.ADMIN,
+      }).save();
+      await OrganizationCourseModel.create({
+        courseId: course.id,
+        organizationId: organization.id,
+      }).save();
+
+      const res = await supertest({ userId: user.id })
+        .post(`/organization/${organization.id}/create_course`)
+        .send({
+          name: 'newName',
+          timezone: 'America/Los_Angeles',
+          sectionGroupName: 'test',
+          semesterId: semester.id,
+          profIds: [professor1.id],
+        });
+
+      expect(res.status).toBe(202);
+      expect(res.body.message).toBe(
+        'Course created successfully. Default settings used.',
+      );
+
+      // get the newly created course from the database
+      const newCourse = await CourseModel.findOne({
+        where: { name: 'newName' },
+      });
+
+      // Fetch the updated courseSettings from the database
+      const updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: newCourse.id },
+      });
+
+      expect(updatedCourseSettings.chatBotEnabled).toEqual(true);
+      expect(updatedCourseSettings.asyncQueueEnabled).toEqual(true);
+      expect(updatedCourseSettings.adsEnabled).toEqual(true);
+      expect(updatedCourseSettings.queueEnabled).toEqual(true);
+    });
+
     it('should return 200 when course is created', async () => {
       const user = await UserFactory.create();
       const professor1 = await UserFactory.create();
@@ -2413,10 +2568,39 @@ describe('Organization Integration', () => {
           sectionGroupName: 'test',
           semesterId: semester.id,
           profIds: [professor1.id, professor2.id],
+          courseSettings: [
+            {
+              feature: 'chatBotEnabled',
+              value: true,
+            },
+            {
+              feature: 'queueEnabled',
+              value: false,
+            },
+            {
+              feature: 'asyncQueueEnabled',
+              value: true,
+            },
+          ],
         });
 
+      expect(res.body.message).toBe('Course created successfully.');
       expect(res.status).toBe(200);
-      expect(res.body.message).toBe('Course created successfully');
+
+      // get the newly created course from the database
+      const newCourse = await CourseModel.findOne({
+        where: { name: 'newName' },
+      });
+
+      // check to make sure courseSettings is correct
+      const updatedCourseSettings = await CourseSettingsModel.findOne({
+        where: { courseId: newCourse.id },
+      });
+
+      expect(updatedCourseSettings.chatBotEnabled).toEqual(true);
+      expect(updatedCourseSettings.asyncQueueEnabled).toEqual(true);
+      expect(updatedCourseSettings.adsEnabled).toEqual(true); // ungiven value defaults to their default value (true)
+      expect(updatedCourseSettings.queueEnabled).toEqual(false);
     });
   });
 });

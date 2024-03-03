@@ -905,6 +905,10 @@ export class UpdateOrganizationCourseDetailsParams {
   @IsArray()
   @IsOptional()
   profIds?: Array<number>
+
+  @IsArray()
+  @IsOptional()
+  courseSettings?: Array<CourseSettingsRequestBody>
 }
 
 export class ChatBotQuestionParams {
@@ -1419,12 +1423,23 @@ export class CourseSettingsResponse {
   }
 }
 
+const validFeatures = [
+  'chatBotEnabled',
+  'asyncQueueEnabled',
+  'adsEnabled',
+  'queueEnabled',
+]
+
 export class CourseSettingsRequestBody {
   @IsBoolean()
   value!: boolean
 
-  @IsIn(['chatBotEnabled', 'asyncQueueEnabled', 'adsEnabled', 'queueEnabled'])
+  @IsIn(validFeatures)
   feature!: string
+
+  static isValidFeature(feature: string): boolean {
+    return validFeatures.includes(feature)
+  }
 }
 
 export const ERROR_MESSAGES = {
