@@ -147,6 +147,7 @@ export default function Add(): ReactElement {
                       label="Course Name"
                       name="courseName"
                       tooltip="Name of the course"
+                      rules={[{ required: true }]}
                     >
                       <Input allowClear={true} />
                     </Form.Item>
@@ -165,7 +166,8 @@ export default function Add(): ReactElement {
                     <Form.Item
                       label="Section Group"
                       name="sectionGroupName"
-                      tooltip="Name of the section group (E.g. if you're in COSC 111 001, the section group name is 001)"
+                      tooltip="Name of the section group (E.g. if you're in COSC 111 001, the section group is 001)"
+                      rules={[{ required: true }]}
                     >
                       <Input allowClear={true} />
                     </Form.Item>
@@ -186,6 +188,7 @@ export default function Add(): ReactElement {
                       label="Course Timezone"
                       name="courseTimezone"
                       tooltip="Timezone of the course"
+                      rules={[{ required: true }]}
                     >
                       <Select>
                         {COURSE_TIMEZONES.map((timezone) => (
@@ -202,6 +205,7 @@ export default function Add(): ReactElement {
                       label="Semester"
                       name="semesterId"
                       tooltip="Semester of the course"
+                      rules={[{ required: true }]}
                     >
                       <Select>
                         {semesters.map((semester) => (
@@ -255,7 +259,9 @@ export default function Add(): ReactElement {
                                   'This feature allows students to ask questions to an AI chatbot that will answer their questions based on uploaded lab content.'
                                 }
                               >
-                                <QuestionCircleOutlined />
+                                <QuestionCircleOutlined
+                                  style={{ color: 'gray' }}
+                                />
                               </Tooltip>
                             </Checkbox>
                           </Col>
@@ -270,7 +276,9 @@ export default function Add(): ReactElement {
                                   'This feature allows students to ask questions in a queue that can then be answered by the professor or a TA. Suitable for online, hybrid, and in-person office hours and labs.'
                                 }
                               >
-                                <QuestionCircleOutlined />
+                                <QuestionCircleOutlined
+                                  style={{ color: 'gray' }}
+                                />
                               </Tooltip>
                             </Checkbox>
                           </Col>
@@ -285,7 +293,9 @@ export default function Add(): ReactElement {
                                   'This feature allows students to ask questions asynchronously (e.g. outside of office hours or labs) that can then be responded to by the professor. It also features automatic AI-generated answers based on uploaded course content.'
                                 }
                               >
-                                <QuestionCircleOutlined />
+                                <QuestionCircleOutlined
+                                  style={{ color: 'gray' }}
+                                />
                               </Tooltip>
                             </Checkbox>
                           </Col>

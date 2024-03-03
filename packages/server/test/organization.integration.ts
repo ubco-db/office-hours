@@ -2478,17 +2478,6 @@ describe('Organization Integration', () => {
           ],
         });
 
-      // print output of courseSettings for debugging
-      // get the newly created course
-      const newCourse = await CourseModel.findOne({
-        where: { name: 'newName' },
-      });
-      // get course settings
-      const updatedCourseSettings = await CourseSettingsModel.findOne({
-        where: { courseId: newCourse.id },
-      });
-      console.log(updatedCourseSettings);
-
       expect(res.body.message).toEqual('invalid feature');
       expect(res.status).toBe(400);
     });

@@ -15,7 +15,9 @@ Current features that can be toggled for a course:
 - `course.integration.ts`: tests for the toggle features endpoint. 
     - The PUT test (specifically the "should return 200 if course settings are updated successfully" test) should be updated to include the new feature.
     - The GET test should be updated to include the new feature (specifically, where it expects the payloads).
-- `organization.integration.ts`: specifically the "should return 400 when course settings is invalid", "should return 202 when a course is created with no course settings provided (which will use defaults)", and the "should return 200 when course is created" tests will need to be updated to include the new feature.
+- `organization.integration.ts`: specifically the following tests will need to be updated with the new feature:
+    - "should return 202 when a course is created with no course settings provided (which will use defaults)"
+    - (optionally) "should return 200 when course is created" 
 
 ### Frontend
 - `/api-client/index.ts`: no changes needed here. Can use the setCourseFeature and getCourseFeatures functions.
