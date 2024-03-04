@@ -33,7 +33,7 @@ interface CourseType {
 export default function Edit(): ReactElement {
   const profile = useProfile()
   const router = useRouter()
-  const uid = router.query['uid']
+  const uid = Number(router.query['uid'])
   const { organization } = useOrganization(profile?.organization.orgId)
 
   if (
@@ -41,6 +41,9 @@ export default function Edit(): ReactElement {
     profile.organization.organizationRole !== OrganizationRole.ADMIN
   ) {
     return <DefaultErrorPage statusCode={404} />
+  }
+  if (!uid) {
+    return <DefaultErrorPage statusCode={400} title="Invalid User ID" />
   }
 
   function RenderUserInfo(): ReactElement {
@@ -75,18 +78,16 @@ export default function Edit(): ReactElement {
     const { data: userData, error } = useSWR(
       `api/v1/organization/[oid]/get_user/[uid]`,
       async () =>
-        API.organizations
-          .getUser(organization?.id, Number(uid))
-          .then((userInfo) => {
-            userInfo.courses = userInfo?.courses.map((course) => {
-              return {
-                ...course,
-                // Needed for antd table to fill the keys with course id
-                key: course.id,
-              }
-            })
-            return userInfo
-          }),
+        API.organizations.getUser(organization?.id, uid).then((userInfo) => {
+          userInfo.courses = userInfo?.courses.map((course) => {
+            return {
+              ...course,
+              // Needed for antd table to fill the keys with course id
+              key: course.id,
+            }
+          })
+          return userInfo
+        }),
     )
 
     if (error) {
@@ -97,7 +98,7 @@ export default function Edit(): ReactElement {
 
     const deleteProfilePicture = async () => {
       await API.organizations
-        .deleteProfilePicture(organization?.id, Number(uid))
+        .deleteProfilePicture(organization?.id, uid)
         .then(() => {
           message.success('Profile picture was deleted')
         })
@@ -115,11 +116,7 @@ export default function Edit(): ReactElement {
       }
 
       await API.organizations
-        .dropUserCourses(
-          organization?.id,
-          Number(uid),
-          selectedRowKeys as number[],
-        )
+        .dropUserCourses(organization?.id, uid, selectedRowKeys as number[])
         .then(() => {
           message.success('User courses were dropped')
           setTimeout(() => {
@@ -135,7 +132,7 @@ export default function Edit(): ReactElement {
 
     const updateAccess = async () => {
       await API.organizations
-        .updateAccess(organization?.id, Number(uid))
+        .updateAccess(organization?.id, uid)
         .then(() => {
           message.success('User access was updated')
           setTimeout(() => {
@@ -188,7 +185,7 @@ export default function Edit(): ReactElement {
       }
 
       await API.organizations
-        .patchUserInfo(organization?.id, Number(uid), {
+        .patchUserInfo(organization?.id, uid, {
           firstName: firstNameField,
           lastName: lastNameField,
           email: emailField,
