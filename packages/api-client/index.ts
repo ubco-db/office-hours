@@ -311,7 +311,7 @@ class APIClient {
       feature: string,
       value: boolean,
     ): Promise<void> =>
-      this.req('PUT', `/api/v1/courses/${courseId}/features`, undefined, {
+      this.req('PATCH', `/api/v1/courses/${courseId}/features`, undefined, {
         feature,
         value,
       }),

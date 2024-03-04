@@ -13,7 +13,7 @@ Current features that can be toggled for a course:
 - `course.controller.ts`: Add the new feature in the @Get(':id/features) endpoint in the two response bodies beside the other features.
     - sidenote: the entire endpoint exists in the controller, there is nothing for coursefeatures in the `course.service.ts` file, so no changes are necessary there.  
 - `course.integration.ts`: tests for the toggle features endpoint. 
-    - The PUT test (specifically the "should return 200 if course settings are updated successfully" test) should be updated to include the new feature.
+    - The PATCH test (specifically the "should return 200 if course settings are updated successfully" test) should be updated to include the new feature.
     - The GET test should be updated to include the new feature (specifically, where it expects the payloads).
 - `organization.integration.ts`: specifically the following tests will need to be updated with the new feature:
     - "should return 202 when a course is created with no course settings provided (which will use defaults)"

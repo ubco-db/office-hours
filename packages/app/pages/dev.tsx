@@ -52,7 +52,7 @@ export default function DevPanel(): ReactElement {
               })
               .catch((error) => {
                 message.error(
-                  `Another FUCKING error occurred while deleting the data: ${error.message}`,
+                  `Error occurred while deleting the data: ${error.message}`,
                 )
               })
           }}
@@ -70,7 +70,7 @@ export default function DevPanel(): ReactElement {
               })
               .catch((error) => {
                 message.error(
-                  `Another FUCKING error occurred while seeding data: ${error.message}`,
+                  `Error occurred while seeding data: ${error.message}`,
                 )
               })
           }}
@@ -88,7 +88,7 @@ export default function DevPanel(): ReactElement {
               })
               .catch((error) => {
                 message.error(
-                  `Another FUCKING error occurred while adding questions to the queue: ${error.message}`,
+                  `Error occurred while adding questions to the queue: ${error.message}`,
                 )
               })
           }}

@@ -1580,7 +1580,7 @@ describe('Course Integration', () => {
   });
 
   // course settings
-  describe('PUT /courses/:id/features', () => {
+  describe('PATCH /courses/:id/features', () => {
     let course;
     let student;
     let professor;
@@ -1610,14 +1610,14 @@ describe('Course Integration', () => {
 
     it('should return 401 if user is not a professor', async () => {
       await supertest({ userId: student.id })
-        .put(`/courses/1/features`)
+        .patch(`/courses/1/features`)
         .send({ value: false, feature: 'chatBotEnabled' })
         .expect(401);
     });
 
     it('should return 401 if user is not authorized', async () => {
       await supertest()
-        .put(`/courses/1/features`)
+        .patch(`/courses/1/features`)
         .send({ value: false, feature: 'chatBotEnabled' })
         .expect(401);
     });
@@ -1626,7 +1626,7 @@ describe('Course Integration', () => {
       const testcourse = await CourseFactory.create();
       const user = await UserFactory.create();
       const resp = await supertest({ userId: user.id })
-        .put(`/courses/${testcourse.id}/features`)
+        .patch(`/courses/${testcourse.id}/features`)
         .send({ value: true, feature: 'chatBotEnabled' });
 
       expect(resp.body.message).toEqual('Not In This Course');
@@ -1635,7 +1635,7 @@ describe('Course Integration', () => {
 
     it('should return 404 if the course is not found', async () => {
       const resp = await supertest({ userId: professor.id })
-        .put(`/courses/6969/features`)
+        .patch(`/courses/6969/features`)
         .send({ value: true, feature: 'chatBotEnabled' });
 
       expect([
@@ -1647,7 +1647,7 @@ describe('Course Integration', () => {
 
     it('should return 400 if the feature is not valid', async () => {
       const resp = await supertest({ userId: professor.id })
-        .put(`/courses/${course.id}/features`)
+        .patch(`/courses/${course.id}/features`)
         .send({ value: true, feature: 'invalidFeature' });
 
       expect(resp.body.message).toEqual([
@@ -1659,7 +1659,7 @@ describe('Course Integration', () => {
     it('should return 200 if course settings are updated successfully', async () => {
       //  DISABLE CHATBOT
       let resp = await supertest({ userId: professor.id })
-        .put(`/courses/${course.id}/features`)
+        .patch(`/courses/${course.id}/features`)
         .send({ value: false, feature: 'chatBotEnabled' });
 
       expect(resp.status).toBe(200);
@@ -1676,7 +1676,7 @@ describe('Course Integration', () => {
 
       //  DISABLE ASYNC QUEUE
       resp = await supertest({ userId: professor.id })
-        .put(`/courses/${course.id}/features`)
+        .patch(`/courses/${course.id}/features`)
         .send({ value: false, feature: 'asyncQueueEnabled' });
 
       expect(resp.status).toBe(200);
@@ -1693,7 +1693,7 @@ describe('Course Integration', () => {
 
       // DISABLE ADS
       resp = await supertest({ userId: professor.id })
-        .put(`/courses/${course.id}/features`)
+        .patch(`/courses/${course.id}/features`)
         .send({ value: false, feature: 'adsEnabled' });
 
       expect(resp.status).toBe(200);
@@ -1710,7 +1710,7 @@ describe('Course Integration', () => {
 
       // DISABLE QUEUE
       resp = await supertest({ userId: professor.id })
-        .put(`/courses/${course.id}/features`)
+        .patch(`/courses/${course.id}/features`)
         .send({ value: false, feature: 'queueEnabled' });
 
       expect(resp.status).toBe(200);
@@ -1727,7 +1727,7 @@ describe('Course Integration', () => {
 
       // ENABLE CHATBOT
       resp = await supertest({ userId: professor.id })
-        .put(`/courses/${course.id}/features`)
+        .patch(`/courses/${course.id}/features`)
         .send({ value: true, feature: 'chatBotEnabled' });
 
       expect(resp.status).toBe(200);
