@@ -42,9 +42,6 @@ export default function Edit(): ReactElement {
   ) {
     return <DefaultErrorPage statusCode={404} />
   }
-  if (!uid) {
-    return <DefaultErrorPage statusCode={400} title="Invalid User ID" />
-  }
 
   function RenderUserInfo(): ReactElement {
     const [formGeneral] = Form.useForm()
@@ -91,7 +88,13 @@ export default function Edit(): ReactElement {
     )
 
     if (error) {
-      router.push('/organization/settings')
+      console.log('Error: ', error)
+      return (
+        <DefaultErrorPage
+          statusCode={500}
+          title={`An error occured: ${error}\nIf it is a NaN error, please wait a moment.`}
+        />
+      )
     }
 
     const hasSelected = selectedRowKeys.length > 0
