@@ -91,8 +91,12 @@ export default function Edit(): ReactElement {
       console.log('Error: ', error)
       return (
         <DefaultErrorPage
-          statusCode={500}
-          title={`An error occured: ${error}\nIf it is a NaN error, please wait a moment.`}
+          statusCode={error.response.status}
+          title={`An error occured. ${
+            error.response.status == 500
+              ? 'Please wait a moment.'
+              : error.response.statusText
+          }`}
         />
       )
     }
