@@ -4,7 +4,6 @@ import {
   Card,
   Checkbox,
   Col,
-  Divider,
   Form,
   Input,
   Row,
@@ -134,6 +133,7 @@ export default function Add(): ReactElement {
                 layout="vertical"
                 onFinish={addCourse}
                 initialValues={{
+                  // features placed here will appear as checked by default
                   'course-features': [
                     'chatBotEnabled',
                     'queueEnabled',
@@ -256,7 +256,7 @@ export default function Add(): ReactElement {
                               Chatbot&nbsp;
                               <Tooltip
                                 title={
-                                  'This feature allows students to ask questions to an AI chatbot that will answer their questions based on uploaded lab content.'
+                                  'This feature allows students to ask an AI chatbot questions that will answer their questions based on uploaded course content (located in course admin settings)'
                                 }
                               >
                                 <QuestionCircleOutlined
@@ -290,7 +290,7 @@ export default function Add(): ReactElement {
                               Asynchronous Question Centre&nbsp;
                               <Tooltip
                                 title={
-                                  'This feature allows students to ask questions asynchronously (e.g. outside of office hours or labs) that can then be responded to by the professor. It also features automatic AI-generated answers based on uploaded course content.'
+                                  'This feature allows students to ask questions asynchronously (e.g. outside of office hours or labs) that can then be answered by the professor. It also features automatic AI-generated answers based on uploaded course content.'
                                 }
                               >
                                 <QuestionCircleOutlined

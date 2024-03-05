@@ -31,6 +31,51 @@ const CustomSwitch = styled(Switch)`
   margin-right: 1rem;
 `
 
+type FeatureSwitchProps = {
+  featureName: string
+  defaultChecked: boolean
+  title: string
+  description: string
+  courseId: number
+}
+
+const FeatureSwitch = ({
+  featureName,
+  defaultChecked,
+  title,
+  description,
+  courseId,
+}: FeatureSwitchProps): ReactElement => {
+  return (
+    <CustomFormItem>
+      <CustomSwitch
+        defaultChecked={defaultChecked}
+        onChange={async (e) => {
+          await API.course
+            .setCourseFeature(courseId, featureName, e.valueOf() as boolean)
+            .then(() => {
+              message.success(
+                `Successfully set ${featureName} feature to ${e.valueOf()}`,
+              )
+              mutate(`${courseId}/features`)
+            })
+            .catch((error) => {
+              message.error(
+                `An error occured while toggling ${featureName} feature: ${error.message}`,
+              )
+            })
+        }}
+      />
+      <span>
+        {title}&nbsp;
+        <Tooltip title={description}>
+          <QuestionCircleOutlined />
+        </Tooltip>
+      </span>
+    </CustomFormItem>
+  )
+}
+
 export default function ToggleFeaturesPage({
   courseId,
 }: ToggleFeaturesPageProps): ReactElement {
@@ -38,6 +83,7 @@ export default function ToggleFeaturesPage({
     `${courseId}/features`,
     async () => await API.course.getCourseFeatures(courseId),
   )
+
   if (!courseFeatures) {
     return <Spin tip="Loading..." size="large" />
   } else {
@@ -46,142 +92,34 @@ export default function ToggleFeaturesPage({
         <h2>Enable/Disable Features for this Course</h2>
 
         <Form className="ml-2">
-          <CustomFormItem>
-            <CustomSwitch
-              defaultChecked={courseFeatures.asyncQueueEnabled}
-              onChange={async (e) => {
-                await API.course
-                  .setCourseFeature(
-                    courseId,
-                    'asyncQueueEnabled',
-                    e.valueOf() as boolean,
-                  )
-                  .then(() => {
-                    message.success(
-                      'Successfully set async queue feature to ' + e.valueOf(),
-                    )
-                    mutate(`${courseId}/features`)
-                  })
-                  .catch((error) => {
-                    message.error(
-                      `An error occured while toggling async question centre: ${error.message}`,
-                    )
-                  })
-              }}
-            />
-            <span>
-              Asynchronous Question Centre&nbsp;
-              <Tooltip
-                title={
-                  'This feature allows students to ask questions asynchronously (e.g. outside of office hours or labs) that can then be responded to by the professor. It also features automatic AI-generated answers based on uploaded course content.'
-                }
-              >
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </span>
-          </CustomFormItem>
-          <CustomFormItem>
-            <CustomSwitch
-              defaultChecked={courseFeatures.chatBotEnabled}
-              onChange={async (e) => {
-                await API.course
-                  .setCourseFeature(
-                    courseId,
-                    'chatBotEnabled',
-                    e.valueOf() as boolean,
-                  )
-                  .then(() => {
-                    message.success(
-                      'Successfully set chatbot feature to ' + e.valueOf(),
-                    )
-                    mutate(`${courseId}/features`)
-                  })
-                  .catch((error) => {
-                    message.error(
-                      `An error occured while toggling chatbot: ${error.message}`,
-                    )
-                  })
-              }}
-            />
-            <span>
-              Chatbot&nbsp;
-              <Tooltip
-                title={
-                  'This feature allows students to ask questions to an AI chatbot that will answer their questions based on uploaded lab content.'
-                }
-              >
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </span>
-          </CustomFormItem>
-          <CustomFormItem>
-            <CustomSwitch
-              defaultChecked={courseFeatures.queueEnabled}
-              onChange={async (e) => {
-                await API.course
-                  .setCourseFeature(
-                    courseId,
-                    'queueEnabled',
-                    e.valueOf() as boolean,
-                  )
-                  .then(() => {
-                    message.success(
-                      'Successfully set queues feature to ' + e.valueOf(),
-                    )
-                    mutate(`${courseId}/features`)
-                  })
-                  .catch((error) => {
-                    message.error(
-                      `An error occured while toggling queues feature: ${error.message}`,
-                    )
-                  })
-              }}
-            />
-            <span>
-              Queues&nbsp;
-              <Tooltip
-                title={
-                  'This feature allows students to ask questions in a queue that can then be answered by the professor or a TA. Suitable for online, hybrid, and in-person office hours and labs.'
-                }
-              >
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </span>
-          </CustomFormItem>
-          <CustomFormItem>
-            <CustomSwitch
-              defaultChecked={courseFeatures.adsEnabled}
-              onChange={async (e) => {
-                await API.course
-                  .setCourseFeature(
-                    courseId,
-                    'adsEnabled',
-                    e.valueOf() as boolean,
-                  )
-                  .then(() => {
-                    message.success(
-                      'Successfully set ads feature to ' + e.valueOf(),
-                    )
-                    mutate(`${courseId}/features`)
-                  })
-                  .catch((error) => {
-                    message.error(
-                      `An error occured while toggling ads: ${error.message}`,
-                    )
-                  })
-              }}
-            />
-            <span>
-              Advertisements (Not currently implemented)&nbsp;
-              <Tooltip
-                title={
-                  'Displays non-intrusive advertisements to help keep the servers running (and to keep us from going bankrupt from those darn OpenAI API fees).'
-                }
-              >
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </span>
-          </CustomFormItem>
+          <FeatureSwitch
+            featureName="asyncQueueEnabled"
+            defaultChecked={courseFeatures.asyncQueueEnabled}
+            title="Asynchronous Question Centre"
+            description="This feature allows students to ask questions asynchronously (e.g. outside of office hours or labs) that can then be answered by the professor. It also features automatic AI-generated answers based on uploaded course content."
+            courseId={courseId}
+          />
+          <FeatureSwitch
+            featureName="chatBotEnabled"
+            defaultChecked={courseFeatures.chatBotEnabled}
+            title="ChatBot"
+            description="This feature allows students to ask an AI chatbot questions that will answer their questions based on uploaded course content (located in course admin settings)"
+            courseId={courseId}
+          />
+          <FeatureSwitch
+            featureName="queueEnabled"
+            defaultChecked={courseFeatures.queueEnabled}
+            title="Queues"
+            description="This feature allows students to ask questions in a queue that can then be answered by the professor or a TA. Suitable for online, hybrid, and in-person office hours and labs."
+            courseId={courseId}
+          />
+          <FeatureSwitch
+            featureName="adsEnabled"
+            defaultChecked={courseFeatures.adsEnabled}
+            title="Advertisements (Not currently implemented)"
+            description="Displays non-intrusive advertisements to help keep the servers running (and to keep us from going bankrupt from those darn OpenAI API fees)."
+            courseId={courseId}
+          />
         </Form>
       </ToggleFeaturesPageComponent>
     )

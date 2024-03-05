@@ -955,25 +955,16 @@ export class CourseController {
       where: { courseId },
     });
 
-    // if no settings found, do default
-    if (!courseSettings) {
-      return new CourseSettingsResponse({
-        courseId: courseId,
-        chatBotEnabled: true,
-        asyncQueueEnabled: true,
-        adsEnabled: true,
-        queueEnabled: true,
-        settingsFound: false,
-      });
-    }
-
-    return new CourseSettingsResponse({
+    // if no settings found for the courseid, return the default values
+    const response = new CourseSettingsResponse({
       courseId: courseId,
-      chatBotEnabled: courseSettings.chatBotEnabled,
-      asyncQueueEnabled: courseSettings.asyncQueueEnabled,
-      adsEnabled: courseSettings.adsEnabled,
-      queueEnabled: courseSettings.queueEnabled,
-      settingsFound: true,
+      chatBotEnabled: courseSettings?.chatBotEnabled ?? true, // the 'true' at the end here is the default value
+      asyncQueueEnabled: courseSettings?.asyncQueueEnabled ?? true,
+      adsEnabled: courseSettings?.adsEnabled ?? true,
+      queueEnabled: courseSettings?.queueEnabled ?? true,
+      settingsFound: !!courseSettings, // !! converts truthy/falsy into true/false
     });
+
+    return response;
   }
 }

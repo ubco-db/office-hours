@@ -320,7 +320,6 @@ class APIClient {
     ): Promise<CourseSettingsResponse> =>
       this.req('GET', `/api/v1/courses/${courseId}/features`),
   }
-
   taStatus = {
     checkIn: async (
       courseId: number,

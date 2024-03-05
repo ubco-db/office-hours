@@ -6,7 +6,8 @@
 - [Developing](#developing)
   - [Running locally outside of Docker container](#running-locally-outside-of-docker-container)
   - [Running locally within a Docker container](#running-locally-within-a-docker-container)
-- [Migrations](#migrations)
+  - [Database Changes](#database-changes)
+    - [Migrations](#migrations)
   - [Adding an API Route](#adding-an-api-route)
   - [Adding to the frontend app](#adding-to-the-frontend-app)
   - [Testing](#testing)
@@ -86,9 +87,11 @@ docker-compose build && docker-compose up
 
 table_name.entity.ts files are used to define the database schema.
 
-If you change an entity, you MUST run `yarn migration:generate -n [migration-name]`, to make the migration file, then `yarn typeorm migration:run` will automatically run on deployment to staging/production. Commit the migration file to Git!
-
 Also, you must update the seed.controller.ts file to reflect the new database changes. This seed file is used to populate the database with dummy data on http://localhost:3000/dev.
+
+#### Migrations
+
+If you change an entity, you MUST run `yarn migration:generate -n [migration-name]`, to make the migration file, then `yarn typeorm migration:run` will automatically run on deployment to staging/production. Commit the migration file to Git!
 
 ### Adding an API Route
 
