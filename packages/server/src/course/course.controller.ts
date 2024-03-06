@@ -111,7 +111,27 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   async getAsyncQuestions(
     @Param('cid') cid: number,
+    @Req() req: Request,
+    @Res() res: Response,
   ): Promise<AsyncQuestionResponse> {
+    const user = await UserModel.findOne(req.user.userId);
+    const userCourse = await UserCourseModel.findOne({
+      where: {
+        user,
+        courseId: cid,
+      },
+    });
+
+    if (!userCourse) {
+      res.status(HttpStatus.NOT_FOUND).send({
+        message: ERROR_MESSAGES.profileController.userResponseNotFound,
+      });
+      return;
+    }
+
+    const isStaff =
+      userCourse.role === Role.TA || userCourse.role === Role.PROFESSOR;
+
     const all = await AsyncQuestionModel.find({
       where: {
         courseId: cid,
@@ -119,7 +139,10 @@ export class CourseController {
       relations: ['creator', 'course', 'images'],
     });
     if (!all) {
-      throw NotFoundException;
+      res.status(HttpStatus.NOT_FOUND).send({
+        message: ERROR_MESSAGES.questionController.notFound,
+      });
+      return;
     }
     // const course = await CourseModel.findOne({
     //   where: {
@@ -152,7 +175,50 @@ export class CourseController {
         question.visible === true &&
         question.status !== asyncQuestionStatus.TADeleted,
     );
-    return questions;
+
+    function mapQuestions(questions, userId) {
+      return questions
+        .filter((question) => question.visible || question.creatorId === userId)
+        .map((question) => ({
+          id: question.id,
+          creator:
+            userId === question.creator.id
+              ? question.creator
+              : { id: question.creator.id },
+          questionText: question.questionText,
+          creatorId: question.creatorId,
+          taHelped: question.taHelped,
+          createdAt: question.createdAt,
+          questionTypes: question.questionTypes,
+          status: question.status,
+          images: question.images,
+          questionAbstract: question.questionAbstract,
+          answerText: question.answerText,
+          aiAnswerText: question.aiAnswerText,
+          closedAt: question.closedAt,
+          visible: question.visible,
+        }));
+    }
+
+    if (!isStaff) {
+      questions.otherQuestions = [];
+
+      questions.helpedQuestions = mapQuestions(
+        questions.helpedQuestions,
+        user.id,
+      );
+      questions.waitingQuestions = mapQuestions(
+        questions.waitingQuestions,
+        user.id,
+      );
+      questions.visibleQuestions = mapQuestions(
+        questions.visibleQuestions,
+        user.id,
+      );
+    }
+
+    res.status(HttpStatus.OK).send(questions);
+    return;
   }
 
   @Get('limited/:id/:code')
