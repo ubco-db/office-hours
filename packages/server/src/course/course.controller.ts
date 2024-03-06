@@ -160,10 +160,13 @@ export class CourseController {
     // }
     const questions = new AsyncQuestionResponse();
     questions.helpedQuestions = all.filter(
-      (question) => question.status === asyncQuestionStatus.Resolved,
+      (question) =>
+        question.status === asyncQuestionStatus.AIAnsweredResolved ||
+        question.status === asyncQuestionStatus.HumanAnswered,
     );
     questions.waitingQuestions = all.filter(
-      (question) => question.status === asyncQuestionStatus.Waiting,
+      (question) =>
+        question.status === asyncQuestionStatus.AIAnsweredNeedsAttention,
     );
     questions.otherQuestions = all.filter(
       (question) =>

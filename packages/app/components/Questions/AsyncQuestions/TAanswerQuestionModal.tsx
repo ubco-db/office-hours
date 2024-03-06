@@ -1,6 +1,6 @@
 import { ReactElement, useEffect, useState } from 'react'
 import Modal from 'antd/lib/modal/Modal'
-import { Input, Form, Button, message, Checkbox, Image } from 'antd'
+import { Input, Form, Button, message, Checkbox, Image, Tooltip } from 'antd'
 import { API } from '@koh/api-client'
 import { AsyncQuestion, asyncQuestionStatus } from '@koh/common'
 import { default as React } from 'react'
@@ -21,13 +21,14 @@ export function AnswerQuestionModal({
   //use questions for form validation
   useEffect(() => {
     form.setFieldsValue(question)
+    console.log(question)
   }, [question])
   const postReponse = async (value) => {
     await API.asyncQuestions
       .update(question.id, {
         answerText: value.answerText,
         visible: visibleStatus,
-        status: asyncQuestionStatus.Resolved,
+        status: asyncQuestionStatus.HumanAnswered,
       })
       .then((value) => {
         if (value) {
@@ -40,24 +41,29 @@ export function AnswerQuestionModal({
   return (
     <Modal
       title="Post/Edit response to Student question"
-      visible={visible}
+      open={visible}
       onCancel={onClose}
       footer={[
         <Button key="back" onClick={onClose}>
           Return
         </Button>,
-        <Button
+        <Tooltip
+          title="Submitting this response will mark the question as answered by a faculty member."
           key="submit"
-          type="primary"
-          onClick={async () => {
-            const value = await form.validateFields()
-            console.log(value)
-            postReponse(value)
-            onClose()
-          }}
         >
-          Submit
-        </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={async () => {
+              const value = await form.validateFields()
+              console.log(value)
+              postReponse(value)
+              onClose()
+            }}
+          >
+            Submit
+          </Button>
+        </Tooltip>,
       ]}
     >
       <span>

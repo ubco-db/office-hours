@@ -149,7 +149,11 @@ export function AsyncQuestionForm({
           })
         }
       })
-    message.success('Question Posted')
+    message.success('Question Updated')
+
+    //student can see the updated AI answer, decide whether it suffices or not
+    //if not, they click button to get help from TA, also give chance to comment on the feedback
+    //if they click button, it will send a notification to the TA
   }
 
   const onFinish = (value) => {

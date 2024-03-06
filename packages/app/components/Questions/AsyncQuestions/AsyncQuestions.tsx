@@ -10,7 +10,7 @@ import { useRoleInCourse } from '../../../hooks/useRoleInCourse'
 import { SettingsLeftPanel } from './SettingsLeftPanel'
 import { Select } from 'antd'
 import { useAsnycQuestions } from '../../../hooks/useAsyncQuestions'
-import StudentAsyncCard from './StudentAsyncCard'
+import AsyncCard from './AsyncCard'
 import { VerticalDivider, EditQueueButton } from '../Shared/SharedComponents'
 import { AsyncQuestionForm } from './AsyncQuestionForm'
 import PropTypes from 'prop-types'
@@ -168,7 +168,7 @@ export default function AsyncQuestionsPage({
       <>
         {profile &&
           questions.map((question) => (
-            <StudentAsyncCard
+            <AsyncCard
               key={question.id}
               question={question}
               cid={courseId}

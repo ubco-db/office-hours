@@ -382,11 +382,20 @@ export enum ClosedQuestionStatus {
 }
 
 export enum asyncQuestionStatus {
-  Resolved = 'Resolved',
+  AIAnsweredNeedsAttention = 'AIAnsweredNeedsAttention', // AI has answered, but the answer is unsatisfactory.
+  AIAnsweredResolved = 'AIAnsweredResolved', // AI has answered, and the answer is satisfactory.
+  HumanAnswered = 'HumanAnswered', // A human (professor/TA) has provided an answer.
+  AIAnswered = 'AIAnswered', // AI has answered
   TADeleted = 'TADeleted',
   StudentDeleted = 'StudentDeleted',
-  Waiting = 'Waiting',
 }
+
+export enum resolutionSource {
+  AI = 'AI',
+  Human = 'Human',
+  NotAnswerable = 'NotAnswerable',
+}
+
 export const StatusInQueue = [
   OpenQuestionStatus.Drafting,
   OpenQuestionStatus.Queued,

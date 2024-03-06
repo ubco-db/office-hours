@@ -27,6 +27,7 @@ import { AsyncQuestionModel } from './asyncQuestion.entity';
 import { asyncQuestionService } from './asyncQuestion.service';
 import { CourseModel } from 'course/course.entity';
 import { MailService } from 'mail/mail.service';
+import { UserCourseModel } from 'profile/user-course.entity';
 
 @Controller('asyncQuestions')
 @UseGuards(JwtAuthGuard)
@@ -66,22 +67,23 @@ export class asyncQuestionController {
         answerText: body.answerText || null,
         aiAnswerText: body.aiAnswerText,
         questionTypes: body.questionTypes,
-        status: asyncQuestionStatus.Waiting,
+        status: body.status || asyncQuestionStatus.AIAnswered,
         visible: body.visible || false,
         createdAt: new Date(),
       }).save();
-      // const professors = await UserCourseModel.findOne({
+      // const faculties = await UserCourseModel.find({
       //   where: {
-      //     role: Role.PROFESSOR,
+      //     role: Role.PROFESSOR || Role.TA,
       //   },
       // });
-      // console.log(professors);
-      // const post: sendEmailAsync = {
-      //   receiver: professors.user.email,
-      //   subject: 'UBC helpme Async question created',
-      //   type: asyncQuestionEventType.created,
-      // };
-      // this.mailService.sendEmail(post);
+      // faculties.forEach((professors) => {
+      //   const post: sendEmailAsync = {
+      //     receiver: professors.user.email,
+      //     subject: 'UBC helpme Async question created',
+      //     type: asyncQuestionEventType.created,
+      //   };
+      //   this.mailService.sendEmail(post);
+      // });
       return question;
     } catch (err) {
       console.error(err);
@@ -127,7 +129,7 @@ export class asyncQuestionController {
         subject: 'UBC helpme Async question status change',
         type: asyncQuestionEventType.deleted,
       };
-      if (body.status === asyncQuestionStatus.Resolved) {
+      if (body.status === asyncQuestionStatus.HumanAnswered) {
         post.type = asyncQuestionEventType.answered;
         this.mailService.sendEmail(post);
       } else if (body.status === asyncQuestionStatus.TADeleted) {
