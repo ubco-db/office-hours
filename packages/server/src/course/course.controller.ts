@@ -56,6 +56,7 @@ import { HeatmapService } from './heatmap.service';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
+import { question } from 'readline-sync';
 
 @Controller('courses')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -111,10 +112,9 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   async getAsyncQuestions(
     @Param('cid') cid: number,
-    @Req() req: Request,
+    @User() user: UserModel,
     @Res() res: Response,
   ): Promise<AsyncQuestionResponse> {
-    const user = await UserModel.findOne(req.user.userId);
     const userCourse = await UserCourseModel.findOne({
       where: {
         user,
@@ -159,6 +159,7 @@ export class CourseController {
     //   );
     // }
     const questions = new AsyncQuestionResponse();
+
     questions.helpedQuestions = all.filter(
       (question) =>
         question.status === asyncQuestionStatus.AIAnsweredResolved ||
@@ -166,7 +167,8 @@ export class CourseController {
     );
     questions.waitingQuestions = all.filter(
       (question) =>
-        question.status === asyncQuestionStatus.AIAnsweredNeedsAttention,
+        question.status === asyncQuestionStatus.AIAnsweredNeedsAttention ||
+        question.status === asyncQuestionStatus.AIAnswered,
     );
     questions.otherQuestions = all.filter(
       (question) =>

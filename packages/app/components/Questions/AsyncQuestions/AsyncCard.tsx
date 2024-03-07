@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react'
+import React, { ReactElement, useEffect, useState } from 'react'
 import { Button, Card, Image, message } from 'antd'
 import { Text } from '../Shared/SharedComponents'
 import { QuestionType } from '../Shared/QuestionType'
@@ -9,6 +9,7 @@ import { AsyncQuestion, asyncQuestionStatus } from '@koh/common'
 import { useProfile } from '../../../hooks/useProfile'
 import StudentQuestionDetailButtons from './StudentQuestionDetailButtons'
 import { API } from '@koh/api-client'
+import { set } from 'lodash'
 
 interface AsyncCardProps {
   question: AsyncQuestion
@@ -16,13 +17,13 @@ interface AsyncCardProps {
   qid: number
   isStaff: boolean
   userId: number
+  onStatusChange: () => void
   onQuestionTypeClick: (questionType: any) => void
 }
 
 export default function AsyncCard({
   question,
-  cid,
-  qid,
+  onStatusChange,
   isStaff,
   userId,
   onQuestionTypeClick,
@@ -40,16 +41,16 @@ export default function AsyncCard({
 
   const handleFeedback = async (resolved) => {
     try {
-      const status = resolved
+      const newstatus = resolved
         ? asyncQuestionStatus.AIAnsweredResolved
-        : asyncQuestionStatus.HumanAnswered
-      await API.asyncQuestions.update(question.id, { status })
+        : asyncQuestionStatus.AIAnsweredNeedsAttention
+      await API.asyncQuestions.update(question.id, { status: newstatus })
       message.success(
         `Question has been marked as ${
           resolved ? 'resolved' : 'needing faculty attention'
         }.`,
       )
-      // Optionally, refresh the question list or update local state to reflect the change
+      onStatusChange()
     } catch (error) {
       console.error('Failed to update question status', error)
       message.error('Failed to update question status. Please try again.')
@@ -58,7 +59,11 @@ export default function AsyncCard({
 
   return (
     <Card
-      className="mb-2 rounded-lg bg-white p-2 shadow-lg"
+      className={`mb-2 rounded-lg bg-white p-2 shadow-lg ${
+        question.status === asyncQuestionStatus.HumanAnswered
+          ? 'bg-green-100/50'
+          : 'bg-yellow-100/50'
+      }`}
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="mb-4 flex items-start justify-between">
@@ -84,22 +89,20 @@ export default function AsyncCard({
           {isStaff && (
             <>
               <TAquestionDetailButtons
-                queueId={qid}
                 question={question}
-                hasUnresolvedRephraseAlert={false}
                 setIsExpandedTrue={setIsExpandedTrue}
+                onStatusChange={onStatusChange}
               />
             </>
           )}
-          {userId == question.creatorId &&
+          {userId === question.creatorId &&
           question.status === asyncQuestionStatus.AIAnswered ? (
             <>
               {/* Students can edit their own questions, but only if question is not resolved, note that AIAnswer is default */}
               <StudentQuestionDetailButtons
-                queueId={qid}
                 question={question}
-                hasUnresolvedRephraseAlert={false}
                 setIsExpandedTrue={setIsExpandedTrue}
+                onStatusChange={onStatusChange}
               />
             </>
           ) : (
@@ -154,7 +157,7 @@ export default function AsyncCard({
             {/* Students vote on whether they still need faculty help */}
             <Button onClick={() => handleFeedback(true)}>Satisfied</Button>
             <Button type="primary" onClick={() => handleFeedback(false)}>
-              Need Faculty Help
+              Still need faculty Help
             </Button>
           </div>
         )}

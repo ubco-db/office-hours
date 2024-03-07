@@ -18,7 +18,7 @@ import { MailController } from './mail.controller';
           service: 'gmail',
           auth: {
             user: 'ubchelpme@gmail.com',
-            pass: 'geelhkocdxiwqlwa',
+            pass: 'ge',
           },
         },
       }),

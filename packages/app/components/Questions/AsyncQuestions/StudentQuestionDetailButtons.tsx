@@ -11,9 +11,11 @@ import { AsyncQuestionForm } from './AsyncQuestionForm'
 export default function StudentQuestionDetailButtons({
   question,
   setIsExpandedTrue,
+  onStatusChange,
 }: {
   question: AsyncQuestion
   setIsExpandedTrue: (event) => void
+  onStatusChange: () => void
 }): ReactElement {
   const [answerQuestionVisible, setAnswerQuestionVisbile] = useState(false)
   // const handleCancel = () => {
@@ -21,9 +23,9 @@ export default function StudentQuestionDetailButtons({
   // };
   // const [form] = Form.useForm();
 
-  if (question.status !== asyncQuestionStatus.Waiting) {
-    return <></>
-  }
+  // if (question.status !== asyncQuestionStatus.Waiting) {
+  //   return <></>
+  // }
   return (
     <>
       <Popconfirm
@@ -31,10 +33,13 @@ export default function StudentQuestionDetailButtons({
         okText="Yes"
         cancelText="No"
         onConfirm={async () => {
-          message.success('Question is removed')
+          // make sure that deleted questions are not visible
           await API.asyncQuestions.update(question.id, {
             status: asyncQuestionStatus.StudentDeleted,
+            visible: false,
           })
+          message.success('Removed Question')
+          onStatusChange()
         }}
       >
         <Tooltip title="Delete Question">
@@ -42,7 +47,9 @@ export default function StudentQuestionDetailButtons({
             shape="circle"
             icon={<CloseOutlined />}
             data-cy="cant-find-button"
-            onClick={(event) => setIsExpandedTrue(event)}
+            onClick={(event) => {
+              setIsExpandedTrue(event)
+            }}
           />
         </Tooltip>
       </Popconfirm>

@@ -57,8 +57,6 @@ export function AsyncQuestionForm({
     QuestionTypeParams[]
   >(question?.questionTypes || [])
 
-  const [isVisible, setIsVisible] = useState(true)
-
   //image stuff
   useEffect(() => {
     if (!selectedImage) {
@@ -102,7 +100,6 @@ export function AsyncQuestionForm({
           aiAnswerText: aiAnswer,
           answerText: aiAnswer,
           questionAbstract: value.QuestionAbstract,
-          visible: isVisible,
         },
         courseId,
       )
@@ -134,7 +131,6 @@ export function AsyncQuestionForm({
         aiAnswerText: aiAnswer,
         answerText: aiAnswer,
         questionAbstract: value.QuestionAbstract,
-        visible: isVisible,
       })
       .then((response) => {
         if (selectedImage && response) {
@@ -280,13 +276,6 @@ export function AsyncQuestionForm({
             ) : (
               <></>
             )}
-          </Form.Item>
-          <Form.Item
-            name="isHidden"
-            label="Only visible to me and teaching staff"
-            valuePropName="checked"
-          >
-            <Checkbox onChange={(e) => setIsVisible(!e.target.checked)} />
           </Form.Item>
           <br></br>
           <br></br>

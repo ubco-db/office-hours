@@ -116,26 +116,26 @@ export class asyncQuestionController {
     question.closedAt = new Date();
     question.save().then(async () => {
       //send notification
-      const receiver = await UserModel.findOne({
-        where: {
-          id: question.creatorId,
-        },
-      });
-      if (!receiver) {
-        throw NotFoundException;
-      }
-      const post: sendEmailAsync = {
-        receiver: receiver.email,
-        subject: 'UBC helpme Async question status change',
-        type: asyncQuestionEventType.deleted,
-      };
-      if (body.status === asyncQuestionStatus.HumanAnswered) {
-        post.type = asyncQuestionEventType.answered;
-        this.mailService.sendEmail(post);
-      } else if (body.status === asyncQuestionStatus.TADeleted) {
-        post.type = asyncQuestionEventType.deleted;
-        this.mailService.sendEmail(post);
-      }
+      // const receiver = await UserModel.findOne({
+      //   where: {
+      //     id: question.creatorId,
+      //   },
+      // });
+      // if (!receiver) {
+      //   throw NotFoundException;
+      // }
+      // const post: sendEmailAsync = {
+      //   receiver: receiver.email,
+      //   subject: 'UBC helpme Async question status change',
+      //   type: asyncQuestionEventType.deleted,
+      // };
+      // if (body.status === asyncQuestionStatus.HumanAnswered) {
+      //   post.type = asyncQuestionEventType.answered;
+      //   this.mailService.sendEmail(post);
+      // } else if (body.status === asyncQuestionStatus.TADeleted) {
+      //   post.type = asyncQuestionEventType.deleted;
+      //   this.mailService.sendEmail(post);
+      // }
     });
     return question;
   }

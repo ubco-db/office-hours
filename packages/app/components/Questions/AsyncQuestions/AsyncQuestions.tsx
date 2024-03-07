@@ -3,6 +3,7 @@ import {
   AsyncQuestionResponse,
   QuestionTypeParams,
   Role,
+  asyncQuestionStatus,
 } from '@koh/common'
 import React, { ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
@@ -73,30 +74,37 @@ export default function AsyncQuestionsPage({
     setQuestionTypeInput(selectedTypes)
   }
 
-  const { questions } = useAsnycQuestions(courseId)
+  const { questions, mutateQuestions } = useAsnycQuestions(courseId)
 
   useEffect(() => {
+    console.log(questions)
     const allQuestionsList: AsyncQuestion[] = questions
-      ? [...questions.helpedQuestions, ...questions.waitingQuestions]
+      ? [
+          ...questions.helpedQuestions,
+          ...questions.waitingQuestions,
+          ...questions.visibleQuestions,
+        ]
       : []
 
     let displayedQuestions = allQuestionsList
 
-    // if (isStaff) {
-    //   displayedQuestions = allQuestionsList
-    // } else {
-    //   displayedQuestions = allQuestionsList.filter(
-    //     (question) => question.visible || question.creatorId === profile?.id,
-    //   )
-    // }
+    if (isStaff) {
+      displayedQuestions = allQuestionsList
+    } else {
+      displayedQuestions = allQuestionsList.filter(
+        (question) => question.visible || question.creatorId === profile?.id,
+      )
+    }
 
     if (statusFilter === 'helped') {
       displayedQuestions = displayedQuestions.filter(
-        (question) => question.status === 'Resolved',
+        (question) => question.status === asyncQuestionStatus.HumanAnswered,
       )
     } else if (statusFilter === 'unhelped') {
       displayedQuestions = displayedQuestions.filter(
-        (question) => question.status === 'Waiting',
+        (question) =>
+          question.status === asyncQuestionStatus.AIAnswered ||
+          question.status === asyncQuestionStatus.AIAnsweredNeedsAttention,
       )
     }
 
@@ -121,6 +129,7 @@ export default function AsyncQuestionsPage({
       .map((question) => question.questionTypes)
       .flat()
     setQuestionsTypeState(shownQuestionTypes)
+    console.log(displayedQuestions)
   }, [visibleFilter, statusFilter, questions, questionTypeInput])
 
   function RenderQueueInfoCol(): ReactElement {
@@ -157,38 +166,35 @@ export default function AsyncQuestionsPage({
     )
   }
 
-  const RenderQuestionList = ({ questions }) => {
-    if (!questions) {
+  const RenderQuestionList = ({ renderQuestions }: any) => {
+    if (!renderQuestions) {
       return (
         <NoQuestionsText>There are no questions in the queue</NoQuestionsText>
       )
     }
-
     return (
       <>
-        {profile &&
-          questions.map((question) => (
-            <AsyncCard
-              key={question.id}
-              question={question}
-              cid={courseId}
-              qid={undefined} // If qid is always undefined, consider removing it if not used.
-              isStaff={isStaff}
-              userId={profile.id} // Safe to directly access since it's in the condition above.
-              onQuestionTypeClick={(questionType) => {
-                setQuestionTypeInput((prevInput) => {
-                  const index = prevInput.indexOf(questionType)
-                  if (index > -1) {
-                    // questionType is in the array, remove it
-                    return prevInput.filter((qt) => qt !== questionType)
-                  } else {
-                    // questionType is not in the array, add it
-                    return [...prevInput, questionType]
-                  }
-                })
-              }}
-            />
-          ))}
+        {renderQuestions.map((question) => (
+          <AsyncCard
+            key={question.id}
+            question={question}
+            onStatusChange={mutateQuestions}
+            isStaff={isStaff}
+            userId={profile.id} // Safe to directly access since it's in the condition above.
+            onQuestionTypeClick={(questionType) => {
+              setQuestionTypeInput((prevInput) => {
+                const index = prevInput.indexOf(questionType)
+                if (index > -1) {
+                  // questionType is in the array, remove it
+                  return prevInput.filter((qt) => qt !== questionType)
+                } else {
+                  // questionType is not in the array, add it
+                  return [...prevInput, questionType]
+                }
+              })
+            }}
+          />
+        ))}
       </>
     )
   }
@@ -249,7 +255,7 @@ export default function AsyncQuestionsPage({
           onChange={(value) => setVisibleFilter(value)}
           className="select-filter"
         >
-          <Select.Option value="all">Question Visibility</Select.Option>
+          <Select.Option value="all">All questions</Select.Option>
           <Select.Option value="visible">Visible Only</Select.Option>
           <Select.Option value="hidden">Hidden Only</Select.Option>
         </Select>
@@ -291,7 +297,7 @@ export default function AsyncQuestionsPage({
         <QueueListContainer>
           <RenderFilters />
 
-          <RenderQuestionList questions={displayedQuestions} />
+          <RenderQuestionList renderQuestions={displayedQuestions} />
         </QueueListContainer>
       </Container>
       {isStaff ? (

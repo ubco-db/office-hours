@@ -1,6 +1,15 @@
 import { ReactElement, useEffect, useState } from 'react'
 import Modal from 'antd/lib/modal/Modal'
-import { Input, Form, Button, message, Checkbox, Image, Tooltip } from 'antd'
+import {
+  Input,
+  Form,
+  Button,
+  message,
+  Checkbox,
+  Image,
+  Tooltip,
+  Switch,
+} from 'antd'
 import { API } from '@koh/api-client'
 import { AsyncQuestion, asyncQuestionStatus } from '@koh/common'
 import { default as React } from 'react'
@@ -93,6 +102,17 @@ export function AnswerQuestionModal({
           visible: question.visible,
         }}
       >
+        <Form.Item
+          name="visible"
+          label="Set question visible to all students"
+          valuePropName="checked"
+        >
+          <Switch
+            checkedChildren="visible"
+            unCheckedChildren="hidden"
+            onChange={(checked) => setVisibleStatus(checked)}
+          />
+        </Form.Item>
         <Form.Item
           name="answerText"
           rules={[{ required: true, message: 'Please input your response.' }]}
