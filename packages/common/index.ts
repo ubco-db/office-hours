@@ -487,6 +487,10 @@ export class AsyncQuestion {
   @IsOptional()
   @IsBoolean()
   visible?: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  verified?: boolean
 }
 
 export class Image {

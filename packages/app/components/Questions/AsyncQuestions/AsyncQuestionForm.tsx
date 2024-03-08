@@ -9,6 +9,7 @@ import { useRouter } from 'next/router'
 import { QuestionTypeParams, AsyncQuestion } from '@koh/common'
 import PropTypes from 'prop-types'
 import { QuestionType } from '../Shared/QuestionType'
+import { on } from 'events'
 
 const Container = styled.div`
   max-width: 960px;
@@ -33,6 +34,7 @@ interface EditQueueModalProps {
   question: AsyncQuestion
   visible: boolean
   onClose: () => void
+  onStatusChange: () => void
 }
 
 AsyncQuestionForm.propTypes = {
@@ -44,6 +46,7 @@ export function AsyncQuestionForm({
   question,
   visible,
   onClose,
+  onStatusChange,
 }: EditQueueModalProps): ReactElement {
   const router = useRouter()
   const courseId = Number(router.query['cid'])
@@ -116,6 +119,7 @@ export function AsyncQuestionForm({
           })
         }
       })
+    onStatusChange()
     message.success('Question Posted')
   }
 
@@ -146,7 +150,7 @@ export function AsyncQuestionForm({
         }
       })
     message.success('Question Updated')
-
+    onStatusChange()
     //student can see the updated AI answer, decide whether it suffices or not
     //if not, they click button to get help from TA, also give chance to comment on the feedback
     //if they click button, it will send a notification to the TA
@@ -218,10 +222,10 @@ export function AsyncQuestionForm({
           <Form.Item name="QuestionAbstract" rules={[{ required: true }]}>
             <Input placeholder="Question abstract" maxLength={50}></Input>
           </Form.Item>
-          <Form.Item name="questionText">
+          <Form.Item name="questionText" rules={[{ required: true }]}>
             <Input.TextArea
               allowClear={true}
-              placeholder="Question details(optional)"
+              placeholder="Question details "
               autoSize={{ minRows: 3, maxRows: 6 }}
             />
           </Form.Item>

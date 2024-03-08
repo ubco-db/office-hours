@@ -38,6 +38,7 @@ export function AnswerQuestionModal({
         answerText: value.answerText,
         visible: visibleStatus,
         status: asyncQuestionStatus.HumanAnswered,
+        verified: value.verified,
       })
       .then((value) => {
         if (value) {
@@ -112,6 +113,13 @@ export function AnswerQuestionModal({
             unCheckedChildren="hidden"
             onChange={(checked) => setVisibleStatus(checked)}
           />
+        </Form.Item>
+        <Form.Item
+          name="verified"
+          label="Mark as verified by faculty"
+          valuePropName="checked"
+        >
+          <Switch checkedChildren="verified" unCheckedChildren="unverified" />
         </Form.Item>
         <Form.Item
           name="answerText"

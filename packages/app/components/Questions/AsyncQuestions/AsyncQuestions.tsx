@@ -311,6 +311,7 @@ export default function AsyncQuestionsPage({
           question={undefined}
           visible={studentQuestionModal}
           onClose={() => setStudentQuestionModal(false)}
+          onStatusChange={mutateQuestions}
         />
       )}
     </>

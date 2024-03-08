@@ -1,5 +1,10 @@
 import { QuestionGroupModel } from 'question/question-group.entity';
-import { AlertType, OrganizationRole, Role } from '@koh/common';
+import {
+  AlertType,
+  OrganizationRole,
+  Role,
+  asyncQuestionStatus,
+} from '@koh/common';
 import { AlertModel } from 'alerts/alerts.entity';
 import { EventModel, EventType } from 'profile/event-model.entity';
 import { Factory } from 'typeorm-factory';
@@ -17,6 +22,7 @@ import { InteractionModel } from 'chatbot/interaction.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { QuestionTypeModel } from 'question/question-type.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 
 export const UserFactory = new Factory(UserModel)
   .attr('email', `user@ubc.ca`)
@@ -108,6 +114,18 @@ export const AlertFactory = new Factory(AlertModel)
   .assocOne('user', UserFactory)
   .assocOne('course', CourseFactory)
   .attr('payload', {});
+
+export const AsyncQuestionFactory = new Factory(AsyncQuestionModel)
+  .assocOne('course', CourseFactory)
+  .assocOne('creator', UserFactory)
+  .attr('questionAbstract', 'abstract')
+  .attr('questionText', 'text')
+  .attr('aiAnswerText', 'ai answer')
+  .attr('answerText', 'answer')
+  .attr('status', asyncQuestionStatus.AIAnswered)
+  .attr('visible', false)
+  .attr('verified', false)
+  .attr('createdAt', new Date());
 
 export const OrganizationFactory = new Factory(OrganizationModel)
   .attr('name', 'UBCO')

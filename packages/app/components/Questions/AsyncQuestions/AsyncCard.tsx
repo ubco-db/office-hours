@@ -61,7 +61,7 @@ export default function AsyncCard({
     <Card
       className={`mb-2 rounded-lg bg-white p-2 shadow-lg ${
         question.status === asyncQuestionStatus.HumanAnswered
-          ? 'bg-green-100/50'
+          ? 'bg-green-100/30'
           : 'bg-yellow-100/50'
       }`}
       onClick={() => setIsExpanded(!isExpanded)}

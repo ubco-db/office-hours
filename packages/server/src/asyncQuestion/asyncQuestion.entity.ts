@@ -83,4 +83,7 @@ export class AsyncQuestionModel extends BaseEntity {
 
   @Column('boolean', { nullable: true })
   visible: boolean;
+
+  @Column('boolean')
+  verified: boolean;
 }

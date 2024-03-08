@@ -68,7 +68,8 @@ export class asyncQuestionController {
         aiAnswerText: body.aiAnswerText,
         questionTypes: body.questionTypes,
         status: body.status || asyncQuestionStatus.AIAnswered,
-        visible: body.visible || false,
+        visible: false,
+        verified: false,
         createdAt: new Date(),
       }).save();
       // const faculties = await UserCourseModel.find({
@@ -98,6 +99,7 @@ export class asyncQuestionController {
   async updateQuestion(
     @Param('questionId') questionId: number,
     @Body() body: UpdateAsyncQuestions,
+    @User() user: UserModel,
   ): Promise<AsyncQuestion> {
     const question = await AsyncQuestionModel.findOne({
       where: { id: questionId },
@@ -113,7 +115,30 @@ export class asyncQuestionController {
     //If not creator, check if user is TA/PROF of course of question
 
     Object.assign(question, body);
-    question.closedAt = new Date();
+    if (
+      body.status === asyncQuestionStatus.HumanAnswered ||
+      body.status === asyncQuestionStatus.AIAnsweredResolved
+    ) {
+      question.closedAt = new Date();
+    }
+    if (body.status === asyncQuestionStatus.HumanAnswered) {
+      question.taHelpedId = user.id;
+    }
+    // if creator, can update question anytime
+    // otherwise has to be TA/PROF of course
+    if (question.creatorId !== user.id) {
+      const requester = await UserCourseModel.findOne({
+        where: {
+          userId: user.id,
+        },
+      });
+      if (requester.role === Role.STUDENT) {
+        throw new HttpException(
+          'No permission to update question.',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+    }
     question.save().then(async () => {
       //send notification
       // const receiver = await UserModel.findOne({
