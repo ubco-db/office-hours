@@ -3,13 +3,11 @@ import Modal from 'antd/lib/modal/Modal'
 import { Input, Form, message, Select, Checkbox } from 'antd'
 import styled from 'styled-components'
 import { API } from '@koh/api-client'
-
+import PropTypes from 'prop-types'
 import { default as React } from 'react'
 import { useRouter } from 'next/router'
 import { QuestionTypeParams, AsyncQuestion } from '@koh/common'
-import PropTypes from 'prop-types'
 import { QuestionType } from '../Shared/QuestionType'
-import { on } from 'events'
 
 const Container = styled.div`
   max-width: 960px;
@@ -20,14 +18,6 @@ const QuestionText = styled.div`
   font-size: 14px;
   line-height: 22px;
   margin-bottom: 4px;
-`
-
-const QuestionCaption = styled.div`
-  font-weight: 300;
-  font-size: 14px;
-  line-height: 22px;
-  color: #8c8c8c;
-  margin-bottom: 32px;
 `
 
 interface EditQueueModalProps {

@@ -57,23 +57,18 @@ export function AnswerQuestionModal({
         <Button key="back" onClick={onClose}>
           Return
         </Button>,
-        <Tooltip
-          title="Submitting this response will mark the question as answered by a faculty member."
+        <Button
           key="submit"
+          type="primary"
+          onClick={async () => {
+            const value = await form.validateFields()
+            console.log(value)
+            postReponse(value)
+            onClose()
+          }}
         >
-          <Button
-            key="submit"
-            type="primary"
-            onClick={async () => {
-              const value = await form.validateFields()
-              console.log(value)
-              postReponse(value)
-              onClose()
-            }}
-          >
-            Submit
-          </Button>
-        </Tooltip>,
+          Submit
+        </Button>,
       ]}
     >
       <span>

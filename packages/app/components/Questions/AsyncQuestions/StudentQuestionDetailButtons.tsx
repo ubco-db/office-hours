@@ -66,6 +66,7 @@ export default function StudentQuestionDetailButtons({
       <AsyncQuestionForm
         question={question}
         visible={answerQuestionVisible}
+        onStatusChange={onStatusChange}
         onClose={() => setAnswerQuestionVisbile(false)}
       />
     </>

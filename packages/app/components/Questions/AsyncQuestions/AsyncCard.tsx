@@ -9,7 +9,39 @@ import { AsyncQuestion, asyncQuestionStatus } from '@koh/common'
 import { useProfile } from '../../../hooks/useProfile'
 import StudentQuestionDetailButtons from './StudentQuestionDetailButtons'
 import { API } from '@koh/api-client'
-import { set } from 'lodash'
+import styled, { keyframes, css } from 'styled-components'
+
+const flashAnimation = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+`
+
+const StyledCard = styled(Card)<{ shouldFlash: boolean; questionStatus: any }>`
+  cursor: pointer;
+
+  &:hover {
+    background: #ecf0f3;
+  }
+
+  ${({ shouldFlash }) =>
+    shouldFlash &&
+    css`
+      animation: ${flashAnimation} 2s infinite;
+    `};
+
+  /* Original Card styles */
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+  background: white;
+  padding: 0.5rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: ${({ questionStatus }) =>
+    questionStatus === asyncQuestionStatus.HumanAnswered
+      ? '#F0FDF4'
+      : '#FEF3C7'};
+`
 
 interface AsyncCardProps {
   question: AsyncQuestion
@@ -29,6 +61,9 @@ export default function AsyncCard({
   onQuestionTypeClick,
 }: AsyncCardProps): ReactElement {
   const [isExpanded, setIsExpanded] = useState(false)
+  const shouldFlash =
+    question.status === asyncQuestionStatus.AIAnswered &&
+    userId === question.creatorId
 
   const handleImageClick = (event) => {
     event.stopPropagation() // Prevents the click from closing the card
@@ -58,12 +93,9 @@ export default function AsyncCard({
   }
 
   return (
-    <Card
-      className={`mb-2 rounded-lg bg-white p-2 shadow-lg ${
-        question.status === asyncQuestionStatus.HumanAnswered
-          ? 'bg-green-100/30'
-          : 'bg-yellow-100/50'
-      }`}
+    <StyledCard
+      shouldFlash={shouldFlash}
+      questionStatus={question.status}
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="mb-4 flex items-start justify-between">
@@ -83,6 +115,16 @@ export default function AsyncCard({
         ) : (
           <div className="flex-grow text-sm italic">Anonymous Student</div>
         )}
+        <div
+          className={`flex flex-grow items-center justify-center rounded-full px-2 py-1 
+    ${
+      question.status === asyncQuestionStatus.HumanAnswered
+        ? 'bg-green-200'
+        : 'bg-yellow-200'
+    }`}
+        >
+          {question.status}
+        </div>
         <div className="flex items-center">
           <Text className="text-sm">{getAsyncWaitTime(question)}</Text>
           {/*Stuff gets buttons to edit and delete questions*/}
@@ -118,7 +160,7 @@ export default function AsyncCard({
               return (
                 <Image
                   height={300}
-                  src={`/api/v1/image/${i.id}`}
+                  src={`/ api / v1 / image / ${i.id} `}
                   alt="none"
                   key={i.id}
                   onClick={handleImageClick}
@@ -161,6 +203,6 @@ export default function AsyncCard({
             </Button>
           </div>
         )}
-    </Card>
+    </StyledCard>
   )
 }
