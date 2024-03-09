@@ -17,7 +17,6 @@ import PropTypes from 'prop-types'
 import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
-import { useCourse } from '../../../hooks/useCourse'
 
 const Container = styled.div`
   flex: 1;
@@ -73,7 +72,7 @@ export default function AsyncQuestionsPage({
     setQuestionTypeInput(selectedTypes)
   }
 
-  const { questions } = useAsnycQuestions(courseId)
+  const { questions, mutateQuestions } = useAsnycQuestions(courseId)
 
   useEffect(() => {
     const allQuestionsList: AsyncQuestion[] = questions
@@ -255,6 +254,19 @@ export default function AsyncQuestionsPage({
     )
   }
 
+  const RenderCreatorFilter = () => {
+    return (
+      <>
+        <Select
+          id="creator-filter-select"
+          value={creatorFilter}
+          onChange={(value) => setCreatorFilter(value)}
+          className="select-filter"
+        ></Select>
+      </>
+    )
+  }
+
   const RenderFilters = () => {
     return (
       <>
@@ -290,6 +302,8 @@ export default function AsyncQuestionsPage({
           question={undefined}
           visible={studentQuestionModal}
           onClose={() => setStudentQuestionModal(false)}
+          // refresh the queue after a question is added
+          onQuestionUpdated={mutateQuestions}
         />
       )}
     </>
