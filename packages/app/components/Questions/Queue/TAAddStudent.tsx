@@ -90,7 +90,9 @@ export function AddStudentsModal({
   const courseNumber = Number(courseId)
 
   const getQuestions = useCallback(async () => {
-    setQuestionsTypeState(await API.questions.questionTypes(courseNumber))
+    setQuestionsTypeState(
+      await API.questions.getQuestionTypes(courseNumber, queueId),
+    )
   }, [courseNumber])
 
   const populateStudents = useCallback(async () => {

@@ -2,10 +2,15 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { QuestionModel } from './question.entity';
+import { Exclude } from 'class-transformer';
+import { QueueModel } from '../queue/queue.entity';
+import { AsyncQuestionModel } from '../asyncQuestion/asyncQuestion.entity';
 
 @Entity('question_type_model')
 export class QuestionTypeModel extends BaseEntity {
@@ -24,9 +29,15 @@ export class QuestionTypeModel extends BaseEntity {
   @ManyToMany(() => QuestionModel, (question) => question.questionTypes)
   questions: QuestionModel[];
 
-  @Column({ type: 'boolean', nullable: false, default: false })
-  forAsync: boolean;
+  @ManyToMany(() => AsyncQuestionModel, (question) => question.questionTypes)
+  asyncQuestions: AsyncQuestionModel[];
 
-  @Column({ type: 'boolean', nullable: false, default: false })
-  forQueue: boolean;
+  @ManyToOne((type) => QueueModel, (q) => q.questions)
+  @JoinColumn({ name: 'queueId' })
+  @Exclude()
+  queue: QueueModel;
+
+  @Column({ nullable: true })
+  @Exclude()
+  queueId: number | null;
 }

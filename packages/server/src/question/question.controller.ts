@@ -468,24 +468,24 @@ export class QuestionController {
   }
 
   @Post(':c/questionType')
-  async addQuestions(
+  async addQuestionType(
     @Res() res: Response,
-    @Param('c') course: number,
+    @Param('c') courseId: number,
     @Body() newQuestionType: QuestionTypeParams,
   ): Promise<void> {
     const questionType = await QuestionTypeModel.findOne({
       where: {
-        cid: course,
+        cid: courseId,
+        queueId: newQuestionType.queueId,
         name: newQuestionType.name,
       },
     });
     if (!questionType) {
       await QuestionTypeModel.create({
-        cid: course,
+        cid: courseId,
         name: newQuestionType.name,
         color: newQuestionType.color,
-        forAsync: newQuestionType.forAsync,
-        forQueue: newQuestionType.forQueue,
+        queueId: newQuestionType.queueId,
       }).save();
       res.status(200).send('success');
       return;
@@ -495,18 +495,20 @@ export class QuestionController {
     }
   }
 
-  @Get(':c/questionType/:forAsync/:forQueue')
-  async getQuestionType(
+  @Get(':c/questionType/:queueId')
+  async getQuestionTypes(
     @Res() res: Response,
     @Param('c') course: number,
-    @Param('forAsync') forAsync: boolean,
-    @Param('forQueue') forQueue: boolean,
+    @Param('queueId') queueId: number | null,
   ): Promise<QuestionTypeModel[]> {
+    if (typeof queueId !== 'number' || isNaN(queueId)) {
+      queueId = null;
+    }
+
     const questions = await QuestionTypeModel.find({
       where: {
         cid: course,
-        forAsync,
-        forQueue,
+        queueId,
       },
     });
     if (!questions) {

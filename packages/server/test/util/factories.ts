@@ -71,6 +71,7 @@ export const QueueFactory = new Factory(QueueModel)
 export const QuestionTypeFactory = new Factory(QuestionTypeModel)
   .attr('cid', 1)
   .attr('name', 'Question Type')
+  .assocOne('queue', QueueFactory)
   .attr('color', '#000000')
   .attr('questions', []);
 

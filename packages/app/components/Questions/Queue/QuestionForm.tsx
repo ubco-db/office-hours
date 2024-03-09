@@ -48,6 +48,7 @@ const SaveChangesButton = styled(Button)`
 interface QuestionFormProps {
   visible: boolean
   question: Question
+  queueId: number
   leaveQueue: () => void
   finishQuestion: (
     text: string,
@@ -72,6 +73,7 @@ export default function QuestionForm({
   finishQuestion,
   position,
   cancel,
+  queueId,
 }: QuestionFormProps): ReactElement {
   const [storageQuestion, setStoredQuestion] = useLocalStorage(
     'draftQuestion',
@@ -164,10 +166,9 @@ export default function QuestionForm({
     let isCancelled = false
 
     const fetchQuestions = async () => {
-      const questions = await API.questions.questionTypes(
+      const questions = await API.questions.getQuestionTypes(
         courseNumber,
-        false,
-        true,
+        queueId,
       )
       if (!isCancelled) {
         setQuestionsTypeState(questions)

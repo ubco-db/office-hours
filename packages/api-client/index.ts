@@ -374,14 +374,13 @@ class APIClient {
         undefined,
         { queueId },
       ),
-    questionTypes: async (
+    getQuestionTypes: async (
       courseId: number,
-      forAsync: boolean,
-      forQueue: boolean,
+      queueId: number | null,
     ): Promise<any> =>
       this.req(
         'GET',
-        `/api/v1/questions/${courseId}/questionType/${forAsync}/${forQueue}`,
+        `/api/v1/questions/${courseId}/questionType/${queueId}`,
         undefined,
       ),
     addQuestionType: async (
