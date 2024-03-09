@@ -31,6 +31,8 @@ ListQuestionsResponse {
         QuestionTypeModel {
           "cid": 1,
           "color": "#000000",
+          "forAsync": false,
+          "forQueue": false,
           "id": 1,
           "name": "Question Type",
         },
@@ -53,6 +55,8 @@ ListQuestionsResponse {
         QuestionTypeModel {
           "cid": 1,
           "color": "#000000",
+          "forAsync": false,
+          "forQueue": false,
           "id": 2,
           "name": "Question Type",
         },
@@ -104,6 +108,8 @@ ListQuestionsResponse {
       QuestionTypeModel {
         "cid": 1,
         "color": "#000000",
+        "forAsync": false,
+        "forQueue": false,
         "id": 1,
         "name": "Question Type",
       },
