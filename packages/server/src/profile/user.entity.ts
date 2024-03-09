@@ -1,10 +1,8 @@
 import { Exclude } from 'class-transformer';
 import { INSIGHTS_MAP } from '../insights/insight-objects';
-import * as bcrypt from 'bcrypt';
 import {
   AfterLoad,
   BaseEntity,
-  BeforeInsert,
   Column,
   Entity,
   JoinColumn,
@@ -22,6 +20,7 @@ import { AlertModel } from '../alerts/alerts.entity';
 import { AccountType, UserRole } from '@koh/common';
 import { OrganizationUserModel } from '../organization/organization-user.entity';
 import { InteractionModel } from '../chatbot/interaction.entity';
+import { UserTokenModel } from './user-token.entity';
 
 @Entity('user_model')
 export class UserModel extends BaseEntity {
@@ -106,6 +105,9 @@ export class UserModel extends BaseEntity {
   @OneToMany((type) => InteractionModel, (interaction) => interaction.user)
   @JoinColumn({ name: 'user' })
   interactions: InteractionModel[];
+
+  @OneToMany((type) => UserTokenModel, (userToken) => userToken.user)
+  tokens: UserTokenModel[];
 
   @AfterLoad()
   computeInsights(): void {

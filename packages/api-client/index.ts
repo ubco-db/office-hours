@@ -54,6 +54,7 @@ import {
   OrganizationStatsResponse,
   AddQuestionTypeParams,
   UBCOuserParam,
+  RegistrationTokenDetails,
 } from '@koh/common'
 import Axios, { AxiosInstance, Method } from 'axios'
 import { plainToClass } from 'class-transformer'
@@ -128,15 +129,8 @@ class APIClient {
       this.req('GET', `/api/v1/profile/${sid}/student`, undefined),
     inQueue: async (sid: number): Promise<boolean> =>
       this.req('GET', `/api/v1/profile/${sid}/inQueue`, undefined),
-    updatePassword: async (password: string, token: string): Promise<void> =>
-      this.req(
-        'PATCH',
-        `/api/v1/profile/${password}/update_password?token=${token}`,
-        undefined,
-      ),
-    verifyResetPassword: async (token: string): Promise<boolean> =>
-      this.req('GET', `/api/v1/profile/verify_token?token=${token}`, undefined),
   }
+
   chatbot = {
     createInteraction: async (body: {
       courseId: number

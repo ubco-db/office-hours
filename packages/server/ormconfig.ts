@@ -25,6 +25,8 @@ import { OrganizationUserModel } from './src/organization/organization-user.enti
 import { OrganizationModel } from './src/organization/organization.entity';
 import { OrganizationCourseModel } from './src/organization/organization-course.entity';
 import { ChatbotDocumentModel } from './src/chatbot/chatbotDocument.entity';
+import { UserTokenModel } from './src/profile/user-token.entity';
+
 config();
 
 // Options only used whe run via CLI
@@ -68,6 +70,7 @@ const typeorm = {
     OrganizationModel,
     OrganizationCourseModel,
     ChatbotDocumentModel,
+    UserTokenModel,
   ],
   keepConnectionAlive: true,
   logging:

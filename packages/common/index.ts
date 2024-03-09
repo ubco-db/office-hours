@@ -121,6 +121,30 @@ export type CoursePartial = {
   name: string
 }
 
+export class RegistrationTokenDetails {
+  @IsString()
+  token!: string
+}
+
+export class PasswordRequestResetBody {
+  @IsString()
+  email!: string
+
+  @IsString()
+  recaptchaToken!: string
+
+  @IsInt()
+  organizationId!: number
+}
+
+export class PasswordRequestResetWithTokenBody {
+  @IsString()
+  password!: string
+
+  @IsString()
+  confirmPassword!: string
+}
+
 /**
  * Represents a course that a user is accociated with and their role in that course
  * @param course - The course the user accociated with.

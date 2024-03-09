@@ -8,12 +8,14 @@ import { OAuth2Client } from 'google-auth-library';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 import { UserModel } from 'profile/user.entity';
 import * as bcrypt from 'bcrypt';
+import { TokenType, UserTokenModel } from 'profile/user-token.entity';
+import { MailService } from 'mail/mail.service';
 
 @Injectable()
 export class AuthService {
   client: OAuth2Client;
 
-  constructor() {
+  constructor(private mailerService: MailService) {
     this.client = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -176,6 +178,18 @@ export class AuthService {
         }).save();
       }
 
+      const createdAt: number = parseInt(new Date().getTime().toString());
+      const token: string = this.generateToken(8);
+
+      await UserTokenModel.create({
+        user: newUser,
+        token: token,
+        created_at: createdAt,
+        expires_at: createdAt + 1000 * 60 * 60 * 24,
+      }).save();
+
+      await this.mailerService.sendUserVerificationCode(token, email);
+
       const userId = newUser.id;
 
       await OrganizationUserModel.create({
@@ -196,5 +210,30 @@ export class AuthService {
       relations: ['organizationUser'],
     });
     return user && user.organizationUser.organizationId === oid ? true : false;
+  }
+
+  async createPasswordResetToken(user: UserModel): Promise<string> {
+    const token = this.generateToken(12).toLowerCase();
+    const createdAt = parseInt(new Date().getTime().toString());
+
+    await UserTokenModel.create({
+      user,
+      token,
+      created_at: createdAt,
+      expires_at: createdAt + 1000 * 60 * 60 * 24,
+      token_type: TokenType.PASSWORD_RESET,
+    }).save();
+
+    return token;
+  }
+
+  private generateToken(length: number): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let token = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      token += characters.charAt(randomIndex);
+    }
+    return token;
   }
 }

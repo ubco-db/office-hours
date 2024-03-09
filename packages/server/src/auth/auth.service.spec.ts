@@ -6,6 +6,8 @@ import { Connection } from 'typeorm';
 import { OrganizationFactory } from '../../test/util/factories';
 import { AccountType } from '@koh/common';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import { MailService } from 'mail/mail.service';
+import { MailModule } from 'mail/mail.module';
 
 // Extend the OAuth2Client mock with additional methods
 jest.mock('google-auth-library', () => {
@@ -50,17 +52,36 @@ jest.mock('google-auth-library', () => {
   };
 });
 
+class MockMailService {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async sendUserVerificationCode(
+    code: string,
+    receiver: string,
+  ): Promise<void> {
+    return;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async sendPasswordResetEmail(receiver: string, url: string): Promise<void> {
+    return;
+  }
+}
+
 describe('AuthService', () => {
   let service: AuthService;
   let conn: Connection;
+  let mailService: MailService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TestTypeOrmModule, TestConfigModule],
-      providers: [AuthService],
+      imports: [TestTypeOrmModule, TestConfigModule, MailModule],
+      providers: [
+        AuthService,
+        { provide: MailService, useClass: MockMailService },
+      ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
+    mailService = module.get<MailService>(MailService);
     conn = module.get<Connection>(Connection);
   });
 

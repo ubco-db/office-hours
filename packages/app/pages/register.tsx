@@ -77,7 +77,6 @@ export default function Register(): ReactElement {
     })
       .then(async (res) => {
         const data = await res.json()
-        console.log(res)
         if (!res.ok) {
           message.error(data.message)
           return
@@ -87,7 +86,6 @@ export default function Register(): ReactElement {
         }
       })
       .catch(async (err) => {
-        console.log(err)
         if (err && err.response) {
           message.error(err.response.data.message)
           return

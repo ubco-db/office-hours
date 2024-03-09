@@ -289,7 +289,7 @@ export default function Login(): ReactElement {
                   </Form.Item>
 
                   <div className="d-flex flex-row space-x-8 text-center">
-                    <a href="/forgetpassword/forget">Forgot password</a>
+                    <a href="/account/password">Forgot password</a>
                     <a href="/register">Create account</a>
                   </div>
                 </Form>
