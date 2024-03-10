@@ -33,6 +33,7 @@ interface EditQueueModalProps {
   question: AsyncQuestion
   visible: boolean
   onClose: () => void
+  onQuestionUpdated: () => void
 }
 
 AsyncQuestionForm.propTypes = {
@@ -44,6 +45,7 @@ export function AsyncQuestionForm({
   question,
   visible,
   onClose,
+  onQuestionUpdated,
 }: EditQueueModalProps): ReactElement {
   const router = useRouter()
   const courseId = Number(router.query['cid'])
@@ -91,22 +93,21 @@ export function AsyncQuestionForm({
   }
 
   const createQuestion = async (value) => {
-    const aiAnswer = await getAiAnswer(
-      value.QuestionAbstract + ' ' + value.questionText,
-    )
+    let questionId = NaN
     await API.asyncQuestions
       .create(
         {
           questionTypes: questionTypeInput,
           questionText: value.questionText,
-          aiAnswerText: aiAnswer,
-          answerText: aiAnswer,
+          aiAnswerText: 'AI answer being generated...',
+          answerText: 'AI answer being generated...',
           questionAbstract: value.QuestionAbstract,
           visible: isVisible,
         },
         courseId,
       )
       .then((response) => {
+        questionId = response?.id
         if (selectedImage && response) {
           const data = new FormData()
           data.append('AsyncQuestionId', String(response.id))
@@ -120,19 +121,34 @@ export function AsyncQuestionForm({
         }
       })
     message.success('Question Posted')
-  }
+    onQuestionUpdated()
 
-  const updateQuestion = async (value) => {
     const aiAnswer = await getAiAnswer(
       value.QuestionAbstract + ' ' + value.questionText,
     )
 
-    await API.asyncQuestions
-      .update(question.id, {
+    if (questionId) {
+      await API.asyncQuestions.update(questionId, {
         questionTypes: questionTypeInput,
         questionText: value.questionText,
         aiAnswerText: aiAnswer,
         answerText: aiAnswer,
+        questionAbstract: value.QuestionAbstract,
+        visible: isVisible,
+      })
+
+      message.success('Your question has received an AI answer')
+      onQuestionUpdated()
+    }
+  }
+
+  const updateQuestion = async (value) => {
+    await API.asyncQuestions
+      .update(question.id, {
+        questionTypes: questionTypeInput,
+        questionText: value.questionText,
+        aiAnswerText: 'AI answer being generated...',
+        answerText: 'AI answer being generated...',
         questionAbstract: value.QuestionAbstract,
         visible: isVisible,
       })
@@ -149,7 +165,24 @@ export function AsyncQuestionForm({
           })
         }
       })
-    message.success('Question Posted')
+    message.success('Question Updated')
+    onQuestionUpdated()
+
+    const aiAnswer = await getAiAnswer(
+      value.QuestionAbstract + ' ' + value.questionText,
+    )
+
+    await API.asyncQuestions.update(question.id, {
+      questionTypes: questionTypeInput,
+      questionText: value.questionText,
+      aiAnswerText: aiAnswer,
+      answerText: aiAnswer,
+      questionAbstract: value.QuestionAbstract,
+      visible: isVisible,
+    })
+
+    message.success('Your question has received an updated AI answer')
+    onQuestionUpdated()
   }
 
   const onFinish = (value) => {
