@@ -50,12 +50,13 @@ import { QuestionModel } from './question.entity';
 import { QuestionService } from './question.service';
 import { QuestionTypeModel } from './question-type.entity';
 import { pick } from 'lodash';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 // NOTE: FIXME: EVERY REQUEST INTO QUESTIONCONTROLLER REQUIRES THE BODY TO HAVE A
 // FIELD questionId OR queueId! If not, stupid weird untraceable bugs will happen
 // and you will lose a lot of development time
 @Controller('questions')
-@UseGuards(JwtAuthGuard, QuestionRolesGuard)
+@UseGuards(JwtAuthGuard, QuestionRolesGuard, EmailVerifiedGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class QuestionController {
   constructor(

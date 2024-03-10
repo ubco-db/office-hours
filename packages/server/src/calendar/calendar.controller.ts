@@ -14,9 +14,10 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CalendarModel } from './calendar.entity';
 import { Calendar, ERROR_MESSAGES } from '@koh/common';
 import { CourseModel } from 'course/course.entity';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('calendar')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}
   @Post()

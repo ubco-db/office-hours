@@ -47,6 +47,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'mail/mail.service';
 import { OrganizationService } from '../organization/organization.service';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 @Controller('profile')
 export class ProfileController {
   constructor(
@@ -62,7 +63,7 @@ export class ProfileController {
   //potential problem-should fix later. Currently checking whether question in database, but student can be in different queues(so find with both queues and user id)
   //get all student in course
   @Get(':c/id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getAllStudents(
     @Param('c') c: number,
     @Res() res: Response,
@@ -114,7 +115,7 @@ export class ProfileController {
   }
 
   @Get(':id/inQueue')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async inQueue(
     @Param('id') id: number,
     @Res() res: Response,
@@ -234,7 +235,7 @@ export class ProfileController {
   }
 
   @Patch()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async patch(
     @Res() res: Response,
     @Body() userPatch: UpdateProfileParams,
@@ -300,7 +301,7 @@ export class ProfileController {
   }
 
   @Post('/upload_picture')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -347,7 +348,7 @@ export class ProfileController {
   }
 
   @Get('/get_picture/:photoURL')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getImage(
     @Param('photoURL') photoURL: string,
     @Res() res: Response,
@@ -372,7 +373,7 @@ export class ProfileController {
   }
 
   @Delete('/delete_profile_picture')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async deleteProfilePicture(@User() user: UserModel): Promise<void> {
     if (user.photoURL) {
       if (user.photoURL.startsWith('http')) {

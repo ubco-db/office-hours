@@ -505,6 +505,7 @@ describe('Auth Integration', () => {
       const organization = await OrganizationFactory.create();
       const user = await UserFactory.create({
         email: 'email.com',
+        emailVerified: false,
       });
 
       await OrganizationUserModel.create({
