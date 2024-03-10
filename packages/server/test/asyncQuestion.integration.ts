@@ -25,7 +25,7 @@ describe('Async Question Integration', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(response.body).toMatchSnapshot();
+      expect(response.body.vote).toBe(1);
     });
 
     it('should update an existing vote on a question', async () => {
@@ -99,13 +99,15 @@ describe('Async Question Integration', () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body).toMatchSnapshot();
+      expect(response.body.aiAnswerText).toBe('ai');
+      expect(response.body.answerText).toBe('answer');
+      expect(response.body.status).toBe(asyncQuestionStatus.Waiting);
     });
 
     it('should not create a question in a non-existent course', async () => {
       const student = await UserFactory.create();
       const response = await supertest({ userId: student.id })
-        .post(`/asyncQuestions/9999`) // Assuming 9999 is a non-existent course ID
+        .post(`/asyncQuestions/9999`)
         .send({
           questionAbstract: 'abstract',
           questionText: 'text',
