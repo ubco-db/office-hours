@@ -1,5 +1,4 @@
 import {
-  AddQuestionTypeParams,
   ClosedQuestionStatus,
   CreateQuestionParams,
   CreateQuestionResponse,
@@ -10,6 +9,7 @@ import {
   OpenQuestionStatus,
   questions,
   QuestionStatusKeys,
+  QuestionTypeParams,
   Role,
   UpdateQuestionParams,
   UpdateQuestionResponse,
@@ -291,7 +291,7 @@ export class QuestionController {
       question = Object.assign(question, body);
       if (body.questionTypes) {
         question.questionTypes = body.questionTypes.map(
-          (type: AddQuestionTypeParams) => {
+          (type: QuestionTypeParams) => {
             const questionType = new QuestionTypeModel();
             questionType.id = type.id;
             questionType.cid = type.cid;
@@ -471,7 +471,7 @@ export class QuestionController {
   async addQuestions(
     @Res() res: Response,
     @Param('c') course: number,
-    @Body() newQuestionType: AddQuestionTypeParams,
+    @Body() newQuestionType: QuestionTypeParams,
   ): Promise<void> {
     const questionType = await QuestionTypeModel.findOne({
       where: {

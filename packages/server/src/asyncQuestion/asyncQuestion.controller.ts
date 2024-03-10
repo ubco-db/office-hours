@@ -27,6 +27,7 @@ import { AsyncQuestionModel } from './asyncQuestion.entity';
 import { asyncQuestionService } from './asyncQuestion.service';
 import { CourseModel } from 'course/course.entity';
 import { MailService } from 'mail/mail.service';
+
 @Controller('asyncQuestions')
 @UseGuards(JwtAuthGuard)
 export class asyncQuestionController {
@@ -43,7 +44,6 @@ export class asyncQuestionController {
     @User() user: UserModel,
   ): Promise<any> {
     // const { text, questionType, groupable, queueId, force } = body;
-    console.log(body);
     const c = await CourseModel.findOne({
       where: { id: cid },
     });
@@ -53,6 +53,7 @@ export class asyncQuestionController {
         ERROR_MESSAGES.questionController.createQuestion.invalidQueue,
       );
     }
+
     //check whether there are images to be added
     try {
       const question = await AsyncQuestionModel.create({
@@ -62,7 +63,9 @@ export class asyncQuestionController {
         course: c,
         questionAbstract: body.questionAbstract,
         questionText: body.questionText || null,
-        questionType: body.questionType,
+        answerText: body.answerText || null,
+        aiAnswerText: body.aiAnswerText,
+        questionTypes: body.questionTypes,
         status: asyncQuestionStatus.Waiting,
         visible: body.visible || false,
         createdAt: new Date(),
@@ -101,6 +104,9 @@ export class asyncQuestionController {
     if (question === undefined) {
       throw new NotFoundException();
     }
+
+    question.aiAnswerText = body.aiAnswerText;
+    question.answerText = body.answerText;
 
     //If not creator, check if user is TA/PROF of course of question
 
