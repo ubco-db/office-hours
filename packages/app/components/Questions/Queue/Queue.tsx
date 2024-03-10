@@ -38,6 +38,7 @@ import { AddStudentsModal } from './TAAddStudent'
 import { EditQueueModal } from './EditQueueModal'
 import PropTypes from 'prop-types'
 import { EditOutlined, LoginOutlined, PlusOutlined } from '@ant-design/icons'
+import { NextRouter } from 'next/router'
 
 const Container = styled.div`
   flex: 1;
@@ -283,6 +284,14 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
   )
 
   function RenderQueueInfoCol(): ReactElement {
+    const [isJoinQueueModalLoading, setIsJoinQueueModalLoading] =
+      useState(false)
+
+    const joinQueue = useCallback(async () => {
+      setIsJoinQueueModalLoading(true)
+      await joinQueueOpenModal(false)
+      setIsJoinQueueModalLoading(false)
+    }, [joinQueueOpenModal])
     return isStaff ? (
       <QueueInfoColumn
         queueId={qid}
@@ -387,14 +396,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
   }
 
   function RenderQueueQuestions({ questions }: QueueProps) {
-    const [isJoinQueueModalLoading, setIsJoinQueueModalLoading] =
-      useState(false)
-
-    const joinQueue = useCallback(async () => {
-      setIsJoinQueueModalLoading(true)
-      await joinQueueOpenModal(false)
-      setIsJoinQueueModalLoading(false)
-    }, [joinQueueOpenModal])
     return (
       <div data-cy="queueQuestions">
         {questions?.length === 0 ? (

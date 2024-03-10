@@ -1,4 +1,4 @@
-import { ReactElement } from 'react'
+import { ReactElement, useState } from 'react'
 import { Text } from './SharedComponents'
 import { QuestionTypeParams } from '@koh/common'
 
