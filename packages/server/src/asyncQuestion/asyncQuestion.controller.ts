@@ -47,6 +47,17 @@ export class asyncQuestionController {
     @User() user: UserModel,
     @Res() res: Response,
   ): Promise<AsyncQuestion> {
+    const question = await AsyncQuestionModel.findOne({
+      where: { id: qid },
+    });
+
+    if (!question) {
+      res
+        .status(404)
+        .send({ message: ERROR_MESSAGES.questionController.notFound });
+      return;
+    }
+
     const thisUserThisQuestionVote = await AsyncQuestionVotesModel.findOne({
       where: { userId: user.id, questionId: qid },
     });
@@ -57,7 +68,6 @@ export class asyncQuestionController {
     const newValue = sumVotes + vote;
 
     const canVote = newValue <= 1 && newValue >= -1;
-
     if (canVote) {
       if (hasVoted) {
         thisUserThisQuestionVote.vote = newValue;
@@ -71,9 +81,6 @@ export class asyncQuestionController {
         await vote.save();
       }
     }
-    const question = await AsyncQuestionModel.findOne({
-      where: { id: qid },
-    });
 
     res
       .status(200)
@@ -87,19 +94,19 @@ export class asyncQuestionController {
     @Body() body: CreateAsyncQuestions,
     @Param('cid') cid: number,
     @User() user: UserModel,
+    @Res() res: Response,
   ): Promise<any> {
-    // const { text, questionType, groupable, queueId, force } = body;
     const c = await CourseModel.findOne({
       where: { id: cid },
     });
 
     if (!c) {
-      throw new NotFoundException(
-        ERROR_MESSAGES.questionController.createQuestion.invalidQueue,
-      );
+      res
+        .status(404)
+        .send({ message: ERROR_MESSAGES.questionController.notFound });
+      return;
     }
 
-    //check whether there are images to be added
     try {
       const question = await AsyncQuestionModel.create({
         courseId: cid,
@@ -115,25 +122,14 @@ export class asyncQuestionController {
         visible: body.visible || false,
         createdAt: new Date(),
       }).save();
-      // const professors = await UserCourseModel.findOne({
-      //   where: {
-      //     role: Role.PROFESSOR,
-      //   },
-      // });
-      // console.log(professors);
-      // const post: sendEmailAsync = {
-      //   receiver: professors.user.email,
-      //   subject: 'UBC helpme Async question created',
-      //   type: asyncQuestionEventType.created,
-      // };
-      // this.mailService.sendEmail(post);
-      return question;
+      res.status(201).send(question);
+      return;
     } catch (err) {
       console.error(err);
-      throw new HttpException(
-        ERROR_MESSAGES.questionController.saveQError,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      res
+        .status(500)
+        .send({ message: ERROR_MESSAGES.questionController.saveQError });
+      return;
     }
   }
 
@@ -183,38 +179,3 @@ export class asyncQuestionController {
     return question;
   }
 }
-//delete questions currently not implemented.
-
-// @Delete(':questionId')
-// async deleteQuestion(
-//     @Param('questionId') questionId: number,
-//     @Body() body: UpdateAsyncQuestions,
-//   ): Promise<AsyncQuestion> {
-//     const question = await AsyncQuestionModel.findOne({
-//       where: { id: questionId },
-//       relations: ['creator', 'images'],
-//     });
-//     if (!question) {
-//       throw new NotFoundException();
-//     }
-
-//     const receiver = await UserModel.findOne({
-//       where: {
-//         id: question.creatorId,
-//       },
-//     });
-//     if (!receiver) {
-//       throw NotFoundException;
-//     }
-
-//     const post: sendEmailAsync = {
-//       receiver: receiver.email,
-//       subject: 'UBC helpme Async question status change',
-//       type: asyncQuestionEventType.deleted,
-//     };
-//     this.mailService.sendEmail(post);
-
-//     return question;
-//   }
-
-// }
