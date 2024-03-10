@@ -44,8 +44,7 @@ export const ChatbotComponent: React.FC = () => {
   const profile = useProfile()
   const [isLoading, setIsLoading] = useState(false)
   const [interactionId, setInteractionId] = useState<number | null>(null)
-  const [preDeterminedQuestions, setPreDeterminedQuestions] =
-    useState<PreDeterminedQuestion[]>(null)
+  const [preDeterminedQuestions] = useState<PreDeterminedQuestion[]>(null)
 
   const [messages, setMessages] = useState<Message[]>([
     {

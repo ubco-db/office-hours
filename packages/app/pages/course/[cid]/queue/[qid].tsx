@@ -7,7 +7,7 @@ import NavBar from '../../../../components/Nav/NavBar'
 import { useQueue } from '../../../../hooks/useQueue'
 import { useRoleInCourse } from '../../../../hooks/useRoleInCourse'
 import { useChatbotContext } from '../../../../providers/chatbotProvider'
-import QueuePage from '../../../../components/Queue/Queue'
+import QueuePage from '../../../../components/Questions/Queue/Queue'
 
 const Container = styled.div`
   flex: 1;
