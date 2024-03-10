@@ -240,12 +240,28 @@ export class QuestionController {
       }
     }
 
+    const types = await Promise.all(
+      questionTypes.map(async (type) => {
+        const questionType = await QuestionTypeModel.findOne({
+          where: {
+            id: type.id,
+          },
+        });
+        if (!questionType) {
+          throw new BadRequestException(
+            ERROR_MESSAGES.questionController.createQuestion.invalidQuestionType,
+          );
+        }
+        return questionType;
+      }),
+    );
+
     try {
       const question = await QuestionModel.create({
         queueId: queueId,
         creator: user,
         text,
-        questionTypes,
+        questionTypes: types,
         groupable,
         status: QuestionStatusKeys.Drafting,
         createdAt: new Date(),
@@ -290,15 +306,20 @@ export class QuestionController {
       }
       question = Object.assign(question, body);
       if (body.questionTypes) {
-        question.questionTypes = body.questionTypes.map(
-          (type: QuestionTypeParams) => {
-            const questionType = new QuestionTypeModel();
-            questionType.id = type.id;
-            questionType.cid = type.cid;
-            questionType.name = type.name;
-            questionType.color = type.color;
+        question.questionTypes = await Promise.all(
+          body.questionTypes.map(async (type) => {
+            const questionType = await QuestionTypeModel.findOne({
+              where: {
+                id: type.id,
+              },
+            });
+            if (!questionType) {
+              throw new BadRequestException(
+                ERROR_MESSAGES.questionController.createQuestion.invalidQuestionType,
+              );
+            }
             return questionType;
-          },
+          }),
         );
       }
 

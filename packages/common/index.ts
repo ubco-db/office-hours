@@ -302,6 +302,7 @@ export class Question {
   @Type(() => Date)
   closedAt?: Date
 
+  @Type(() => QuestionTypeParams)
   questionTypes?: QuestionTypeParams[]
 
   status!: QuestionStatus
@@ -1465,6 +1466,7 @@ export const ERROR_MESSAGES = {
       noNewQuestions: 'Queue not allowing new questions',
       closedQueue: 'Queue is closed',
       oneQuestionAtATime: "You can't create more than one question at a time.",
+      invalidQuestionType: 'Invalid question type',
     },
     updateQuestion: {
       fsmViolation: (

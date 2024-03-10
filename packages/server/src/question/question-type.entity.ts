@@ -38,6 +38,5 @@ export class QuestionTypeModel extends BaseEntity {
   queue: QueueModel;
 
   @Column({ nullable: true })
-  @Exclude()
   queueId: number | null;
 }

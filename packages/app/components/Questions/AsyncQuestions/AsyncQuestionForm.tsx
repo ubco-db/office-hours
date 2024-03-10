@@ -186,7 +186,6 @@ export function AsyncQuestionForm({
   }
 
   const onFinish = (value) => {
-    console.log(value)
     if (!question) {
       createQuestion(value)
     } else {

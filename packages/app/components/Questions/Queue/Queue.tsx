@@ -190,7 +190,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
   }, [qid])
 
   const closeEditModal = useCallback(() => {
-    console.log('closeEditModal')
     setPopupEditQuestion(false)
     setIsJoining(false)
   }, [])
