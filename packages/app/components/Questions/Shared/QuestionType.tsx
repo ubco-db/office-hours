@@ -78,6 +78,28 @@ export function CheckableQuestionType({
     onChange(typeID, !checked)
   }
 
+  // for making it so you can press enter to toggle it
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      handleClick()
+    }
+  }
+
+  // for applying hover and focus styles
+  const [isHovered, setIsHovered] = useState(false)
+  const handleMouseEnter = () => {
+    setIsHovered(true)
+  }
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+  }
+  const handleFocus = () => {
+    setIsHovered(true)
+  }
+  const handleBlur = () => {
+    setIsHovered(false)
+  }
+
   return (
     <div
       style={{
@@ -88,10 +110,18 @@ export function CheckableQuestionType({
         display: 'inline-block',
         cursor: 'pointer',
         border: `1px solid ${typeColor}`,
+        boxShadow: isHovered ? `0 0 0 2px ${typeColor}` : undefined,
       }}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      tabIndex={0}
+      role="checkbox"
     >
-      <Text style={{ fontSize: 'smaller', color: textColor }}>{typeName}</Text>{' '}
+      <Text style={{ fontSize: 'smaller', color: textColor }}>{typeName}</Text>
     </div>
   )
 }
@@ -105,6 +135,8 @@ interface QuestionTypeSelectorProps {
   onChange: (newSelectedTypes: number[]) => void
   value: number[]
   className?: string
+  ariaLabel?: string
+  ariaLabelledBy?: string
 }
 
 export function QuestionTypeSelector({
@@ -112,6 +144,8 @@ export function QuestionTypeSelector({
   onChange,
   value,
   className,
+  ariaLabel,
+  ariaLabelledBy,
 }: QuestionTypeSelectorProps): React.ReactElement {
   const [selectedTypes, setSelectedTypes] = useState(value || [])
 
@@ -125,7 +159,12 @@ export function QuestionTypeSelector({
   }
 
   return (
-    <div className={className}>
+    <div
+      className={className}
+      role="group"
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+    >
       {questionTypes.map((type) =>
         type.name ? ( // don't display question types with no name (e.g. glitched ones)
           <CheckableQuestionType

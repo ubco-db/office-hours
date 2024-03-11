@@ -12,7 +12,6 @@ import {
 import styled from 'styled-components'
 import { useLocalStorage } from '../../../hooks/useLocalStorage'
 import { toOrdinal } from '../../../utils/ordinal'
-import { useHotkeys } from 'react-hotkeys-hook'
 import { API } from '@koh/api-client'
 import { QuestionTypeSelector } from '../Shared/QuestionType'
 import PropTypes from 'prop-types'
@@ -227,8 +226,8 @@ export default function QuestionForm({
           />
         )}
         {questionsTypeState.length > 0 ? (
-          <>
-            <QuestionText>
+          <section aria-labelledby="question-type-text">
+            <QuestionText id="question-type-text">
               What category(s) does your question fall under?
             </QuestionText>
             <QuestionTypeSelector
@@ -236,8 +235,9 @@ export default function QuestionForm({
               value={questionTypeInput.map((type) => type.id)}
               questionTypes={questionsTypeState}
               className="mb-4"
+              ariaLabelledBy="question-type-text"
             ></QuestionTypeSelector>
-          </>
+          </section>
         ) : (
           <p>No Question types found</p>
         )}

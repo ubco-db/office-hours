@@ -200,9 +200,9 @@ body {
 } */
 
 /* for testing -> all focussed elements get a yellow highlight background */
-*:focus {
-    background-color: yellow !important;
-}
+/* *:focus {
+    background-color: blueviolet !important;
+} */
 
  /* this is purely just to give the CustomCard the hover effect when it gets focused (when tabbing through the queues) */
  a .ant-card.open-queue-card {
