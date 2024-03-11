@@ -99,7 +99,7 @@ function createQueueTab(
             <Link href="/course/[cid]/queue/[qid]" as={queuePath}>
               <a
                 aria-disabled={isSelected ? 'true' : 'false'}
-                tabIndex={isSelected ? -1 : 2}
+                tabIndex={isSelected ? -1 : 0}
               >
                 {openQueue.room}
               </a>
@@ -119,9 +119,9 @@ function createGeneralTab(tabItem: NavBarGeneralTabItem, currentPath: string) {
         <a
           className={tabItem.className}
           aria-disabled={isSelected ? 'true' : 'false'}
-          tabIndex={isSelected ? -1 : 2}
+          tabIndex={isSelected ? -1 : 0}
         >
-          {tabItem.text}{' '}
+          {tabItem.text}
         </a>
       </Link>
     </MenuItem>

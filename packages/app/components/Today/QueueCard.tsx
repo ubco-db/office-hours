@@ -50,6 +50,8 @@ const CustomCard = styled(Card)`
       transition: color 0.3s ease-in-out;
     }
   }
+
+  // NOTE: in global.css there is also some code to change the card's focus property (applies same style as on hover, just used when tabbing through the queues).
 `
 
 const QueueInfoRow = styled.div`
@@ -142,127 +144,135 @@ const QueueCard = ({
       href={isLinkEnabled ? '/course/[cid]/queue/[qid]' : ''}
       as={isLinkEnabled ? `/course/${cid}/queue/${queue.id}` : ''}
     >
-      <CustomCard
-        headStyle={{
-          background: queue.isOpen ? '#25426C' : '#25426cbf',
-          color: '#FFFFFF',
-          borderRadius: '6px 6px 0 0',
-        }}
-        // make the card glow if there are staff members in the queue
-        className={
-          'open-queue-card' +
-          (queue.staffList.length >= 1 ? ' glowy ' : '') +
-          (isLinkEnabled ? ' cursor-pointer ' : '')
+      <a
+        aria-label={
+          queue.room +
+          ' Queue. ' +
+          (queue.staffList.length >= 1 ? ' it has staff checked in. ' : '')
         }
-        title={
-          <span className="mr-8 flex flex-row flex-wrap items-center justify-between">
-            <div>
-              {queue.room}
-
-              <QueueInfoTags>
-                {queue?.isProfessorQueue && (
-                  <Tag color="#337589" className="m-0 mr-1 text-gray-200">
-                    Professor Queue
-                  </Tag>
-                )}
-                {queue.isOpen && !queue.allowQuestions && (
-                  <Tooltip title="This queue is no longer accepting questions">
-                    <Tag
-                      icon={<StopOutlined />}
-                      color="#591e40"
-                      className="m-0 text-gray-300"
-                    >
-                      Not Accepting Questions
-                    </Tag>
-                  </Tooltip>
-                )}
-              </QueueInfoTags>
-            </div>
-            <div className="mr-8 h-fit text-sm font-normal text-gray-200">
-              <span className="text-lg font-medium">{queue.queueSize}</span> in
-              queue
-            </div>
-          </span>
-        }
-        extra={<RightOutlined className=" text-3xl text-gray-100" />}
       >
-        <div className="flex flex-row items-center justify-start">
-          <div className=" mr-3 text-sm">
-            <span className=" text-base">{queue.staffList.length} </span>
-            staff checked in{queue.staffList.length > 0 ? ':' : ''}
-          </div>
-          <div>
-            {staffList.map((staffMember) => (
-              <Tooltip key={staffMember.id} title={staffMember.name}>
-                <StyledKOHAvatar
-                  size={48}
-                  photoURL={staffMember.photoURL}
-                  name={staffMember.name}
-                />
-              </Tooltip>
-            ))}
-          </div>
-        </div>
+        <CustomCard
+          headStyle={{
+            background: queue.isOpen ? '#25426C' : '#25426cbf',
+            color: '#FFFFFF',
+            borderRadius: '6px 6px 0 0',
+          }}
+          // make the card glow if there are staff members in the queue
+          className={
+            'open-queue-card' +
+            (queue.staffList.length >= 1 ? ' glowy ' : '') +
+            (isLinkEnabled ? ' cursor-pointer ' : '')
+          }
+          title={
+            <span className="mr-8 flex flex-row flex-wrap items-center justify-between">
+              <div>
+                {queue.room}
 
-        <Row justify="space-between" align="middle">
-          <QueueCardDivider />
-          {/* If notes being edited, show input box.
+                <QueueInfoTags>
+                  {queue?.isProfessorQueue && (
+                    <Tag color="#337589" className="m-0 mr-1 text-gray-200">
+                      Professor Queue
+                    </Tag>
+                  )}
+                  {queue.isOpen && !queue.allowQuestions && (
+                    <Tooltip title="This queue is no longer accepting questions">
+                      <Tag
+                        icon={<StopOutlined />}
+                        color="#591e40"
+                        className="m-0 text-gray-300"
+                      >
+                        Not Accepting Questions
+                      </Tag>
+                    </Tooltip>
+                  )}
+                </QueueInfoTags>
+              </div>
+              <div className="mr-8 h-fit text-sm font-normal text-gray-200">
+                <span className="text-lg font-medium">{queue.queueSize}</span>{' '}
+                in queue
+              </div>
+            </span>
+          }
+          extra={<RightOutlined className=" text-3xl text-gray-100" />}
+        >
+          <div className="flex flex-row items-center justify-start">
+            <div className=" mr-3 text-sm">
+              <span className=" text-base">{queue.staffList.length} </span>
+              staff checked in{queue.staffList.length > 0 ? ':' : ''}
+            </div>
+            <div>
+              {staffList.map((staffMember) => (
+                <Tooltip key={staffMember.id} title={staffMember.name}>
+                  <StyledKOHAvatar
+                    size={48}
+                    photoURL={staffMember.photoURL}
+                    name={staffMember.name}
+                  />
+                </Tooltip>
+              ))}
+            </div>
+          </div>
+
+          <Row justify="space-between" align="middle">
+            <QueueCardDivider />
+            {/* If notes being edited, show input box.
           Else if there are notes, show the notes.
           Else if you're a TA, show placeholder.
           Else show nothing */}
-          {editingNotes ? (
-            <NotesDiv>
-              <NotesInput
-                defaultValue={queue.notes}
-                value={updatedNotes}
-                onChange={(e) => setUpdatedNotes(e.target.value as any)}
-              />
-            </NotesDiv>
-          ) : queue.notes ? (
-            <div>
-              <Linkify
-                componentDecorator={(decoratedHref, decoratedText, key) => (
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={decoratedHref}
-                    key={key}
-                  >
-                    {decoratedText}
-                  </a>
-                )}
-              >
-                <Notes>
-                  <NotificationOutlined /> <i>{queue.notes}</i>
-                </Notes>
-              </Linkify>
-            </div>
-          ) : isTA ? (
-            <i className="font-light text-gray-400"> no notes provided </i>
-          ) : null}
-          <RightQueueNotesRow>
-            {editingNotes && (
-              <SaveButton onClick={handleUpdate} size="large">
-                Save Changes
-              </SaveButton>
-            )}
-            {!editingNotes && (
-              <QueueCardButtonRow>
-                {isTA && (
-                  <EditNotesButton
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsLinkEnabled(false)
-                      setEditingNotes(true)
-                    }}
-                    icon={<EditOutlined />}
-                  />
-                )}
-              </QueueCardButtonRow>
-            )}
-          </RightQueueNotesRow>
-        </Row>
-      </CustomCard>
+            {editingNotes ? (
+              <NotesDiv>
+                <NotesInput
+                  defaultValue={queue.notes}
+                  value={updatedNotes}
+                  onChange={(e) => setUpdatedNotes(e.target.value as any)}
+                />
+              </NotesDiv>
+            ) : queue.notes ? (
+              <div>
+                <Linkify
+                  componentDecorator={(decoratedHref, decoratedText, key) => (
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={decoratedHref}
+                      key={key}
+                    >
+                      {decoratedText}
+                    </a>
+                  )}
+                >
+                  <Notes>
+                    <NotificationOutlined /> <i>{queue.notes}</i>
+                  </Notes>
+                </Linkify>
+              </div>
+            ) : isTA ? (
+              <i className="font-light text-gray-400"> no notes provided </i>
+            ) : null}
+            <RightQueueNotesRow>
+              {editingNotes && (
+                <SaveButton onClick={handleUpdate} size="large">
+                  Save Changes
+                </SaveButton>
+              )}
+              {!editingNotes && (
+                <QueueCardButtonRow>
+                  {isTA && (
+                    <EditNotesButton
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsLinkEnabled(false)
+                        setEditingNotes(true)
+                      }}
+                      icon={<EditOutlined />}
+                    />
+                  )}
+                </QueueCardButtonRow>
+              )}
+            </RightQueueNotesRow>
+          </Row>
+        </CustomCard>
+      </a>
     </Link>
   )
 }

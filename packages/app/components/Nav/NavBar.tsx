@@ -207,7 +207,7 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
   tabs.push({
     href: '/courses',
     as: `/courses`,
-    text: 'My Courses >',
+    text: 'My Courses \u200B>\u200B', // zero-width space, to make the arrow invisible to screen readers
   })
 
   return courseId ? (

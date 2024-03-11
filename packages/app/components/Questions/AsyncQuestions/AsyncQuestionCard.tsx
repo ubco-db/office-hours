@@ -63,22 +63,26 @@ const AsyncQuestionCard = (): ReactElement => {
       href="/course/[cid]/async_question"
       as={`/course/${cid}/async_question`}
     >
-      <CustomCard
-        headStyle={{
-          background: 'rgb(60, 66, 111)',
-          color: '#FFFFFF',
-          borderRadius: '6px 6px 0 0',
-        }}
-        className={'open-queue-card'}
-        title="Async Question Centre"
-        extra={<RightOutlined className=" text-3xl text-gray-100" />}
-      >
-        <QueueInfoRow>
-          <h4 className="italic text-gray-600">Ask your questions any time!</h4>
-        </QueueInfoRow>
+      <a aria-label="Async Question Centre">
+        <CustomCard
+          headStyle={{
+            background: 'rgb(60, 66, 111)',
+            color: '#FFFFFF',
+            borderRadius: '6px 6px 0 0',
+          }}
+          className={'open-queue-card'}
+          title="Async Question Centre"
+          extra={<RightOutlined className=" text-3xl text-gray-100" />}
+        >
+          <QueueInfoRow>
+            <h4 className="italic text-gray-600">
+              Ask your questions any time!
+            </h4>
+          </QueueInfoRow>
 
-        <Row justify="space-between" align="middle"></Row>
-      </CustomCard>
+          <Row justify="space-between" align="middle"></Row>
+        </CustomCard>
+      </a>
     </Link>
   )
 }

@@ -203,3 +203,23 @@ body {
 *:focus {
     background-color: yellow !important;
 }
+
+ /* this is purely just to give the CustomCard the hover effect when it gets focused (when tabbing through the queues) */
+ a .ant-card.open-queue-card {
+    transition: box-shadow 0.3s ease;
+  }
+  
+  a:focus-within .ant-card.open-queue-card {
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.45);
+  }
+  
+  a:focus-within .ant-card.open-queue-card .ant-card-head {
+    background: rgb(47, 76, 128) !important;
+    transition: color 0.3s ease-in-out !important;
+  }
+  
+  /* // make the green arrow right on hover (still uncertain on whether to keep this) */
+  a:focus-within .ant-card.open-queue-card .anticon.anticon-right {
+    color: lightgreen;
+    transition: color 0.3s ease-in-out;
+  }

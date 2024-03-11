@@ -279,6 +279,7 @@ export const ChatbotToday: React.FC = () => {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Ask something..."
+        aria-label="Chatbot input field"
         onPressEnter={handleAsk}
         className="mt-auto w-4/5"
         suffix={

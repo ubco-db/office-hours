@@ -152,12 +152,6 @@ export default function QuestionForm({
     }
   }
 
-  useHotkeys('enter', () => onClickSubmit(), { enableOnTags: ['TEXTAREA'] }, [
-    questionTypeInput,
-    questionText,
-    router,
-    courseId,
-  ])
   // all possible questions, use courseId
   const courseNumber = Number(courseId)
   const getQuestions = useCallback(() => {
