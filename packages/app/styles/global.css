@@ -189,3 +189,17 @@ body {
 .glowy:after {
 	filter: blur(1.5px);
 }
+
+/* make selected links (i.e. the page you are currently on) hover a different colour (hovering on a selected link would appear the same)
+.ant-menu-horizontal > .ant-menu-item-selected.ant-menu-item a {
+    transition: text-shadow 0.3s ease;
+    text-shadow: 0px 0px 0px transparent;
+}
+.ant-menu-horizontal > .ant-menu-item-selected.ant-menu-item a:hover {
+    text-shadow: 0px 0px 1px #000;
+} */
+
+/* for testing -> all focussed elements get a yellow highlight background */
+*:focus {
+    background-color: yellow !important;
+}

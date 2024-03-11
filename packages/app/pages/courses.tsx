@@ -68,7 +68,7 @@ export default function Courses(): ReactElement {
                 }}
                 cover={
                   <img
-                    alt="example"
+                    alt="example banner"
                     style={{ objectFit: 'cover', height: '20vh' }}
                     src="https://open-2021.sites.olt.ubc.ca/files/2020/10/OSIP-2020-Slider.jpg"
                   />
@@ -92,6 +92,7 @@ export default function Courses(): ReactElement {
                   block
                   style={{ marginTop: 15 }}
                   href={`course/${course.course.id}/today`}
+                  aria-label={`${course.course.name} Course Page`}
                 >
                   Course page
                 </Button>
@@ -148,6 +149,7 @@ export default function Courses(): ReactElement {
                   objectFit: 'contain',
                   objectPosition: 'center',
                 }}
+                alt="Organization Logo"
               />
             </Col>
             <Col xs={{ span: 24 }} sm={{ span: 21 }}>

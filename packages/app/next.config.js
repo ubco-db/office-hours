@@ -33,6 +33,10 @@ const config = {
   experimental: {
     productionBrowserSourceMaps: true,
   },
+  i18n: { // speaking language configuration
+    locales: ['en'],
+    defaultLocale: 'en',
+  },
   webpack: (config, options) => {
     patchWebpackConfig(config, options)
 

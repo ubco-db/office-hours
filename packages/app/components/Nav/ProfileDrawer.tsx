@@ -18,8 +18,11 @@ const NoPaddingPopover: typeof Popover = styled(StyleablePopover)`
   }
 `
 
-const AvatarButton = styled.div`
+const AvatarButton = styled.button`
   cursor: pointer;
+  border: none;
+  padding: 0;
+  background: none;
 
   // give it a bit of margins in the mobile navbar drawer
   @media (max-width: 650px) {
@@ -28,27 +31,45 @@ const AvatarButton = styled.div`
   }
 `
 
-export default function ProfileDrawer(): ReactElement {
+export default function ProfileDrawer(ariaUser: string): ReactElement {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+
+  // these functions are used to make the popover tab-able
+  const handleBlur = () => {
+    setIsPopoverOpen(false)
+  }
+  const handleFocus = () => {
+    setIsPopoverOpen(true)
+  }
+
   return (
     <>
       <NoPaddingPopover
         content={
-          <Menu mode="inline">
-            <Menu.Item icon={<SettingOutlined />}>
+          <Menu mode="inline" tabIndex={-1}>
+            <Menu.Item
+              key="settings"
+              icon={<SettingOutlined />}
+              aria-label="User Settings"
+              onFocus={handleFocus}
+            >
               <Link href={{ pathname: '/settings' }}>Settings</Link>
             </Menu.Item>
-            <Menu.Item key="2" icon={<LogoutOutlined />}>
+            <Menu.Item
+              key="logout"
+              icon={<LogoutOutlined />}
+              onFocus={handleFocus}
+            >
               <Link href={'/api/v1/logout'}>Logout</Link>
             </Menu.Item>
           </Menu>
         }
         placement="bottomLeft"
-        trigger="click"
+        trigger={['click']}
         open={isPopoverOpen}
         onOpenChange={setIsPopoverOpen}
       >
-        <AvatarButton>
+        <AvatarButton onBlur={handleBlur} aria-label="User Menu Button">
           {/* show a larger avatar icon for mobile */}
           <SelfAvatar className="hidden sm:inline-block" size={40} />
           <SelfAvatar className="inline-block sm:hidden" size={50} />
