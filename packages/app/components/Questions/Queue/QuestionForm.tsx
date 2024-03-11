@@ -1,5 +1,5 @@
 import { QuestionTypeParams, OpenQuestionStatus, Question } from '@koh/common'
-import { Alert, Button, Input, Modal, Radio, Select } from 'antd'
+import { Alert, Button, Input, Modal, Radio } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import { NextRouter, useRouter } from 'next/router'
 import {
@@ -14,7 +14,7 @@ import { useLocalStorage } from '../../../hooks/useLocalStorage'
 import { toOrdinal } from '../../../utils/ordinal'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { API } from '@koh/api-client'
-import { QuestionType } from '../Shared/QuestionType'
+import { QuestionTypeSelector } from '../Shared/QuestionType'
 import PropTypes from 'prop-types'
 
 const Container = styled.div`
@@ -178,7 +178,6 @@ export default function QuestionForm({
       cleanup()
     }
   }, [getQuestions])
-
   return (
     <Modal
       open={visible}
@@ -211,7 +210,7 @@ export default function QuestionForm({
       <Container>
         {drafting && (
           <Alert
-            style={{ marginBottom: '32px' }}
+            style={{ marginBottom: '1rem' }}
             message={`You are currently ${toOrdinal(position)} in queue`}
             description="Your spot in queue has been temporarily reserved. Please describe your question to finish joining the queue."
             type="success"
@@ -220,7 +219,7 @@ export default function QuestionForm({
         )}
         {helping && (
           <Alert
-            style={{ marginBottom: '32px' }}
+            style={{ marginBottom: '1rem' }}
             message={`A TA is coming to help you`}
             description="Please click 'Save Changes' to submit what you've filled out"
             type="info"
@@ -232,31 +231,12 @@ export default function QuestionForm({
             <QuestionText>
               What category(s) does your question fall under?
             </QuestionText>
-            <Select
-              mode="multiple"
-              placeholder="Select question types"
+            <QuestionTypeSelector
               onChange={onTypeChange}
-              style={{ width: '100%' }}
               value={questionTypeInput.map((type) => type.id)}
-              tagRender={(props) => {
-                const type = questionsTypeState.find(
-                  (type) => type.id === props.value,
-                )
-                return (
-                  <QuestionType
-                    typeName={type.name}
-                    typeColor={type.color}
-                    onClick={props.onClose}
-                  />
-                )
-              }}
-            >
-              {questionsTypeState.map((type) => (
-                <Select.Option value={type.id} key={type.id}>
-                  {type.name}
-                </Select.Option>
-              ))}
-            </Select>
+              questionTypes={questionsTypeState}
+              className="mb-4"
+            ></QuestionTypeSelector>
           </>
         ) : (
           <p>No Question types found</p>
