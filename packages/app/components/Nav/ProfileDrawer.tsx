@@ -24,6 +24,13 @@ const AvatarButton = styled.button`
   padding: 0;
   background: none;
 
+  // hover/focus effect
+  transition: transform 0.3s ease;
+  &:hover,
+  &:focus {
+    transform: scale(1.1);
+  }
+
   // give it a bit of margins in the mobile navbar drawer
   @media (max-width: 650px) {
     margin-left: 1em;
@@ -32,44 +39,29 @@ const AvatarButton = styled.button`
 `
 
 export default function ProfileDrawer(ariaUser: string): ReactElement {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-
-  // these functions are used to make the popover tab-able
-  const handleBlur = () => {
-    setIsPopoverOpen(false)
-  }
-  const handleFocus = () => {
-    setIsPopoverOpen(true)
-  }
-
   return (
     <>
       <NoPaddingPopover
         content={
           <Menu mode="inline" tabIndex={-1}>
-            <Menu.Item
-              key="settings"
-              icon={<SettingOutlined />}
-              aria-label="User Settings"
-              onFocus={handleFocus}
-            >
-              <Link href={{ pathname: '/settings' }}>Settings</Link>
+            <Menu.Item key="settings" icon={<SettingOutlined />} tabIndex={-1}>
+              <Link href={{ pathname: '/settings' }}>
+                <a aria-label="User Settings">Settings</a>
+              </Link>
             </Menu.Item>
-            <Menu.Item
-              key="logout"
-              icon={<LogoutOutlined />}
-              onFocus={handleFocus}
-            >
-              <Link href={'/api/v1/logout'}>Logout</Link>
+            <Menu.Item key="logout" icon={<LogoutOutlined />} tabIndex={-1}>
+              <Link href={'/api/v1/logout'}>
+                <a>Logout</a>
+              </Link>
             </Menu.Item>
           </Menu>
         }
         placement="bottomLeft"
         trigger={['click']}
-        open={isPopoverOpen}
-        onOpenChange={setIsPopoverOpen}
+        // insert the popup container right after the AvatarButton in the DOM to ensure you can tab to the menu items right away after opening the dropdown (normally, it will insert the popover at the top of the DOM, which will mess up the tab order)
+        getPopupContainer={(trigger) => trigger.parentNode as HTMLElement}
       >
-        <AvatarButton onBlur={handleBlur} aria-label="User Menu Button">
+        <AvatarButton aria-label="User Menu Button">
           {/* show a larger avatar icon for mobile */}
           <SelfAvatar className="hidden sm:inline-block" size={40} />
           <SelfAvatar className="inline-block sm:hidden" size={50} />
