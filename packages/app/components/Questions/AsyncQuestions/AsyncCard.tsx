@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react'
+import React, { ReactElement, useState } from 'react'
 import { Button, Card, Image, message } from 'antd'
 import { Text } from '../Shared/SharedComponents'
 import { QuestionType } from '../Shared/QuestionType'
@@ -6,7 +6,6 @@ import { KOHAvatar } from '../../common/SelfAvatar'
 import { TAquestionDetailButtons } from './TAquestionDetailButtons'
 import { getAsyncWaitTime } from '../../../utils/TimeUtil'
 import { AsyncQuestion, asyncQuestionStatus } from '@koh/common'
-import { useProfile } from '../../../hooks/useProfile'
 import StudentQuestionDetailButtons from './StudentQuestionDetailButtons'
 import { API } from '@koh/api-client'
 import styled, { keyframes, css } from 'styled-components'
@@ -15,33 +14,28 @@ const flashAnimation = keyframes`
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 `
-
-const StyledCard = styled(Card)<{ shouldFlash: boolean; questionStatus: any }>`
-  cursor: pointer;
-
-  &:hover {
-    background: #ecf0f3;
-  }
+const FlashingSection = styled.div<{ shouldFlash: boolean }>`
+  display: flex;
+  justify-content: center;
+  gap: 16px; /* Adjust the space between buttons */
+  margin-top: 1rem;
 
   ${({ shouldFlash }) =>
     shouldFlash &&
     css`
       animation: ${flashAnimation} 2s infinite;
     `};
-
-  /* Original Card styles */
-  margin-bottom: 2rem;
-  border-radius: 0.5rem;
-  background: white;
-  padding: 0.5rem;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  background: ${({ questionStatus }) =>
-    questionStatus === asyncQuestionStatus.HumanAnswered
-      ? '#F0FDF4'
-      : '#FEF3C7'};
 `
+
+const statusDisplayMap = {
+  [asyncQuestionStatus.AIAnsweredNeedsAttention]:
+    'AI Answered, Needs Attention',
+  [asyncQuestionStatus.AIAnsweredResolved]: 'AI Answered, Resolved',
+  [asyncQuestionStatus.HumanAnswered]: 'Answered by Human',
+  [asyncQuestionStatus.AIAnswered]: 'Answered by AI',
+  [asyncQuestionStatus.TADeleted]: 'Deleted by TA',
+  [asyncQuestionStatus.StudentDeleted]: 'Deleted by Student',
+}
 
 interface AsyncCardProps {
   question: AsyncQuestion
@@ -93,9 +87,12 @@ export default function AsyncCard({
   }
 
   return (
-    <StyledCard
-      shouldFlash={shouldFlash}
-      questionStatus={question.status}
+    <Card
+      className={`mb-2 rounded-lg bg-white p-2 shadow-lg ${
+        question.status === asyncQuestionStatus.HumanAnswered
+          ? 'bg-green-100/30'
+          : 'bg-yellow-100/50'
+      }`}
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="mb-4 flex items-start justify-between">
@@ -123,7 +120,7 @@ export default function AsyncCard({
         : 'bg-yellow-200'
     }`}
         >
-          {question.status}
+          {statusDisplayMap[question.status]}
         </div>
         <div className="flex items-center">
           <Text className="text-sm">{getAsyncWaitTime(question)}</Text>
@@ -160,7 +157,7 @@ export default function AsyncCard({
               return (
                 <Image
                   height={300}
-                  src={`/ api / v1 / image / ${i.id} `}
+                  src={`/api/v1/image/${i.id}`}
                   alt="none"
                   key={i.id}
                   onClick={handleImageClick}
@@ -195,14 +192,14 @@ export default function AsyncCard({
       </div>
       {question.status === asyncQuestionStatus.AIAnswered &&
         userId === question.creatorId && (
-          <div className="mt-4 flex justify-center space-x-4">
+          <FlashingSection shouldFlash={shouldFlash}>
             {/* Students vote on whether they still need faculty help */}
             <Button onClick={() => handleFeedback(true)}>Satisfied</Button>
             <Button type="primary" onClick={() => handleFeedback(false)}>
               Still need faculty Help
             </Button>
-          </div>
+          </FlashingSection>
         )}
-    </StyledCard>
+    </Card>
   )
 }

@@ -18,7 +18,6 @@ import PropTypes from 'prop-types'
 import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
-import { useCourse } from '../../../hooks/useCourse'
 
 const Container = styled.div`
   flex: 1;
@@ -77,7 +76,6 @@ export default function AsyncQuestionsPage({
   const { questions, mutateQuestions } = useAsnycQuestions(courseId)
 
   useEffect(() => {
-    console.log(questions)
     const allQuestionsList: AsyncQuestion[] = questions
       ? [
           ...questions.helpedQuestions,
@@ -129,7 +127,6 @@ export default function AsyncQuestionsPage({
       .map((question) => question.questionTypes)
       .flat()
     setQuestionsTypeState(shownQuestionTypes)
-    console.log(displayedQuestions)
   }, [visibleFilter, statusFilter, questions, questionTypeInput])
 
   function RenderQueueInfoCol(): ReactElement {

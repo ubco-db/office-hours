@@ -1,6 +1,6 @@
 import { ReactElement, useCallback, useEffect, useState } from 'react'
 import Modal from 'antd/lib/modal/Modal'
-import { Input, Form, message, Select, Checkbox } from 'antd'
+import { Input, Form, message, Select } from 'antd'
 import styled from 'styled-components'
 import { API } from '@koh/api-client'
 import PropTypes from 'prop-types'

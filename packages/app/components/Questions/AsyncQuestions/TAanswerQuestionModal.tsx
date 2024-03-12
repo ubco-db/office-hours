@@ -30,7 +30,6 @@ export function AnswerQuestionModal({
   //use questions for form validation
   useEffect(() => {
     form.setFieldsValue(question)
-    console.log(question)
   }, [question])
   const postReponse = async (value) => {
     await API.asyncQuestions
@@ -62,7 +61,6 @@ export function AnswerQuestionModal({
           type="primary"
           onClick={async () => {
             const value = await form.validateFields()
-            console.log(value)
             postReponse(value)
             onClose()
           }}
