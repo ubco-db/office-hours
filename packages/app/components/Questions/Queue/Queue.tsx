@@ -299,6 +299,8 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       useState(false)
 
     const joinQueue = useCallback(async () => {
+      console.log('allow questions: ' + !queue?.allowQuestions)
+      console.log('isDisabled: ' + queue?.isDisabled)
       setIsJoinQueueModalLoading(true)
       await joinQueueOpenModal(false)
       setIsJoinQueueModalLoading(false)
@@ -376,11 +378,17 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
                 disabled={
                   !queue?.allowQuestions ||
                   queue?.isDisabled ||
-                  isJoinQueueModalLoading
+                  isJoinQueueModalLoading ||
+                  queue.staffList.length < 1 // the endpoint will throw a 500 error if you try to join with no staff in the queue
                 }
                 data-cy="join-queue-button"
                 onClick={joinQueue}
                 icon={<LoginOutlined />}
+                title={
+                  queue.staffList.length < 1
+                    ? 'No staff are checked into this queue'
+                    : ''
+                }
               >
                 Join Queue
               </JoinButton>
