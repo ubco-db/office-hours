@@ -63,7 +63,7 @@ const AsyncQuestionCard = (): ReactElement => {
       href="/course/[cid]/async_question"
       as={`/course/${cid}/async_question`}
     >
-      <a aria-label="Async Question Centre">
+      <a aria-label="Async Question Centre" id="async-centre">
         <CustomCard
           headStyle={{
             background: 'rgb(60, 66, 111)',

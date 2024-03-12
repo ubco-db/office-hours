@@ -35,6 +35,10 @@ export default function Queue(): ReactElement {
         <Head>
           <title>{queue?.room} Queue | UBC Office Hours</title>
         </Head>
+        {/* accessiblity thing that lets users skip tabbing through the navbar */}
+        <a href={`#join-queue-button`} className="skip-link">
+          Skip to main content
+        </a>
         <NavBar courseId={Number(cid)} />
         <QueuePage qid={Number(qid)} cid={Number(cid)} />
       </Container>

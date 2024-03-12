@@ -17,6 +17,7 @@ type QueueCard = {
   queue: QueuePartial
   isTA: boolean
   updateQueueNotes: (queue: QueuePartial, queueNotes: string) => Promise<void>
+  linkId?: string
 }
 
 const CustomCard = styled(Card)`
@@ -124,6 +125,7 @@ const QueueCard = ({
   queue,
   isTA,
   updateQueueNotes,
+  linkId,
 }: QueueCard): ReactElement => {
   const [editingNotes, setEditingNotes] = useState(false)
   const [updatedNotes, setUpdatedNotes] = useState(queue.notes)
@@ -147,9 +149,10 @@ const QueueCard = ({
       <a
         aria-label={
           queue.room +
-          ' Queue. ' +
-          (queue.staffList.length >= 1 ? ' it has staff checked in. ' : '')
+          ' Queue ' +
+          (queue.staffList.length >= 1 ? '. It has staff checked in. ' : '')
         }
+        id={linkId}
       >
         <CustomCard
           headStyle={{
@@ -167,7 +170,6 @@ const QueueCard = ({
             <span className="mr-8 flex flex-row flex-wrap items-center justify-between">
               <div>
                 {queue.room}
-
                 <QueueInfoTags>
                   {queue?.isProfessorQueue && (
                     <Tag color="#337589" className="m-0 mr-1 text-gray-200">

@@ -374,6 +374,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
               onVisibleChange={setShowJoinPopconfirm}
             >
               <JoinButton
+                id="join-queue-button"
                 type="primary"
                 disabled={
                   !queue?.allowQuestions ||

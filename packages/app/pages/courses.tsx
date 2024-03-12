@@ -93,6 +93,11 @@ export default function Courses(): ReactElement {
                   style={{ marginTop: 15 }}
                   href={`course/${course.course.id}/today`}
                   aria-label={`${course.course.name} Course Page`}
+                  id={
+                    course.course.id === profile.courses[0].course.id
+                      ? 'first-course-button'
+                      : ''
+                  }
                 >
                   Course page
                 </Button>
@@ -122,6 +127,10 @@ export default function Courses(): ReactElement {
         <title>{profile?.organization.organizationName}</title>
       </Head>
       <StandardPageContainer style={{ flex: 'none' }}>
+        {/* accessiblity thing that lets users skip tabbing through the navbar */}
+        <a href={`#first-course-button`} className="skip-link">
+          Skip to main content
+        </a>
         <NavBar />
       </StandardPageContainer>
       <img

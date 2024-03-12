@@ -9,7 +9,6 @@ import React, { ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { StandardPageContainer } from '../../../components/common/PageContainer'
 import NavBar from '../../../components/Nav/NavBar'
-import SchedulePanel from '../../../components/Schedule/SchedulePanel'
 import QueueCard, {
   QueueCardSkeleton,
 } from '../../../components/Today/QueueCard'
@@ -124,6 +123,15 @@ export default function Today(): ReactElement {
     })
     mutateCourse()
   }
+
+  const firstContentItemId = courseFeatures?.queueEnabled
+    ? 'first-queue'
+    : courseFeatures?.asyncQueueEnabled
+    ? 'async-centre'
+    : courseFeatures?.chatBotEnabled
+    ? 'chatbot-input'
+    : ''
+
   if (!course || !courseFeatures) {
     return <Spin tip="Loading..." size="large" />
   } else {
@@ -132,8 +140,15 @@ export default function Today(): ReactElement {
         <Head>
           <title>{course?.name} | UBC Office Hours</title>
         </Head>
-        <NavBar courseId={Number(cid)} />
 
+        {firstContentItemId && (
+          //accessiblity thing that lets users skip tabbing through the navbar
+          <a href={`#${firstContentItemId}`} className="skip-link">
+            Skip to main content
+          </a>
+        )}
+
+        <NavBar courseId={Number(cid)} />
         {(!onlyChatBotEnabled && (
           <Container>
             <Row gutter={64}>
@@ -156,11 +171,9 @@ export default function Today(): ReactElement {
                     </i>
                   </div>
                 </Row>
-
                 {courseFeatures.queueEnabled &&
                   (course?.queues?.length === 0 ? (
                     <>
-                      {' '}
                       <h1 style={{ paddingTop: '100px' }}>
                         There are no queues for this course, try asking async
                         questions
@@ -169,6 +182,9 @@ export default function Today(): ReactElement {
                   ) : (
                     sortedQueues?.map((q) => (
                       <QueueCard
+                        linkId={
+                          q.id === sortedQueues[0].id ? 'first-queue' : ''
+                        }
                         key={q.id}
                         queue={q}
                         isTA={role === Role.TA || role === Role.PROFESSOR}
