@@ -98,8 +98,8 @@ function createQueueTab(
           >
             <Link href="/course/[cid]/queue/[qid]" as={queuePath}>
               <a
-                aria-disabled={isSelected ? 'true' : 'false'}
-                tabIndex={isSelected ? -1 : 0}
+                aria-current={isSelected ? 'page' : 'false'}
+                tabIndex={isSelected ? -1 : null}
               >
                 {openQueue.room}
               </a>
@@ -118,8 +118,7 @@ function createGeneralTab(tabItem: NavBarGeneralTabItem, currentPath: string) {
       <Link href={tabItem.href} as={tabItem.as}>
         <a
           className={tabItem.className}
-          aria-disabled={isSelected ? 'true' : 'false'}
-          tabIndex={isSelected ? -1 : 0}
+          aria-current={isSelected ? 'page' : 'false'}
         >
           {tabItem.text}
         </a>
@@ -139,7 +138,7 @@ export default function NavBarTabs({
     <HorizontalMenu
       selectedKeys={[currentHref]}
       mode={horizontal ? 'horizontal' : 'vertical'}
-      tabIndex={-1}
+      tabIndex={0}
     >
       {tabs.map((tab) =>
         tab.text !== 'Queue'
