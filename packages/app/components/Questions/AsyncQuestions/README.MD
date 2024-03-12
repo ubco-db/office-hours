@@ -26,7 +26,7 @@
 ## Expanded async cards
 
 By default, all questions are collapsed. However, there are a few scenarios where a question card will be expanded:
-- clicking on a car will expand the card to show/hide the answer
+- clicking on a card will expand the card to show/hide the answer
 - after creating a question, the card will be expanded to show the answer
 - after editing a question, the card will be expanded to show the answer
 
