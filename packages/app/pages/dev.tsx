@@ -4,6 +4,7 @@ import { Button, Divider } from 'antd'
 import DefaultErrorPage from 'next/error'
 import React, { ReactElement } from 'react'
 import styled from 'styled-components'
+import { message } from 'antd'
 
 const Container = styled.div`
   width: auto;
@@ -43,21 +44,54 @@ export default function DevPanel(): ReactElement {
         <Button
           style={{ marginRight: '15px' }}
           type="default"
-          onClick={() => API.seeds.delete()}
+          onClick={() => {
+            API.seeds
+              .delete()
+              .then(() => {
+                message.success('Data deleted successfully')
+              })
+              .catch((error) => {
+                message.error(
+                  `Error occurred while deleting the data: ${error.message}`,
+                )
+              })
+          }}
         >
           Delete Data
         </Button>
         <Button
           style={{ marginRight: '15px' }}
           type="default"
-          onClick={() => API.seeds.create()}
+          onClick={() => {
+            API.seeds
+              .create()
+              .then(() => {
+                message.success('Data seeded successfully')
+              })
+              .catch((error) => {
+                message.error(
+                  `Error occurred while seeding data: ${error.message}`,
+                )
+              })
+          }}
         >
           Seed Data
         </Button>
         <Button
           style={{ marginRight: '15px' }}
           type="default"
-          onClick={() => API.seeds.fillQueue()}
+          onClick={() => {
+            API.seeds
+              .fillQueue()
+              .then(() => {
+                message.success('Queue filled successfully')
+              })
+              .catch((error) => {
+                message.error(
+                  `Error occurred while adding questions to the queue: ${error.message}`,
+                )
+              })
+          }}
         >
           Add Questions to Queue
         </Button>

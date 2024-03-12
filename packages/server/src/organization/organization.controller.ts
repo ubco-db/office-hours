@@ -29,6 +29,7 @@ import {
   UpdateProfileParams,
   UserRole,
   COURSE_TIMEZONES,
+  CourseSettingsRequestBody,
 } from '@koh/common';
 import * as fs from 'fs';
 import { OrganizationUserModel } from './organization-user.entity';
@@ -53,6 +54,7 @@ import { memoryStorage } from 'multer';
 import { SemesterModel } from 'semester/semester.entity';
 import { In } from 'typeorm';
 import { UserCourseModel } from 'profile/user-course.entity';
+import { CourseSettingsModel } from 'course/course_settings.entity';
 
 @Controller('organization')
 export class OrganizationController {
@@ -116,6 +118,7 @@ export class OrganizationController {
         });
       }
     }
+
     const course = {
       name: courseDetails.name,
       coordinator_email: courseDetails.coordinator_email,
@@ -128,33 +131,61 @@ export class OrganizationController {
     try {
       const newCourse = await CourseModel.create(course).save();
 
-      for (const profId of courseDetails.profIds) {
-        const chosenProfessor = await UserModel.findOne({
-          where: { id: profId },
-        });
-
-        if (!chosenProfessor) {
-          return res.status(HttpStatus.NOT_FOUND).send({
-            message: `Professor with ID ${profId} not found`,
+      if (courseDetails.profIds)
+        for (const profId of courseDetails.profIds) {
+          const chosenProfessor = await UserModel.findOne({
+            where: { id: profId },
           });
-        }
 
-        await UserCourseModel.create({
-          userId: profId,
-          course: newCourse,
-          role: Role.PROFESSOR,
-          override: false,
-          expires: false,
-        }).save();
-      }
+          if (!chosenProfessor) {
+            return res.status(HttpStatus.NOT_FOUND).send({
+              message: `Professor with ID ${profId} not found`,
+            });
+          }
+
+          await UserCourseModel.create({
+            userId: profId,
+            course: newCourse,
+            role: Role.PROFESSOR,
+            override: false,
+            expires: false,
+          }).save();
+        }
 
       await OrganizationCourseModel.create({
         organizationId: oid,
         course: newCourse,
       }).save();
 
-      return res.status(HttpStatus.OK).send({
-        message: 'Course created successfully',
+      // create courseSettingsModel for the new course (all checks are performed by typescript)
+      const newCourseSettings = new CourseSettingsModel();
+      newCourseSettings.courseId = newCourse.id;
+      // for each feature given, assign its corresponding values
+      if (courseDetails.courseSettings) {
+        for (const givenFeature of courseDetails.courseSettings) {
+          if (!CourseSettingsRequestBody.isValidFeature(givenFeature.feature)) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+              message: 'invalid feature',
+            });
+          }
+          newCourseSettings[givenFeature.feature] = givenFeature.value;
+        }
+      }
+      await newCourseSettings.save();
+
+      let message = 'Course created successfully.';
+      let status = HttpStatus.OK;
+      if (!courseDetails.courseSettings) {
+        message += ' Default settings used.';
+        status = HttpStatus.ACCEPTED;
+      }
+      if (!courseDetails.profIds) {
+        message += ' No professors given.';
+        status = HttpStatus.ACCEPTED;
+      }
+
+      return res.status(status).send({
+        message: message,
       });
     } catch (err) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
