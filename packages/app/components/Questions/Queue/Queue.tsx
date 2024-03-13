@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useState } from 'react'
+import { ReactElement, useCallback, useState, useEffect } from 'react'
 import { useQueue } from '../../../hooks/useQueue'
 import { useQuestions } from '../../../hooks/useQuestions'
 import { useProfile } from '../../../hooks/useProfile'
@@ -20,7 +20,7 @@ import {
   VerticalDivider,
 } from '../Shared/SharedComponents'
 import { QueueInfoColumn } from '../Queue/QueueInfoColumn'
-import { Popconfirm, Tooltip, message, notification } from 'antd'
+import { Popconfirm, Tooltip, message, notification, Spin } from 'antd'
 import TACheckinButton from '../../Today/TACheckinButton'
 import styled from 'styled-components'
 import { useStudentQuestion } from '../../../hooks/useStudentQuestion'
@@ -38,6 +38,7 @@ import { AddStudentsModal } from './TAAddStudent'
 import { EditQueueModal } from './EditQueueModal'
 import PropTypes from 'prop-types'
 import { EditOutlined, LoginOutlined, PlusOutlined } from '@ant-design/icons'
+import { NextRouter } from 'next/router'
 
 const Container = styled.div`
   flex: 1;
@@ -106,16 +107,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       q.id !== qid &&
       q.staffList.some((staffMember) => staffMember.id === profile?.id),
   )
-
-  let isStaff = false
-  profile.courses.forEach((course) => {
-    if (
-      course.course.id === cid &&
-      (course.role === Role.PROFESSOR || course.role === Role.TA)
-    ) {
-      isStaff = true
-    }
-  })
 
   const studentQuestionId = studentQuestion?.id
   const studentQuestionStatus = studentQuestion?.status
@@ -190,7 +181,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
   }, [qid])
 
   const closeEditModal = useCallback(() => {
-    console.log('closeEditModal')
     setPopupEditQuestion(false)
     setIsJoining(false)
   }, [])
@@ -240,13 +230,27 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
     },
     [studentQuestionStatus, studentQuestionId, questions, mutateQuestions],
   )
+  const [isStaff, setIsStaff] = useState(false)
+
+  useEffect(() => {
+    if (profile && profile.courses) {
+      profile.courses.forEach((course) => {
+        if (
+          course.course.id === cid &&
+          (course.role === Role.PROFESSOR || course.role === Role.TA)
+        ) {
+          setIsStaff(true)
+        }
+      })
+    }
+  }, [profile, cid])
 
   const finishQuestionAndClose = useCallback(
     (
       text: string,
       qt: QuestionTypeParams[],
       groupable: false,
-      router: Router,
+      router: NextRouter,
       cid: number,
       location: string,
     ) => {
@@ -280,6 +284,14 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
   )
 
   function RenderQueueInfoCol(): ReactElement {
+    const [isJoinQueueModalLoading, setIsJoinQueueModalLoading] =
+      useState(false)
+
+    const joinQueue = useCallback(async () => {
+      setIsJoinQueueModalLoading(true)
+      await joinQueueOpenModal(false)
+      setIsJoinQueueModalLoading(false)
+    }, [joinQueueOpenModal])
     return isStaff ? (
       <QueueInfoColumn
         queueId={qid}
@@ -350,11 +362,13 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
             >
               <JoinButton
                 type="primary"
-                disabled={!queue?.allowQuestions || queue?.isDisabled}
-                data-cy="join-queue-button"
-                onClick={async () =>
-                  setShowJoinPopconfirm(!(await joinQueueOpenModal(false)))
+                disabled={
+                  !queue?.allowQuestions ||
+                  queue?.isDisabled ||
+                  isJoinQueueModalLoading
                 }
+                data-cy="join-queue-button"
+                onClick={joinQueue}
                 icon={<LoginOutlined />}
               >
                 Join Queue
@@ -420,83 +434,86 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       </div>
     )
   }
+  if (!role || !queue || !profile) {
+    return <Spin />
+  } else {
+    return (
+      <>
+        <Container>
+          <RenderQueueInfoCol />
+          <VerticalDivider />
+          <QueueListContainer>
+            {isStaff && helpingQuestions && helpingQuestions.length > 0 ? (
+              <>
+                <QueueHeader>You are Currently Helping</QueueHeader>
 
-  return (
-    <>
-      <Container>
-        <RenderQueueInfoCol />
-        <VerticalDivider />
-        <QueueListContainer>
-          {isStaff && helpingQuestions && helpingQuestions.length > 0 ? (
-            <>
-              <QueueHeader>You are Currently Helping</QueueHeader>
-
-              {helpingQuestions?.map((question: Question, index: number) => {
-                return (
-                  <StudentQueueCard
-                    key={question.id}
-                    rank={index + 1}
-                    question={question}
-                    cid={cid}
-                    qid={qid}
-                    isStaff={isStaff}
-                  />
-                )
-              })}
-            </>
-          ) : (
-            <>
-              <StudentBanner
-                queueId={qid}
-                editQuestion={openEditModal}
-                leaveQueue={leaveQueue}
-              />
-            </>
-          )}
-          <RenderQueueQuestions questions={questions?.queue} />
-        </QueueListContainer>
-      </Container>
-      {isStaff ? (
-        <>
-          <EditQueueModal
-            queueId={qid}
-            visible={queueSettingsModal}
-            onClose={() => setQueueSettingsModal(false)}
-          />
-          <AddStudentsModal
-            queueId={qid}
-            visible={addStudentsModal}
-            onClose={() => setAddStudentsModal(false)}
-          />
-        </>
-      ) : (
-        <>
-          <QuestionForm
-            visible={
-              (questions && !studentQuestion && isJoining) ||
-              // && studentQuestion.status !== QuestionStatusKeys.Drafting)
-              popupEditQuestion
-            }
-            question={studentQuestion}
-            leaveQueue={leaveQueueAndClose}
-            finishQuestion={finishQuestionAndClose}
-            position={studentQuestionIndex + 1}
-            cancel={closeEditModal}
-          />
-          <CantFindModal
-            visible={studentQuestion?.status === LimboQuestionStatus.CantFind}
-            leaveQueue={leaveQueue}
-            rejoinQueue={rejoinQueue}
-          />
-          <StudentRemovedFromQueueModal
-            question={studentQuestion}
-            leaveQueue={leaveQueue}
-            joinQueue={joinQueueAfterDeletion}
-          />
-        </>
-      )}
-    </>
-  )
+                {helpingQuestions?.map((question: Question, index: number) => {
+                  return (
+                    <StudentQueueCard
+                      key={question.id}
+                      rank={index + 1}
+                      question={question}
+                      cid={cid}
+                      qid={qid}
+                      isStaff={isStaff}
+                    />
+                  )
+                })}
+              </>
+            ) : (
+              <>
+                <StudentBanner
+                  queueId={qid}
+                  editQuestion={openEditModal}
+                  leaveQueue={leaveQueue}
+                />
+              </>
+            )}
+            <RenderQueueQuestions questions={questions?.queue} />
+          </QueueListContainer>
+        </Container>
+        {isStaff ? (
+          <>
+            <EditQueueModal
+              queueId={qid}
+              visible={queueSettingsModal}
+              onClose={() => setQueueSettingsModal(false)}
+            />
+            <AddStudentsModal
+              queueId={qid}
+              visible={addStudentsModal}
+              onClose={() => setAddStudentsModal(false)}
+            />
+          </>
+        ) : (
+          <>
+            <QuestionForm
+              visible={
+                (questions && !studentQuestion && isJoining) ||
+                // && studentQuestion.status !== QuestionStatusKeys.Drafting)
+                popupEditQuestion
+              }
+              question={studentQuestion}
+              leaveQueue={leaveQueueAndClose}
+              finishQuestion={finishQuestionAndClose}
+              position={studentQuestionIndex + 1}
+              cancel={closeEditModal}
+            />
+            <CantFindModal
+              visible={studentQuestion?.status === LimboQuestionStatus.CantFind}
+              leaveQueue={leaveQueue}
+              rejoinQueue={rejoinQueue}
+            />
+            <StudentRemovedFromQueueModal
+              question={studentQuestion}
+              leaveQueue={leaveQueue}
+              joinQueue={joinQueueAfterDeletion}
+            />
+          </>
+        )}
+      </>
+    )
+  }
 }
 
 QueuePage.propTypes = {
