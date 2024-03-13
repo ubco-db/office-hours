@@ -33,7 +33,7 @@ export class MailModule {}
       provide: MailService,
       // Use an empty class for a mock implementation
       useValue: {
-        sendUserVerificationCode: jest.fn(),
+        sendUserVerificationCode: () => 'fake code',
       },
     },
   ],
