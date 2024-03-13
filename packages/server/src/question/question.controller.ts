@@ -239,22 +239,24 @@ export class QuestionController {
         );
       }
     }
-
-    const types = await Promise.all(
-      questionTypes.map(async (type) => {
-        const questionType = await QuestionTypeModel.findOne({
-          where: {
-            id: type.id,
-          },
-        });
-        if (!questionType) {
-          throw new BadRequestException(
-            ERROR_MESSAGES.questionController.createQuestion.invalidQuestionType,
-          );
-        }
-        return questionType;
-      }),
-    );
+    let types = [];
+    if (questionTypes) {
+      types = await Promise.all(
+        questionTypes.map(async (type) => {
+          const questionType = await QuestionTypeModel.findOne({
+            where: {
+              id: type.id,
+            },
+          });
+          if (!questionType) {
+            throw new BadRequestException(
+              ERROR_MESSAGES.questionController.createQuestion.invalidQuestionType,
+            );
+          }
+          return questionType;
+        }),
+      );
+    }
 
     try {
       const question = await QuestionModel.create({
