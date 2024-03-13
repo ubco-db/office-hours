@@ -43,3 +43,7 @@ cypress.env.json
 .vercel
 
 *.pem
+
+husky.sh
+
+.vscode/
