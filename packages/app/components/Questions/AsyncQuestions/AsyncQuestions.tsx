@@ -1,6 +1,5 @@
 import {
   AsyncQuestion,
-  AsyncQuestionResponse,
   QuestionTypeParams,
   Role,
   asyncQuestionStatus,
@@ -13,11 +12,11 @@ import { Select } from 'antd'
 import { useAsnycQuestions } from '../../../hooks/useAsyncQuestions'
 import AsyncCard from './AsyncCard'
 import { VerticalDivider, EditQueueButton } from '../Shared/SharedComponents'
-import { AsyncQuestionForm } from './AsyncQuestionForm'
 import PropTypes from 'prop-types'
 import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
+import CreateAsyncQuestionForm from './CreateAsyncQuestionForm'
 
 const Container = styled.div`
   flex: 1;
@@ -40,7 +39,7 @@ const NoQuestionsText = styled.div`
 `
 
 AsyncQuestionsPage.propTypes = {
-  questions: PropTypes.instanceOf(AsyncQuestionResponse),
+  questions: PropTypes.instanceOf(AsyncQuestion),
   onClose: PropTypes.func.isRequired,
   value: PropTypes.any.isRequired,
 }
@@ -56,6 +55,7 @@ export default function AsyncQuestionsPage({
   const [editAsyncQuestionsModal, setEditAsyncQuestionsModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [visibleFilter, setVisibleFilter] = useState('all')
+  const [creatorFilter, setCreatorFilter] = useState('all')
 
   const [questionTypeInput, setQuestionTypeInput] = useState([])
 
@@ -76,24 +76,8 @@ export default function AsyncQuestionsPage({
   const { questions, mutateQuestions } = useAsnycQuestions(courseId)
 
   useEffect(() => {
-    const allQuestionsList: AsyncQuestion[] = questions
-      ? [
-          ...questions.helpedQuestions,
-          ...questions.waitingQuestions,
-          ...questions.visibleQuestions,
-        ]
-      : []
-
-    let displayedQuestions = allQuestionsList
-
-    if (isStaff) {
-      displayedQuestions = allQuestionsList
-    } else {
-      displayedQuestions = allQuestionsList.filter(
-        (question) => question.visible || question.creatorId === profile?.id,
-      )
-    }
-
+    let displayedQuestions = questions || []
+    // Apply status filter
     if (statusFilter === 'helped') {
       displayedQuestions = displayedQuestions.filter(
         (question) => question.status === asyncQuestionStatus.HumanAnswered,
@@ -105,7 +89,7 @@ export default function AsyncQuestionsPage({
           question.status === asyncQuestionStatus.AIAnsweredNeedsAttention,
       )
     }
-
+    // Apply visibility filter
     if (visibleFilter === 'visible') {
       displayedQuestions = displayedQuestions.filter(
         (question) => question.visible,
@@ -116,18 +100,34 @@ export default function AsyncQuestionsPage({
       )
     }
 
+    // Apply question type filter
     if (questionTypeInput.length > 0) {
       displayedQuestions = displayedQuestions.filter((question) => {
         const questionTypes = question.questionTypes.map((type) => type.id)
         return questionTypeInput.every((type) => questionTypes.includes(type))
       })
     }
+
+    // Apply creator filter
+    if (creatorFilter !== 'all') {
+      displayedQuestions = displayedQuestions.filter(
+        (question) => question.creatorId === creatorFilter,
+      )
+    }
     setDisplayedQuestions(displayedQuestions)
+
     const shownQuestionTypes = displayedQuestions
       .map((question) => question.questionTypes)
       .flat()
     setQuestionsTypeState(shownQuestionTypes)
-  }, [visibleFilter, statusFilter, questions, questionTypeInput])
+  }, [
+    visibleFilter,
+    statusFilter,
+    questions,
+    questionTypeInput,
+    isStaff,
+    profile?.id,
+  ])
 
   function RenderQueueInfoCol(): ReactElement {
     return (
@@ -177,7 +177,7 @@ export default function AsyncQuestionsPage({
             question={question}
             onStatusChange={mutateQuestions}
             isStaff={isStaff}
-            userId={profile.id} // Safe to directly access since it's in the condition above.
+            userId={profile?.id}
             onQuestionTypeClick={(questionType) => {
               setQuestionTypeInput((prevInput) => {
                 const index = prevInput.indexOf(questionType)
@@ -304,8 +304,7 @@ export default function AsyncQuestionsPage({
           courseId={courseId}
         />
       ) : (
-        <AsyncQuestionForm
-          question={undefined}
+        <CreateAsyncQuestionForm
           visible={studentQuestionModal}
           onClose={() => setStudentQuestionModal(false)}
           onStatusChange={mutateQuestions}

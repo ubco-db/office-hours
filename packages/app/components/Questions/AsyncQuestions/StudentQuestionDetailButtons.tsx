@@ -5,8 +5,7 @@ import { message, Popconfirm, Tooltip } from 'antd'
 import React, { ReactElement, useState } from 'react'
 // import { useTAInQueueInfo } from "../../../hooks/useTAInQueueInfo";
 import { CantFindButton, FinishHelpingButton } from '../Queue/Banner'
-import { AsyncQuestionForm } from './AsyncQuestionForm'
-//import { useTeams } from "../../../hooks/useTeams";
+import { UpdateQuestionForm } from './UpdateAsyncQuestionForm'
 
 export default function StudentQuestionDetailButtons({
   question,
@@ -63,7 +62,7 @@ export default function StudentQuestionDetailButtons({
           data-cy="edit-question-button"
         />
       </Tooltip>
-      <AsyncQuestionForm
+      <UpdateQuestionForm
         question={question}
         visible={answerQuestionVisible}
         onStatusChange={onStatusChange}

@@ -1,5 +1,4 @@
 import {
-  AsyncQuestionResponse,
   asyncQuestionStatus,
   CoursePartial,
   EditCourseInfoParams,
@@ -114,7 +113,7 @@ export class CourseController {
     @Param('cid') cid: number,
     @User() user: UserModel,
     @Res() res: Response,
-  ): Promise<AsyncQuestionResponse> {
+  ): Promise<AsyncQuestionModel[]> {
     const userCourse = await UserCourseModel.findOne({
       where: {
         user,
@@ -158,70 +157,21 @@ export class CourseController {
     //     ),
     //   );
     // }
-    const questions = new AsyncQuestionResponse();
+    let questions;
 
-    questions.helpedQuestions = all.filter(
-      (question) =>
-        question.status === asyncQuestionStatus.AIAnsweredResolved ||
-        question.status === asyncQuestionStatus.HumanAnswered,
-    );
-    questions.waitingQuestions = all.filter(
-      (question) =>
-        question.status === asyncQuestionStatus.AIAnsweredNeedsAttention ||
-        question.status === asyncQuestionStatus.AIAnswered,
-    );
-    questions.otherQuestions = all.filter(
-      (question) =>
-        question.status === asyncQuestionStatus.StudentDeleted ||
-        question.status === asyncQuestionStatus.TADeleted,
-    );
-    questions.visibleQuestions = all.filter(
-      (question) =>
-        question.visible === true &&
-        question.status !== asyncQuestionStatus.TADeleted,
-    );
-
-    function mapQuestions(questions, userId) {
-      return questions
-        .filter((question) => question.visible || question.creatorId === userId)
-        .map((question) => ({
-          id: question.id,
-          creator:
-            userId === question.creator.id
-              ? question.creator
-              : { id: question.creator.id },
-          questionText: question.questionText,
-          creatorId: question.creatorId,
-          taHelped: question.taHelped,
-          createdAt: question.createdAt,
-          questionTypes: question.questionTypes,
-          status: question.status,
-          images: question.images,
-          questionAbstract: question.questionAbstract,
-          answerText: question.answerText,
-          aiAnswerText: question.aiAnswerText,
-          closedAt: question.closedAt,
-          visible: question.visible,
-        }));
-    }
-
-    if (!isStaff) {
-      questions.otherQuestions = [];
-
-      questions.helpedQuestions = mapQuestions(
-        questions.helpedQuestions,
-        user.id,
+    if (isStaff) {
+      // Staff sees all questions except the ones deleted
+      questions = all.filter(
+        (question) =>
+          question.status !== asyncQuestionStatus.TADeleted &&
+          question.status !== asyncQuestionStatus.StudentDeleted,
       );
-      questions.waitingQuestions = mapQuestions(
-        questions.waitingQuestions,
-        user.id,
-      );
-      questions.visibleQuestions = mapQuestions(
-        questions.visibleQuestions,
-        user.id,
+    } else {
+      // Students see their own questions and questions that are visible
+      questions = all.filter(
+        (question) => question.creatorId === user.id || question.visible,
       );
     }
-
     res.status(HttpStatus.OK).send(questions);
     return;
   }

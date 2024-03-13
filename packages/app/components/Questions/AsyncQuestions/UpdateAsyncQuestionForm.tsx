@@ -27,12 +27,12 @@ interface EditQueueModalProps {
   onStatusChange: () => void
 }
 
-AsyncQuestionForm.propTypes = {
+UpdateQuestionForm.propTypes = {
   value: PropTypes.any.isRequired,
   onClose: PropTypes.func.isRequired,
 }
 
-export function AsyncQuestionForm({
+export function UpdateQuestionForm({
   question,
   visible,
   onClose,
@@ -60,70 +60,13 @@ export function AsyncQuestionForm({
     setPreview(objectURL)
     return () => window.URL.revokeObjectURL(objectURL)
   }, [selectedImage])
-  //create function to update question. if question undefined create, if question, update. if question and has new image, update image too.
-  const getAiAnswer = async (questionText: string) => {
-    try {
-      const data = {
-        question: questionText,
-        history: [],
-      }
-      const response = await fetch(`/chat/${courseId}/ask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      const json = await response.json()
-      return json.answer
-    } catch (e) {
-      return ''
-    }
-  }
-
-  const createQuestion = async (value) => {
-    const aiAnswer = await getAiAnswer(
-      value.QuestionAbstract + ' ' + value.questionText,
-    )
-    await API.asyncQuestions
-      .create(
-        {
-          questionTypes: questionTypeInput,
-          questionText: value.questionText,
-          aiAnswerText: aiAnswer,
-          answerText: aiAnswer,
-          questionAbstract: value.QuestionAbstract,
-        },
-        courseId,
-      )
-      .then((response) => {
-        if (selectedImage && response) {
-          const data = new FormData()
-          data.append('AsyncQuestionId', String(response.id))
-          data.append('file', selectedImage)
-          fetch('/api/v1/image', {
-            method: 'POST',
-            body: data,
-          }).catch((err) => {
-            message.warning(err + ': Image failed to upload')
-          })
-        }
-      })
-    onStatusChange()
-    message.success('Question Posted')
-  }
+  //update question, no new text generated
 
   const updateQuestion = async (value) => {
-    const aiAnswer = await getAiAnswer(
-      value.QuestionAbstract + ' ' + value.questionText,
-    )
-
     await API.asyncQuestions
       .update(question.id, {
         questionTypes: questionTypeInput,
         questionText: value.questionText,
-        aiAnswerText: aiAnswer,
-        answerText: aiAnswer,
         questionAbstract: value.QuestionAbstract,
       })
       .then((response) => {
@@ -141,18 +84,10 @@ export function AsyncQuestionForm({
       })
     message.success('Question Updated')
     onStatusChange()
-    //student can see the updated AI answer, decide whether it suffices or not
-    //if not, they click button to get help from TA, also give chance to comment on the feedback
-    //if they click button, it will send a notification to the TA
   }
 
   const onFinish = (value) => {
-    console.log(value)
-    if (!question) {
-      createQuestion(value)
-    } else {
-      updateQuestion(value)
-    }
+    updateQuestion(value)
   }
 
   const onTypeChange = (selectedIds: number[]) => {

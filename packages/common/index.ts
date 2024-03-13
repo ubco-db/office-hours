@@ -986,19 +986,6 @@ export class ListQuestionsResponse {
   unresolvedAlerts?: Array<AlertPayload>
 }
 
-export class AsyncQuestionResponse {
-  @Type(() => Question)
-  waitingQuestions!: Array<AsyncQuestion>
-
-  @Type(() => Question)
-  helpedQuestions!: Array<AsyncQuestion>
-
-  @Type(() => Question)
-  otherQuestions!: Array<AsyncQuestion>
-
-  @Type(() => Question)
-  visibleQuestions!: Array<AsyncQuestion>
-}
 export class GetQuestionResponse extends Question {}
 
 export class GetStudentQuestionResponse extends Question {
