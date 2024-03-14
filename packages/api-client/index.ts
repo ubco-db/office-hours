@@ -374,29 +374,24 @@ class APIClient {
         undefined,
         { queueId },
       ),
+  }
+  questionType = {
     getQuestionTypes: async (
       courseId: number,
       queueId: number | null,
     ): Promise<any> =>
-      this.req(
-        'GET',
-        `/api/v1/questions/${courseId}/questionType/${queueId}`,
-        undefined,
-      ),
+      this.req('GET', `/api/v1/questionType/${courseId}/${queueId}`, undefined),
     addQuestionType: async (
       courseId: number,
       body: QuestionTypeParams,
     ): Promise<any> =>
-      this.req(
-        'POST',
-        `/api/v1/questions/${courseId}/questionType`,
-        undefined,
-        body,
-      ),
-    deleteQuestionType: async (questionTypeId: number): Promise<void> =>
-      this.req('DELETE', `/api/v1/questions/${questionTypeId}`),
+      this.req('POST', `/api/v1/questionType/${courseId}`, undefined, body),
+    deleteQuestionType: async (
+      courseId: number,
+      questionTypeId: number,
+    ): Promise<void> =>
+      this.req('DELETE', `/api/v1/questionType/${courseId}/${questionTypeId}`),
   }
-
   calendar = {
     addCalendar: async (body: Calendar): Promise<Calendar> =>
       this.req('POST', `/api/v1/calendar`, undefined, body),

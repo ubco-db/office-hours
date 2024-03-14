@@ -1100,7 +1100,7 @@ export class QuestionTypeParams {
 
   @IsInt()
   @IsOptional()
-  queueId?: number | null
+  queueId?: number
 }
 
 export class TACheckinTimesResponse {

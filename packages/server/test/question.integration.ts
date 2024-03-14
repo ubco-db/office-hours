@@ -29,7 +29,7 @@ import {
   setupIntegrationTest,
 } from './util/testUtils';
 import { forEach } from 'lodash';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 
 describe('Question Integration', () => {
   const supertest = setupIntegrationTest(QuestionModule, modifyMockNotifs);

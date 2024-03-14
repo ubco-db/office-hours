@@ -35,7 +35,7 @@ import { QueueModel } from '../queue/queue.entity';
 import { SeedService } from './seed.service';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 
 @UseGuards(NonProductionGuard)
 @Controller('seeds')

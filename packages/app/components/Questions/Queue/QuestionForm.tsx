@@ -166,7 +166,7 @@ export default function QuestionForm({
     let isCancelled = false
 
     const fetchQuestions = async () => {
-      const questions = await API.questions.getQuestionTypes(
+      const questions = await API.questionType.getQuestionTypes(
         courseNumber,
         queueId,
       )

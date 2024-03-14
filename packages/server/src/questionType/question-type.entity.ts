@@ -7,7 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { QuestionModel } from './question.entity';
+import { QuestionModel } from '../question/question.entity';
 import { Exclude } from 'class-transformer';
 import { QueueModel } from '../queue/queue.entity';
 import { AsyncQuestionModel } from '../asyncQuestion/asyncQuestion.entity';

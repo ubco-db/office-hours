@@ -205,7 +205,7 @@ export function AsyncQuestionForm({
     let isCancelled = false
 
     const fetchQuestions = async () => {
-      const questions = await API.questions.getQuestionTypes(courseId, null)
+      const questions = await API.questionType.getQuestionTypes(courseId, null)
       if (!isCancelled) {
         setQuestionsTypeState(questions)
       }

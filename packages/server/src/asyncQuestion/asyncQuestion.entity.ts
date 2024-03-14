@@ -15,7 +15,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserModel } from '../profile/user.entity';
-import { QuestionTypeModel } from '../question/question-type.entity';
+import { QuestionTypeModel } from '../questionType/question-type.entity';
 
 @Entity('async_question_model')
 export class AsyncQuestionModel extends BaseEntity {
