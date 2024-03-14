@@ -1,11 +1,10 @@
-import { CreateQuestionParams, OrganizationRole, Role } from '@koh/common';
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { OrganizationRole, Role } from '@koh/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AlertModel } from 'alerts/alerts.entity';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { LastRegistrationModel } from 'login/last-registration-model.entity';
 import { ProfSectionGroupsModel } from 'login/prof-section-groups.entity';
 import { DesktopNotifModel } from 'notification/desktop-notif.entity';
-import { PhoneNotifModel } from 'notification/phone-notif.entity';
 import { EventModel, EventType } from 'profile/event-model.entity';
 import { UserCourseModel } from 'profile/user-course.entity';
 import { UserModel } from 'profile/user.entity';
@@ -60,7 +59,6 @@ export class SeedController {
     await this.seedService.deleteAll(UserCourseModel);
     await this.seedService.deleteAll(EventModel);
     await this.seedService.deleteAll(DesktopNotifModel);
-    await this.seedService.deleteAll(PhoneNotifModel);
     await this.seedService.deleteAll(AlertModel);
     await this.seedService.deleteAll(UserModel);
     await this.seedService.deleteAll(CourseSectionMappingModel);

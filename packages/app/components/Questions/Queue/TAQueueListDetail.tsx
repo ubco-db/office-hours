@@ -144,7 +144,7 @@ export default function TAQueueListDetail({
     return (
       <EmptyQueueInfo>
         <NoQuestionsText>There are no questions in the queue</NoQuestionsText>
-        {!user.phoneNotifsEnabled && !user.desktopNotifsEnabled && (
+        {!user.desktopNotifsEnabled && (
           <NotifReminderButton courseId={courseId} />
         )}
       </EmptyQueueInfo>

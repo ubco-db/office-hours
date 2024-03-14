@@ -34,13 +34,7 @@ export default function NotificationsSettings(): ReactElement {
   const editProfile = async (updateProfile: UpdateProfileParams) => {
     const newProfile = { ...profile, ...updateProfile }
     mutate(newProfile, false)
-    await API.profile.patch(
-      pick(newProfile, [
-        'desktopNotifsEnabled',
-        'phoneNotifsEnabled',
-        'phoneNumber',
-      ]),
-    )
+    await API.profile.patch(pick(newProfile, ['desktopNotifsEnabled']))
     mutate()
     return newProfile
   }
@@ -54,15 +48,7 @@ export default function NotificationsSettings(): ReactElement {
         'Your notification settings have been successfully updated',
       )
     } catch (e) {
-      if (
-        e.response?.status === 400 &&
-        e.response?.data?.message ===
-          ERROR_MESSAGES.notificationService.registerPhone
-      ) {
-        form.setFields([
-          { name: 'phoneNumber', errors: ['Invalid phone number'] },
-        ])
-      }
+      message.error(ERROR_MESSAGES[e.message] || e.message)
     }
   }
 
@@ -79,7 +65,7 @@ export default function NotificationsSettings(): ReactElement {
             name="desktopNotifsEnabled"
             valuePropName="checked"
           >
-            <Switch style={{ backgroundColor: '#1677ff' }} />
+            <Switch />
           </Form.Item>
           <Form.Item shouldUpdate noStyle>
             {() =>
@@ -98,44 +84,7 @@ export default function NotificationsSettings(): ReactElement {
               }
             />
           </Tooltip>
-          {/* <Form.Item
-            style={{ marginTop: "30px", flex: 1 }}
-            label="Enable SMS notifications"
-            name="phoneNotifsEnabled"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item shouldUpdate noStyle>
-            {() =>
-              form?.getFieldValue("phoneNotifsEnabled") && (
-                <Form.Item
-                  label="Phone #"
-                  name="phoneNumber"
-                  rules={[
-                    {
-                      required: true,
-                      message:
-                        "Please input your number to enable text notifications",
-                    },
-                  ]}
-                >
-                  <Input placeholder={"XXX-XXX-XXXX"} />
-                </Form.Item>
-              )
-            }
-          </Form.Item> */}
         </Form>
-        {/* <Tooltip title="Click for help guide">
-          <QuestionCircleOutlined
-            style={{ float: "right", fontSize: "25px" }}
-            onClick={() =>
-              window.open(
-                "https://info.khouryofficehours.com/593f9eb67eb04abbb8008c285ed5a8dd"
-              )
-            }
-          />
-        </Tooltip> */}
         <Button
           key="submit"
           type="primary"

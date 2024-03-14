@@ -338,7 +338,6 @@ export default function SettingsTab({
                 tooltip="Whether users use organization's authentication system"
               >
                 <Switch
-                  style={{ backgroundColor: '#1677ff' }}
                   disabled={true}
                   defaultChecked={organization.ssoEnabled}
                 />

@@ -9,7 +9,6 @@ import {
 } from './util/factories';
 import { setupIntegrationTest } from './util/testUtils';
 import { ProfileModule } from '../src/profile/profile.module';
-import { PhoneNotifModel } from 'notification/phone-notif.entity';
 import { DesktopNotifModel } from 'notification/desktop-notif.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 import { AccountType } from '@koh/common';
@@ -149,25 +148,10 @@ describe('Profile Integration', () => {
     it('enables desktop notifs', async () => {
       const user = await UserFactory.create({
         desktopNotifsEnabled: false,
-        phoneNotifsEnabled: false,
       });
       const res = await supertest({ userId: user.id })
         .patch('/profile')
         .send({ desktopNotifsEnabled: true })
-        .expect(200);
-      expect(res.body).toMatchObject({
-        message: 'Profile updated successfully',
-      });
-    });
-
-    it('enables phone notifs', async () => {
-      const user = await UserFactory.create({
-        desktopNotifsEnabled: false,
-        phoneNotifsEnabled: false,
-      });
-      const res = await supertest({ userId: user.id })
-        .patch('/profile')
-        .send({ phoneNotifsEnabled: true, phoneNumber: '911' })
         .expect(200);
       expect(res.body).toMatchObject({
         message: 'Profile updated successfully',
@@ -188,37 +172,6 @@ describe('Profile Integration', () => {
       expect(res.body).toEqual({
         message: 'Email cannot be updated',
       });
-    });
-
-    it('does not let student enable without phone number', async () => {
-      const user = await UserFactory.create({
-        desktopNotifsEnabled: false,
-        phoneNotifsEnabled: false,
-      });
-      await supertest({ userId: user.id })
-        .patch('/profile')
-        .send({ phoneNotifsEnabled: true })
-        .expect(400);
-    });
-
-    it('lets student change phone number', async () => {
-      const user = await UserFactory.create({
-        desktopNotifsEnabled: false,
-        phoneNotifsEnabled: true,
-      });
-      await PhoneNotifModel.create({
-        phoneNumber: '1234567890',
-        user: user,
-        verified: true,
-      }).save();
-      let profile = await supertest({ userId: user.id }).get('/profile');
-      expect(profile.body?.phoneNumber).toEqual('1234567890');
-      await supertest({ userId: user.id })
-        .patch('/profile')
-        .send({ phoneNotifsEnabled: true, phoneNumber: '0987654321' })
-        .expect(200);
-      profile = await supertest({ userId: user.id }).get('/profile');
-      expect(profile.body?.phoneNumber).toEqual('real0987654321');
     });
 
     it('lets ta change default teams message', async () => {

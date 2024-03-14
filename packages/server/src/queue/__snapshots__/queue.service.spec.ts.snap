@@ -88,7 +88,6 @@ ListQuestionsResponse {
       "lastName": "Person",
       "name": "User Person",
       "password": null,
-      "phoneNotifsEnabled": false,
       "photoURL": null,
       "sid": null,
       "userRole": "user",

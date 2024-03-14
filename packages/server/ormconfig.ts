@@ -4,7 +4,6 @@ import { CourseModel } from './src/course/course.entity';
 import { SemesterModel } from './src/semester/semester.entity';
 import { CourseSectionMappingModel } from './src/login/course-section-mapping.entity';
 import { DesktopNotifModel } from './src/notification/desktop-notif.entity';
-import { PhoneNotifModel } from './src/notification/phone-notif.entity';
 import { EventModel } from './src/profile/event-model.entity';
 import { UserCourseModel } from './src/profile/user-course.entity';
 import { UserModel } from './src/profile/user.entity';
@@ -54,7 +53,6 @@ const typeorm = {
     QuestionTypeModel,
     QueueModel,
     DesktopNotifModel,
-    PhoneNotifModel,
     AdminUserModel,
     EventModel,
     QuestionGroupModel,
