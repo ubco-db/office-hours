@@ -19,7 +19,7 @@ export class AsyncQuestionVotesModel extends BaseEntity {
   @JoinColumn({ name: 'userId' })
   user: UserModel;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   @Exclude()
   userId: number;
 
@@ -27,7 +27,7 @@ export class AsyncQuestionVotesModel extends BaseEntity {
   @JoinColumn({ name: 'questionId' })
   question: AsyncQuestionModel;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   @Exclude()
   questionId: number;
 

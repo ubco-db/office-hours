@@ -58,7 +58,7 @@ export class asyncQuestionController {
       return;
     }
 
-    const thisUserThisQuestionVote = await AsyncQuestionVotesModel.findOne({
+    let thisUserThisQuestionVote = await AsyncQuestionVotesModel.findOne({
       where: { userId: user.id, questionId: qid },
     });
 
@@ -71,20 +71,27 @@ export class asyncQuestionController {
     if (canVote) {
       if (hasVoted) {
         thisUserThisQuestionVote.vote = newValue;
-        await thisUserThisQuestionVote.save();
       } else {
-        const vote = new AsyncQuestionVotesModel();
-        vote.user = user;
-        vote.userId = user.id;
-        vote.questionId = qid;
-        vote.vote = newValue;
-        await vote.save();
+        thisUserThisQuestionVote = new AsyncQuestionVotesModel();
+        thisUserThisQuestionVote.user = user;
+        thisUserThisQuestionVote.question = question;
+        thisUserThisQuestionVote.vote = newValue;
       }
     }
 
+    await thisUserThisQuestionVote.save();
+
+    const updatedQuestion = await AsyncQuestionModel.findOne({
+      where: { id: qid },
+    });
+
     res
       .status(200)
-      .send({ question: question, vote: thisUserThisQuestionVote?.vote ?? 0 });
+      .send({
+        questionSumVotes: updatedQuestion.votesSum,
+        vote: thisUserThisQuestionVote?.vote ?? 0,
+      });
+
     return;
   }
 
@@ -106,7 +113,6 @@ export class asyncQuestionController {
         .send({ message: ERROR_MESSAGES.questionController.notFound });
       return;
     }
-
     try {
       const question = await AsyncQuestionModel.create({
         courseId: cid,

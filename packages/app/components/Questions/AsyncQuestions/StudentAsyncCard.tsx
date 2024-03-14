@@ -30,7 +30,7 @@ export default function StudentAsyncCard({
 }: StudentAsyncCardProps): ReactElement {
   const [isExpanded, setIsExpanded] = useState(false)
   const [voteCount, setVoteCount] = useState(question.votesSum)
-  const [thisUserThisQuestionVote, setThisUserThisQuestionVote] = useState(0)
+  const [thisUserThisQuestionVote, setThisUserThisQuestionVote] = useState()
 
   const handleImageClick = (event) => {
     event.stopPropagation() // Prevents the click from closing the card
@@ -42,7 +42,7 @@ export default function StudentAsyncCard({
   }
   const handleVote = async (questionId: number, vote: number) => {
     const resp = await API.asyncQuestions.vote(questionId, vote)
-    setVoteCount(resp.question.votesSum)
+    setVoteCount(resp.questionSumVotes)
   }
 
   useEffect(() => {
