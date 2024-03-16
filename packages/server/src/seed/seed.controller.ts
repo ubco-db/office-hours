@@ -118,9 +118,9 @@ export class SeedController {
     if (!userExists) {
       // Student 1
       const user1 = await UserFactory.create({
-        email: 'kw@ubc.ca',
-        firstName: 'kevin',
-        lastName: 'wang',
+        email: 'studentOne@ubc.ca',
+        firstName: 'studentOne',
+        lastName: 'studentOne',
         password: hashedPassword1,
       });
 
@@ -132,9 +132,9 @@ export class SeedController {
 
       // Student 2
       const user2 = await UserFactory.create({
-        email: 'Justin@ubc.ca',
-        firstName: 'Justin',
-        lastName: 'Schultz',
+        email: 'studentTwo@ubc.ca',
+        firstName: 'studentTwo',
+        lastName: 'studentTwo',
         password: hashedPassword1,
       });
 
@@ -147,9 +147,9 @@ export class SeedController {
 
       // TA 1
       const user3 = await UserFactory.create({
-        email: 'big@ubc.ca',
-        firstName: 'Big',
-        lastName: 'Boy',
+        email: 'TaOne@ubc.ca',
+        firstName: 'TaOne',
+        lastName: 'TaOne',
         password: hashedPassword1,
       });
 
@@ -161,9 +161,9 @@ export class SeedController {
 
       // TA 2
       const user4 = await UserFactory.create({
-        email: 'small@ubc.ca',
-        firstName: 'Small',
-        lastName: 'Boy',
+        email: 'TaTwo@ubc.ca',
+        firstName: 'TaTwo',
+        lastName: 'TaTwo',
         password: hashedPassword1,
       });
 
@@ -175,7 +175,7 @@ export class SeedController {
 
       // Professor
       const user5 = await UserFactory.create({
-        email: 'bigRamon@ubc.ca',
+        email: 'Ramon@ubc.ca',
         firstName: 'Ramon',
         lastName: 'Lawrence',
         insights: [
@@ -265,7 +265,7 @@ export class SeedController {
 
     const eventTA = await UserModel.findOne({
       where: {
-        firstName: 'Big',
+        firstName: 'TaOne',
       },
     });
 
