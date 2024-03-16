@@ -100,7 +100,6 @@ export default function ChatbotSettings(): ReactElement {
             pageNumbers: [],
           }))
           setChatbotDocuments(formattedDocuments)
-          console.log('formattedDocuments', formattedDocuments)
         })
     } catch (e) {
       setChatbotDocuments([])

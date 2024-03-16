@@ -32,7 +32,6 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
           pageNumbers: [],
         }))
         setExistingDocuments(formattedDocuments)
-        console.log('formattedDocuments', formattedDocuments)
       })
   }, [cid, visible])
 
@@ -59,7 +58,6 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
       id: editingRecord.id,
       sourceDocuments: sourceDocumentsWithSelected,
     }
-    console.log('valuesWithId', valuesWithId)
     try {
       const response = await fetch(`/chat/question`, {
         method: 'PATCH',
