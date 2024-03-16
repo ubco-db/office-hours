@@ -294,7 +294,7 @@ export default function ChatbotQuestions({
             View and manage the questions being asked of your chatbot
           </p>
         </div>
-        <Button onClick={() => setAddModelOpen(true)}>Add Question</Button>
+        {/* <Button onClick={() => setAddModelOpen(true)}>Add Question</Button> */}
       </div>
       <hr className="my-5 w-full"></hr>
       <Input

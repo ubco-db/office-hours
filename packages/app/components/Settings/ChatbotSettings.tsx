@@ -1,18 +1,6 @@
-import {
-  Button,
-  Form,
-  Input,
-  Modal,
-  Pagination,
-  Table,
-  Tooltip,
-  UploadProps,
-  message,
-} from 'antd'
+import { Button, Form, Input, Modal, Pagination, Table, Tooltip } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import React, { ReactElement, useEffect, useState } from 'react'
-import { API } from '@koh/api-client'
-import { useDebounce } from '../../hooks/useDebounce'
 import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import {
@@ -44,10 +32,6 @@ export default function ChatbotSettings(): ReactElement {
   const [addDocumentModalOpen, setAddDocumentModalOpen] = useState(false)
   const [documentType, setDocumentType] = useState('FILE')
   const [search, setSearch] = useState('')
-  const debouncedValue = useDebounce<string>(search, 500)
-
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
   const [loading, setLoading] = useState(false)
   const [totalDocuments, setTotalDocuments] = useState(0)
   const [chatbotDocuments, setChatbotDocuments] = useState([])
@@ -66,25 +50,27 @@ export default function ChatbotSettings(): ReactElement {
     beforeUpload: () => false, // Prevent automatic upload
   }
 
-  const columns: ColumnsType<ChatbotDocument> = [
-    {
-      title: 'Document ID',
-      dataIndex: 'id',
-      key: 'id',
-    },
+  const columns = [
     {
       title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'docName',
+      key: 'docName',
     },
+
     {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      title: 'Source',
+      dataIndex: 'sourceLink',
+      key: 'sourceLink',
+      render: (text, record) => (
+        <a href={record.sourceLink} target="_blank" rel="noopener noreferrer">
+          Source Link
+        </a>
+      ),
     },
     {
       title: '',
-      render: (text, record, index) => (
+      key: 'action',
+      render: (text, record) => (
         <Button
           disabled={loading}
           onClick={() => handleDeleteDocument(record)}
@@ -98,20 +84,24 @@ export default function ChatbotSettings(): ReactElement {
 
   useEffect(() => {
     getDocuments()
-  }, [currentPage, pageSize, debouncedValue])
+  }, [])
 
   const getDocuments = async () => {
     setLoading(true)
     try {
-      const data: any = await API.chatbot.getDocuments(
-        Number(cid),
-        search,
-        pageSize,
-        currentPage,
-      )
-
-      setChatbotDocuments(data.chatDocuments)
-      setTotalDocuments(data.total)
+      fetch(`/chat/${cid}/aggregateDocuments`)
+        .then((res) => res.json())
+        .then((json) => {
+          // Convert the json to the expected format
+          const formattedDocuments = json.map((doc) => ({
+            docId: doc.id,
+            docName: doc.pageContent,
+            sourceLink: doc.metadata.source,
+            pageNumbers: [],
+          }))
+          setChatbotDocuments(formattedDocuments)
+          console.log('formattedDocuments', formattedDocuments)
+        })
     } catch (e) {
       setChatbotDocuments([])
     }
@@ -125,23 +115,12 @@ export default function ChatbotSettings(): ReactElement {
         url: url,
       }
 
-      const uploadedDocument = await fetch(`/chat/${cid}/document/url/github`, {
+      await fetch(`/chat/${cid}/document/url/github`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      })
-
-      const documentJSON = await uploadedDocument.json()
-
-      const response = await API.chatbot.addDocument({
-        data: {
-          name: documentJSON.name,
-          type: documentJSON.type,
-          subDocumentIds: documentJSON.ids,
-        },
-        courseId: Number(cid),
       })
 
       toast.success('File uploaded.')
@@ -168,20 +147,9 @@ export default function ChatbotSettings(): ReactElement {
           new Blob([JSON.stringify(jsonData)], { type: 'application/json' }),
         )
 
-        const uploadedDocument = await fetch(`/chat/${cid}/document`, {
+        await fetch(`/chat/${cid}/document`, {
           method: 'POST',
           body: formData,
-        })
-
-        const documentJSON = await uploadedDocument.json()
-
-        await API.chatbot.addDocument({
-          data: {
-            name: documentJSON.name,
-            type: documentJSON.type,
-            subDocumentIds: documentJSON.ids,
-          },
-          courseId: Number(cid),
         })
 
         toast.success('File uploaded.')
@@ -191,17 +159,15 @@ export default function ChatbotSettings(): ReactElement {
     }
   }
 
-  const handleDeleteDocument = async (document: ChatbotDocument) => {
+  const handleDeleteDocument = async (record: any) => {
     setLoading(true)
     try {
-      const res1 = await fetch(`/chat/${cid}/document`, {
+      await fetch(`/chat/${record.docId}/document`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ subDocumentIds: document.subDocumentIds }),
       })
-      const res2 = await API.chatbot.deleteDocument({ documentId: document.id })
       toast.success('Document deleted.')
       getDocuments()
     } catch (e) {
@@ -391,13 +357,9 @@ export default function ChatbotSettings(): ReactElement {
       <div className="my-1"></div>
       <Pagination
         style={{ float: 'right' }}
-        current={currentPage}
-        pageSize={pageSize}
         total={totalDocuments}
-        onChange={(page) => setCurrentPage(page)}
         pageSizeOptions={[10, 20, 30, 50]}
         showSizeChanger
-        onShowSizeChange={(current, pageSize) => setPageSize(pageSize)}
       />
     </div>
   )

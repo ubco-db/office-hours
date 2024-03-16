@@ -32,6 +32,7 @@ const EditChatbotQuestionModal: React.FC<EditChatbotQuestionModalProps> = ({
           pageNumbers: [],
         }))
         setExistingDocuments(formattedDocuments)
+        console.log('formattedDocuments', formattedDocuments)
       })
   }, [cid, visible])
 
