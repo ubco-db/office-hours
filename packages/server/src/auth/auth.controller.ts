@@ -286,7 +286,7 @@ export class AuthController {
 
     this.mailService.sendPasswordResetEmail(
       user.email,
-      `${process.env.DOMAIN}/account/password/reset/${resetLink}`,
+      `${process.env.DOMAIN}/account/password/${resetLink}`,
     );
 
     return res.status(HttpStatus.ACCEPTED).send({
