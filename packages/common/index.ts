@@ -905,26 +905,6 @@ export class GetSelfEnrollResponse {
   courses!: CoursePartial[]
 }
 
-export class GetCourseOverridesRow {
-  id!: number
-  role!: string
-  name!: string
-  email!: string
-}
-
-export class GetCourseOverridesResponse {
-  @Type(() => GetCourseOverridesRow)
-  data!: GetCourseOverridesRow[]
-}
-
-export class UpdateCourseOverrideBody {
-  @IsString()
-  email!: string
-
-  @IsString()
-  role!: Role
-}
-
 export class InteractionParams {
   @IsInt()
   courseId!: number
@@ -1004,8 +984,6 @@ export class DocumentParams {
   @IsArray()
   subDocumentIds?: string[]
 }
-
-export class UpdateCourseOverrideResponse extends GetCourseOverridesRow {}
 
 export class GetQueueResponse extends QueuePartial {}
 

@@ -6,7 +6,6 @@ import {
   CourseSettingsResponse,
   EditCourseInfoParams,
   ERROR_MESSAGES,
-  GetCourseOverridesResponse,
   GetCourseResponse,
   GetCourseUserInfoResponse,
   GetLimitedCourseResponse,
@@ -16,8 +15,6 @@ import {
   TACheckinTimesResponse,
   TACheckoutResponse,
   UBCOuserParam,
-  UpdateCourseOverrideBody,
-  UpdateCourseOverrideResponse,
 } from '@koh/common';
 import {
   BadRequestException,
@@ -594,109 +591,6 @@ export class CourseController {
     return { queueId: queue.id };
   }
 
-  @Get(':id/course_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
-  @Roles(Role.PROFESSOR)
-  async getCourseOverrides(
-    @Param('id') courseId: number,
-  ): Promise<GetCourseOverridesResponse> {
-    const resp = await UserCourseModel.find({
-      where: { courseId, override: true },
-      relations: ['user'],
-    });
-
-    if (resp === null || resp === undefined) {
-      throw new HttpException(
-        ERROR_MESSAGES.courseController.courseModelError,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return {
-      data: resp.map((row) => ({
-        id: row.id,
-        role: row.role,
-        name: row.user.name,
-        email: row.user.email,
-      })),
-    };
-  }
-
-  @Post(':id/update_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
-  @Roles(Role.PROFESSOR)
-  async addOverride(
-    @Param('id') courseId: number,
-    @Body() overrideInfo: UpdateCourseOverrideBody,
-  ): Promise<UpdateCourseOverrideResponse> {
-    const user = await UserModel.findOne({
-      where: { email: overrideInfo.email },
-    });
-    if (!user)
-      throw new BadRequestException(
-        ERROR_MESSAGES.courseController.noUserFound,
-      );
-    const userId = user.id;
-    let userCourse = await UserCourseModel.findOne({
-      where: { courseId, userId },
-    });
-    if (!userCourse) {
-      try {
-        userCourse = await UserCourseModel.create({
-          userId,
-          courseId,
-          role: overrideInfo.role,
-          override: true,
-        }).save();
-      } catch (err) {
-        console.error(err);
-        throw new HttpException(
-          ERROR_MESSAGES.courseController.createCourse,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    } else {
-      userCourse.override = true;
-      userCourse.role = overrideInfo.role;
-      try {
-        await userCourse.save();
-      } catch (err) {
-        console.error(err);
-        throw new HttpException(
-          ERROR_MESSAGES.courseController.updateCourse,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-    return {
-      id: userCourse.id,
-      role: userCourse.role,
-      name: user.name,
-      email: user.email,
-    };
-  }
-
-  @Delete(':id/update_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
-  @Roles(Role.PROFESSOR)
-  async deleteOverride(
-    @Param('id') courseId: number,
-    @Body() overrideInfo: UpdateCourseOverrideBody,
-  ): Promise<void> {
-    const user = await UserModel.findOne({
-      where: { email: overrideInfo.email },
-    });
-    if (!user)
-      throw new BadRequestException(
-        ERROR_MESSAGES.courseController.noUserFound,
-      );
-    const userId = user.id;
-    const userCourse = await UserCourseModel.findOne({
-      where: { courseId, userId, override: true },
-    });
-    await this.courseService.removeUserFromCourse(userCourse);
-  }
-
   @Delete(':id/withdraw_course')
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async withdrawCourse(
@@ -898,6 +792,32 @@ export class CourseController {
       .catch((err) => {
         res.status(HttpStatus.BAD_REQUEST).send({ message: err.message });
       });
+    return;
+  }
+
+  @Patch(':id/update_user_role/:uid/:role')
+  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @Roles(Role.PROFESSOR)
+  async updateUserRole(
+    @Param('id') courseId: number,
+    @Param('uid') userId: number,
+    @Param('role') role: Role,
+    @Res() res: Response,
+  ): Promise<void> {
+    const user = await UserCourseModel.findOne({ userId, courseId });
+
+    if (!user) {
+      res.status(HttpStatus.NOT_FOUND).send({ message: 'User not found' });
+      return;
+    }
+
+    try {
+      await UserCourseModel.update({ courseId, userId }, { role });
+    } catch (err) {
+      res.status(HttpStatus.BAD_REQUEST).send({ message: err.message });
+      return;
+    }
+    res.status(HttpStatus.OK).send({ message: 'Updated user course role' });
     return;
   }
 

@@ -144,10 +144,7 @@ export default function AddStudentsToCourse({
   const cancel = () => {
     setEditingKey(-1)
   }
-  // const editQuestion =(id)=>{
-  //   const newData= data.filter((item)=> item.id!==id);
-  //   setData(newData);
-  // }
+
   const isEditing = (record: questions) => record.id === editingKey
   //for search bars
   const getColumnSearchProps = (dataIndex: string): ColumnType<questions> => ({
@@ -337,19 +334,18 @@ export default function AddStudentsToCourse({
   return (
     <CourseRosterPageComponent>
       <Form form={form} component={false}>
-        {/* prettier-ignore */}
         <Table
           components={{
             body: {
-              cell: EditableCell
-            }
+              cell: EditableCell,
+            },
           }}
           bordered
           dataSource={data}
           columns={mergedColumns}
           rowClassName="editable-row"
           pagination={{
-            onChange: cancel
+            onChange: cancel,
           }}
         />
       </Form>
