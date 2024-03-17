@@ -199,10 +199,14 @@ export const ChatbotToday: React.FC = () => {
                             {item.message}
                             {item.verified && (
                               <Tooltip title="A similar question has been asked before, and the answer has been verified by a faculty member">
-                                  <CheckCircleOutlined
-                                    style={{ color: 'green', fontSize: '20px', marginLeft: '2px'}}
-                                  />
-                                </Tooltip>
+                                <CheckCircleOutlined
+                                  style={{
+                                    color: 'green',
+                                    fontSize: '20px',
+                                    marginLeft: '2px',
+                                  }}
+                                />
+                              </Tooltip>
                             )}
                           </div>
                           {item.questionId && (

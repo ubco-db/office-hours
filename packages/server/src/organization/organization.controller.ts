@@ -149,7 +149,6 @@ export class OrganizationController {
           userId: profId,
           course: newCourse,
           role: Role.PROFESSOR,
-          override: false,
           expires: false,
         }).save();
       }

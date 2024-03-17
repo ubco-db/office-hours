@@ -180,42 +180,6 @@ export class LoginController {
     return { courses: courses.filter((course) => course.selfEnroll) };
   }
 
-  @Post('create_self_enroll_override/:id')
-  @UseGuards(JwtAuthGuard)
-  async createSelfEnrollOverride(
-    @Param('id') courseId: number,
-    @User() user: UserModel,
-  ): Promise<void> {
-    const course = await CourseModel.findOne(courseId);
-
-    if (!course.selfEnroll) {
-      throw new UnauthorizedException(
-        'Cannot self-enroll to this course currently',
-      );
-    }
-
-    const prevUCM = await UserCourseModel.findOne({
-      where: {
-        courseId,
-        userId: user.id,
-      },
-    });
-
-    if (prevUCM) {
-      throw new BadRequestException(
-        'User already has an override for this course',
-      );
-    }
-
-    await UserCourseModel.create({
-      userId: user.id,
-      courseId: courseId,
-      role: Role.STUDENT,
-      override: true,
-      expires: true,
-    }).save();
-  }
-
   // get all courses related to user to log in.
   @Post('getAllcourses')
   async getCourses(
