@@ -14,9 +14,7 @@ describe('Async Question Integration', () => {
   describe('POST /asyncQuestions/:qid/:vote', () => {
     it('should vote on a question', async () => {
       const student = await UserFactory.create();
-      const vote = await VotesFactory.create({ userId: student.id, vote: 1 });
       const question = await AsyncQuestionFactory.create({
-        votes: [vote],
         createdAt: new Date('2020-03-01T05:00:00.000Z'),
       });
 
@@ -30,11 +28,10 @@ describe('Async Question Integration', () => {
 
     it('should update an existing vote on a question', async () => {
       const student = await UserFactory.create();
-      const vote = await VotesFactory.create({ userId: student.id, vote: 1 });
       const question = await AsyncQuestionFactory.create({
-        votes: [vote],
         createdAt: new Date('2020-03-01T05:00:00.000Z'),
       });
+      await VotesFactory.create({ userId: student.id, vote: 1, question });
 
       const response = await supertest({ userId: student.id }).post(
         `/asyncQuestions/${question.id}/-1`,
@@ -46,11 +43,10 @@ describe('Async Question Integration', () => {
 
     it('should not allow voting beyond the allowed range', async () => {
       const student = await UserFactory.create();
-      const vote = await VotesFactory.create({ userId: student.id, vote: 1 });
       const question = await AsyncQuestionFactory.create({
-        votes: [vote],
         createdAt: new Date('2020-03-01T05:00:00.000Z'),
       });
+      await VotesFactory.create({ userId: student.id, vote: 1, question });
 
       const response = await supertest({ userId: student.id }).post(
         `/asyncQuestions/${question.id}/2`,
