@@ -8,7 +8,7 @@ import React, { ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useRoleInCourse } from '../../../hooks/useRoleInCourse'
 import { SettingsLeftPanel } from './SettingsLeftPanel'
-import { Select } from 'antd'
+import { Select, Switch } from 'antd'
 import { useAsnycQuestions } from '../../../hooks/useAsyncQuestions'
 import AsyncCard from './AsyncCard'
 import { VerticalDivider, EditQueueButton } from '../Shared/SharedComponents'
@@ -17,6 +17,7 @@ import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
 import CreateAsyncQuestionForm from './CreateAsyncQuestionForm'
+import { create } from 'lodash'
 
 const Container = styled.div`
   flex: 1;
@@ -55,7 +56,7 @@ export default function AsyncQuestionsPage({
   const [editAsyncQuestionsModal, setEditAsyncQuestionsModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [visibleFilter, setVisibleFilter] = useState('all')
-  const [creatorFilter, setCreatorFilter] = useState('all')
+  const [creatorFilter, setCreatorFilter] = useState('all') // 'all' or 'mine'
 
   const [questionTypeInput, setQuestionTypeInput] = useState([])
 
@@ -110,10 +111,9 @@ export default function AsyncQuestionsPage({
       })
     }
 
-    // Apply creator filter
-    if (creatorFilter !== 'all') {
+    if (creatorFilter === 'mine') {
       displayedQuestions = displayedQuestions.filter(
-        (question) => question.creatorId === creatorFilter,
+        (question) => question.creatorId === profile.id,
       )
     }
 
@@ -130,6 +130,7 @@ export default function AsyncQuestionsPage({
     questions,
     questionTypeInput,
     isStaff,
+    creatorFilter,
     profile?.id,
     sortBy,
   ])
@@ -252,6 +253,20 @@ export default function AsyncQuestionsPage({
     )
   }
 
+  const RenderCreatorFilter = () => {
+    return (
+      <Select
+        id="creator-filter-select"
+        value={creatorFilter}
+        onChange={(value) => setCreatorFilter(value)}
+        className="select-filter"
+      >
+        <Select.Option value="all">All Questions</Select.Option>
+        <Select.Option value="mine">My Questions</Select.Option>
+      </Select>
+    )
+  }
+
   const RenderQuestionStatusFilter = () => {
     return (
       <>
@@ -262,9 +277,9 @@ export default function AsyncQuestionsPage({
           className="select-filter"
           style={{ width: 200 }}
         >
-          <Select.Option value="all">Question Status</Select.Option>
-          <Select.Option value="helped">Answered</Select.Option>
-          <Select.Option value="unhelped">Unanswered</Select.Option>
+          <Select.Option value="all">Verification status</Select.Option>
+          <Select.Option value="helped">Verified questions</Select.Option>
+          <Select.Option value="unhelped">Unverified questions</Select.Option>
         </Select>
       </>
     )
@@ -280,7 +295,7 @@ export default function AsyncQuestionsPage({
           className="select-filter"
           style={{ width: 200 }}
         >
-          <Select.Option value="all">All questions</Select.Option>
+          <Select.Option value="all">Visibility</Select.Option>
           <Select.Option value="visible">Visible Only</Select.Option>
           <Select.Option value="hidden">Hidden Only</Select.Option>
         </Select>
@@ -295,6 +310,7 @@ export default function AsyncQuestionsPage({
         <div className="mb-4 flex items-center gap-x-4">
           <RenderQuestionStatusFilter />
           <RenderVisibleFilter />
+          {!isStaff && <RenderCreatorFilter />}
           <RenderQuestionTypeFilter />
         </div>
       </>

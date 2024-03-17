@@ -479,8 +479,8 @@ export class AsyncQuestion {
   @IsInt()
   creatorId?: number
 
-  @Type(() => UserPartial)
-  taHelped?: UserPartial
+  @Type(() => User)
+  taHelped?: User
 
   @Type(() => Date)
   createdAt?: Date

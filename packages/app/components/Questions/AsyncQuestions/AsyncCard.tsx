@@ -280,7 +280,9 @@ export default function AsyncCard({
         : 'bg-yellow-200'
     }`}
         >
-          {statusDisplayMap[question.status]}
+          {question.status === asyncQuestionStatus.HumanAnswered
+            ? `Verified by ${question.taHelped.firstName} ${question.taHelped.lastName}`
+            : statusDisplayMap[question.status]}
         </div>
         <div className="flex items-center">
           <Text className="text-sm">{getAsyncWaitTime(question)}</Text>
