@@ -26,6 +26,7 @@ import {
   OrganizationFactory,
   OrganizationUserFactory,
   OrganizationCourseFactory,
+  CourseSettingsFactory,
   QuestionTypeFactory,
   CourseSettingsFactory,
 } from '../../test/util/factories';
@@ -36,6 +37,7 @@ import { QueueModel } from '../queue/queue.entity';
 import { SeedService } from './seed.service';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import { CourseSettingsModel } from '../course/course_settings.entity';
 import { QuestionTypeModel } from 'questionType/question-type.entity';
 import { CourseSettingsModel } from '../course/course_settings.entity';
 

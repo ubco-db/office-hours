@@ -54,6 +54,7 @@ import { memoryStorage } from 'multer';
 import { SemesterModel } from 'semester/semester.entity';
 import { In } from 'typeorm';
 import { UserCourseModel } from 'profile/user-course.entity';
+import { CourseSettingsModel } from 'course/course_settings.entity';
 import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 import { CourseSettingsModel } from 'course/course_settings.entity';
 
