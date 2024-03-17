@@ -7,8 +7,7 @@ import NavBar from '../../../../components/Nav/NavBar'
 import { useQueue } from '../../../../hooks/useQueue'
 import { useRoleInCourse } from '../../../../hooks/useRoleInCourse'
 import { useChatbotContext } from '../../../../providers/chatbotProvider'
-import { Spin } from 'antd'
-import QueuePage from '../../../../components/Queue/Queue'
+import QueuePage from '../../../../components/Questions/Queue/Queue'
 
 const Container = styled.div`
   flex: 1;
@@ -24,19 +23,12 @@ export default function Queue(): ReactElement {
   const { queue } = useQueue(Number(qid))
   useEffect(() => {
     setOpen(true)
+    return () => setOpen(false)
   }, [])
 
   useEffect(() => {
     setCid(cid)
   }, [cid])
-
-  function RenderQueuePage(): ReactElement {
-    if (role && queue) {
-      return <QueuePage qid={Number(qid)} cid={Number(cid)} />
-    } else {
-      return <Spin />
-    }
-  }
 
   return (
     <StandardPageContainer>
@@ -45,7 +37,7 @@ export default function Queue(): ReactElement {
           <title>{queue?.room} Queue | UBC Office Hours</title>
         </Head>
         <NavBar courseId={Number(cid)} />
-        <RenderQueuePage />
+        <QueuePage qid={Number(qid)} cid={Number(cid)} />
       </Container>
     </StandardPageContainer>
   )

@@ -1,22 +1,13 @@
 import Router from 'next/router'
-import { ReactElement, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import { LeftOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
-import {
-  message,
-  Button,
-  Form,
-  Input,
-  Card,
-  Row,
-  Col,
-  Select,
-  Spin,
-  Alert,
-} from 'antd'
+import { message, Button, Form, Input, Card, Select, Spin, Alert } from 'antd'
 import styled from 'styled-components'
 import Head from 'next/head'
 import { API } from '@koh/api-client'
 import useSWR from 'swr'
+import ReCAPTCHA from 'react-google-recaptcha'
+import React from 'react'
 
 const Container = styled.div`
   margin-left: auto;
@@ -43,6 +34,8 @@ export default function Login(): ReactElement {
   const [loginMenu, setLoginMenu] = useState(false)
   const [organization, setOrganization] = useState(null)
 
+  const recaptchaRef = React.createRef()
+
   const { data: organizations } = useSWR(`api/v1/organization`, async () =>
     API.organizations.getOrganizations(),
   )
@@ -59,10 +52,16 @@ export default function Login(): ReactElement {
   }
 
   const loginWithInstitution = async () => {
-    Router.push(`/api/v1/auth/shibboleth/${organization.id}`)
+    const lastVisited = encodeURIComponent(localStorage.getItem('lastVisited'))
+    localStorage.removeItem('lastVisited')
+    Router.push(
+      `/api/v1/auth/shibboleth/${organization.id}?lastVisited=${lastVisited}`,
+    )
   }
 
-  function login() {
+  async function login() {
+    const token = await recaptchaRef.current.executeAsync()
+
     if (organization && !organization.legacyAuthEnabled) {
       message.error('Organization does not support legacy authentication')
       return
@@ -74,6 +73,7 @@ export default function Login(): ReactElement {
       body: JSON.stringify({
         email: uname,
         password: pass,
+        recaptchaToken: token,
       }),
     }
     fetch(`/api/v1/ubc_login`, loginRequest)
@@ -126,6 +126,8 @@ export default function Login(): ReactElement {
   const showLoginMenu = (value) => {
     const organization = organizations.find((org) => org.id === value)
 
+    localStorage.setItem('organizationId', `${organization.id}`)
+
     if (!organization) {
       message.error('Organization not found')
       return
@@ -135,6 +137,22 @@ export default function Login(): ReactElement {
     setLoginMenu(true)
   }
 
+  const onReCAPTCHAChange = (captchaCode) => {
+    if (!captchaCode) {
+      return
+    }
+
+    recaptchaRef.current.reset()
+  }
+
+  useEffect(() => {
+    if (organizations && organizations.length === 1) {
+      setOrganization(organizations[0])
+      setLoginMenu(true)
+      localStorage.setItem('organizationId', `${organizations[0].id}`)
+    }
+  }, [organizations, setLoginMenu])
+
   return organizations ? (
     <>
       <Head>
@@ -142,7 +160,7 @@ export default function Login(): ReactElement {
       </Head>
       <Container>
         <Card className="mx-auto max-w-md sm:px-2 md:px-6">
-          <h2 className="text-left">Login</h2>
+          <h2 className="my-4 text-left">Login</h2>
 
           {!loginMenu && (
             <>
@@ -168,13 +186,15 @@ export default function Login(): ReactElement {
 
           {loginMenu && (
             <>
-              <Button
-                className="flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-5 text-left"
-                onClick={() => setLoginMenu(false)}
-              >
-                <LeftOutlined />
-                <span className="font-semibold"> Go Back</span>
-              </Button>
+              {organizations && organizations.length > 1 && (
+                <Button
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-5 text-left"
+                  onClick={() => setLoginMenu(false)}
+                >
+                  <LeftOutlined />
+                  <span className="font-semibold"> Go Back</span>
+                </Button>
+              )}
 
               {organization && organization.googleAuthEnabled && (
                 <Button
@@ -221,6 +241,12 @@ export default function Login(): ReactElement {
                   initialValues={{ remember: true }}
                   onFinish={login}
                 >
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    size="invisible"
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    onChange={onReCAPTCHAChange}
+                  />
                   <Form.Item
                     name="username"
                     rules={[
@@ -266,14 +292,10 @@ export default function Login(): ReactElement {
                     </Button>
                   </Form.Item>
 
-                  <Form.Item>
-                    <a
-                      style={{ marginTop: '-10px' }}
-                      href="/forgetpassword/forget"
-                    >
-                      Forgot password
-                    </a>
-                  </Form.Item>
+                  <div className="d-flex flex-row space-x-8 text-center">
+                    <a href="/account/password">Forgot password</a>
+                    <a href="/register">Create account</a>
+                  </div>
                 </Form>
               )}
             </>

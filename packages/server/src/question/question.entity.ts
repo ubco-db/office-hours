@@ -16,7 +16,7 @@ import { UserModel } from '../profile/user.entity';
 import { QueueModel } from '../queue/queue.entity';
 import { canChangeQuestionStatus } from './question-fsm';
 import { QuestionGroupModel } from './question-group.entity';
-import { QuestionTypeModel } from './question-type.entity';
+import { QuestionTypeModel } from '../questionType/question-type.entity';
 
 @Entity('question_model')
 export class QuestionModel extends BaseEntity {

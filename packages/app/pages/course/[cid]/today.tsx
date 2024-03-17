@@ -5,11 +5,10 @@ import { chunk, mean } from 'lodash'
 import moment from 'moment'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import React, { ReactElement, useEffect, useState } from 'react'
+import React, { ReactElement, useState } from 'react'
 import styled from 'styled-components'
 import { StandardPageContainer } from '../../../components/common/PageContainer'
 import NavBar from '../../../components/Nav/NavBar'
-import SchedulePanel from '../../../components/Schedule/SchedulePanel'
 import QueueCard, {
   QueueCardSkeleton,
 } from '../../../components/Today/QueueCard'
@@ -17,7 +16,7 @@ import TodayPageCheckinButton from '../../../components/Today/QueueCheckInButton
 import { useCourse } from '../../../hooks/useCourse'
 import { useRoleInCourse } from '../../../hooks/useRoleInCourse'
 import PopularTimes from '../../../components/Today/PopularTimes/PopularTimes'
-import AsyncQuestionCard from '../../../components/AsyncQuestion/AsyncQuestionCard'
+import AsyncQuestionCard from '../../../components/Questions/AsyncQuestions/AsyncQuestionCard'
 import { orderBy } from 'lodash'
 import { ChatbotToday } from '../../../components/Today/ChatbotToday'
 

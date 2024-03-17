@@ -76,6 +76,7 @@
     "rxjs": "^6.5.4",
     "sharp": "^0.27.0",
     "source-map-support": "^0.5.19",
+    "superagent": "^8.1.2",
     "twilio": "^3.47.0",
     "typeorm": "^0.2.25",
     "web-push": "3.4.4"
@@ -95,6 +96,7 @@
     "@types/passport-jwt": "^3.0.3",
     "@types/readline-sync": "^1.4.3",
     "@types/redlock": "^4.0.1",
+    "@types/superagent": "^8.1.4",
     "@types/supertest": "^2.0.8",
     "@types/web-push": "3.3.0",
     "cross-env": "^7.0.2",
