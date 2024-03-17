@@ -2,12 +2,14 @@ import {
   Breadcrumb,
   Button,
   Card,
+  Checkbox,
   Col,
   Form,
   Input,
   Row,
   Select,
   Spin,
+  Tooltip,
   message,
 } from 'antd'
 import Head from 'next/head'
@@ -22,6 +24,7 @@ import { COURSE_TIMEZONES, OrganizationRole } from '@koh/common'
 import DefaultErrorPage from 'next/error'
 import { API } from '@koh/api-client'
 import useSWR from 'swr'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 
 export default function Add(): ReactElement {
   const profile = useProfile()
@@ -81,6 +84,14 @@ export default function Add(): ReactElement {
       const courseTimezoneField = formValues.courseTimezone
       const semesterIdField = formValues.semesterId
       const profIds = isAdmin ? formValues.professorsUserId : [profile.id]
+      const courseFeatures = [
+        'chatBotEnabled',
+        'queueEnabled',
+        'asyncQueueEnabled',
+      ].map((feature) => ({
+        feature,
+        value: formValues['course-features'].includes(feature),
+      }))
 
       // if semesterIdField is not a number or not in semesters
       if (
@@ -99,6 +110,7 @@ export default function Add(): ReactElement {
           timezone: courseTimezoneField,
           semesterId: semesterIdField,
           profIds: profIds,
+          courseSettings: courseFeatures,
         })
         .then(() => {
           message.success('Course was created')
@@ -116,13 +128,26 @@ export default function Add(): ReactElement {
         <Row>
           <Col xs={{ span: 24 }} sm={{ span: 24 }}>
             <Card bordered={true} title="Add Course">
-              <Form form={formGeneral} layout="vertical" onFinish={addCourse}>
+              <Form
+                form={formGeneral}
+                layout="vertical"
+                onFinish={addCourse}
+                initialValues={{
+                  // features placed here will appear as checked by default
+                  'course-features': [
+                    'chatBotEnabled',
+                    'queueEnabled',
+                    'asyncQueueEnabled',
+                  ],
+                }}
+              >
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                   <Col xs={{ span: 24 }} sm={{ span: 12 }}>
                     <Form.Item
                       label="Course Name"
                       name="courseName"
                       tooltip="Name of the course"
+                      rules={[{ required: true }]}
                     >
                       <Input allowClear={true} />
                     </Form.Item>
@@ -139,9 +164,10 @@ export default function Add(): ReactElement {
 
                   <Col xs={{ span: 24 }} sm={{ span: 12 }}>
                     <Form.Item
-                      label="Section Group Name"
+                      label="Section Group"
                       name="sectionGroupName"
-                      tooltip="Name of the section group"
+                      tooltip="Name of the section group (E.g. if you're in COSC 111 001, the section group is 001)"
+                      rules={[{ required: true }]}
                     >
                       <Input allowClear={true} />
                     </Form.Item>
@@ -151,7 +177,7 @@ export default function Add(): ReactElement {
                     <Form.Item
                       label="Zoom Link"
                       name="zoomLink"
-                      tooltip="Link to the zoom meeting"
+                      tooltip="Link to the zoom meeting for office hours"
                     >
                       <Input allowClear={true} />
                     </Form.Item>
@@ -162,6 +188,7 @@ export default function Add(): ReactElement {
                       label="Course Timezone"
                       name="courseTimezone"
                       tooltip="Timezone of the course"
+                      rules={[{ required: true }]}
                     >
                       <Select>
                         {COURSE_TIMEZONES.map((timezone) => (
@@ -178,6 +205,7 @@ export default function Add(): ReactElement {
                       label="Semester"
                       name="semesterId"
                       tooltip="Semester of the course"
+                      rules={[{ required: true }]}
                     >
                       <Select>
                         {semesters.map((semester) => (
@@ -212,7 +240,71 @@ export default function Add(): ReactElement {
                       <></>
                     )}
                   </Col>
+                  <Col xs={{ span: 24 }} sm={{ span: 12 }}>
+                    <Form.Item
+                      name="course-features"
+                      label="Course Features"
+                      tooltip="Enable or disable features for this course"
+                    >
+                      <Checkbox.Group className="w-full">
+                        <Row justify="start">
+                          <Col xs={{ span: 12 }} sm={{ span: 6 }}>
+                            <Checkbox
+                              value="chatBotEnabled"
+                              style={{ lineHeight: '32px' }}
+                            >
+                              Chatbot&nbsp;
+                              <Tooltip
+                                title={
+                                  'This feature allows students to ask an AI chatbot questions that will answer their questions based on uploaded course content (located in course admin settings)'
+                                }
+                              >
+                                <QuestionCircleOutlined
+                                  style={{ color: 'gray' }}
+                                />
+                              </Tooltip>
+                            </Checkbox>
+                          </Col>
+                          <Col xs={{ span: 12 }} sm={{ span: 6 }}>
+                            <Checkbox
+                              value="queueEnabled"
+                              style={{ lineHeight: '32px' }}
+                            >
+                              Queues&nbsp;
+                              <Tooltip
+                                title={
+                                  'This feature allows students to ask questions in a queue that can then be answered by the professor or a TA. Suitable for online, hybrid, and in-person office hours and labs.'
+                                }
+                              >
+                                <QuestionCircleOutlined
+                                  style={{ color: 'gray' }}
+                                />
+                              </Tooltip>
+                            </Checkbox>
+                          </Col>
+                          <Col xs={{ span: 24 }} sm={{ span: 12 }}>
+                            <Checkbox
+                              value="asyncQueueEnabled"
+                              style={{ lineHeight: '32px' }}
+                            >
+                              Asynchronous Question Centre&nbsp;
+                              <Tooltip
+                                title={
+                                  'This feature allows students to ask questions asynchronously (e.g. outside of office hours or labs) that can then be answered by the professor. It also features automatic AI-generated answers based on uploaded course content.'
+                                }
+                              >
+                                <QuestionCircleOutlined
+                                  style={{ color: 'gray' }}
+                                />
+                              </Tooltip>
+                            </Checkbox>
+                          </Col>
+                        </Row>
+                      </Checkbox.Group>
+                    </Form.Item>
+                  </Col>
                 </Row>
+
                 <Row>
                   <Col xs={{ span: 24 }} sm={{ span: 12 }}>
                     <Form.Item>

@@ -26,6 +26,7 @@ import {
   OrganizationFactory,
   OrganizationUserFactory,
   OrganizationCourseFactory,
+  CourseSettingsFactory,
   QuestionTypeFactory,
 } from '../../test/util/factories';
 import { CourseModel } from '../course/course.entity';
@@ -35,6 +36,7 @@ import { QueueModel } from '../queue/queue.entity';
 import { SeedService } from './seed.service';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import { CourseSettingsModel } from '../course/course_settings.entity';
 import { QuestionTypeModel } from 'questionType/question-type.entity';
 import { InteractionModel } from 'chatbot/interaction.entity';
 import { ChatbotQuestionModel } from 'chatbot/question.entity';
@@ -73,6 +75,7 @@ export class SeedController {
     await this.seedService.deleteAll(SemesterModel);
     await this.seedService.deleteAll(OrganizationModel);
     await this.seedService.deleteAll(QuestionTypeModel);
+    await this.seedService.deleteAll(CourseSettingsModel);
     const manager = getManager();
     manager.query('ALTER SEQUENCE user_model_id_seq RESTART WITH 1;');
     manager.query('ALTER SEQUENCE organization_model_id_seq RESTART WITH 1;');
@@ -111,6 +114,7 @@ export class SeedController {
         season: 'Fall',
         year: 2023,
       });
+
       await CourseFactory.create({
         timezone: 'America/Los_Angeles',
         semesterId: semester.id,
@@ -119,6 +123,14 @@ export class SeedController {
 
     const course = await CourseModel.findOne({
       where: { name: 'CS 304' },
+    });
+
+    await CourseSettingsFactory.create({
+      course: course,
+      chatBotEnabled: true,
+      asyncQueueEnabled: true,
+      adsEnabled: true,
+      queueEnabled: true,
     });
 
     const userExists = await UserModel.findOne();

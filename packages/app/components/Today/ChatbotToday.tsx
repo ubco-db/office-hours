@@ -22,7 +22,7 @@ const ChatbotContainer = styled.div`
 `
 const StyledInput = styled(Input)`
   width: 100%;
-  margin-top: auto;
+  margin-top: 0;
 
   @media (min-width: 650px) {
     width: 80%;
@@ -172,7 +172,7 @@ export const ChatbotToday: React.FC = () => {
       <ChatbotContainer>
         <Card
           title="Course chatbot"
-          className=" flex h-full max-h-[90vh] w-full flex-col overflow-y-auto"
+          className=" flex h-[85vh] w-full flex-col overflow-y-auto sm:h-[90vh]"
         >
           <div className="grow-1 overflow-y-auto">
             {messages &&
@@ -184,15 +184,23 @@ export const ChatbotToday: React.FC = () => {
                         {' '}
                         {item.message}
                       </div>
-                      <Avatar size="small" icon={<UserOutlined />} />
+                      <Avatar
+                        className="shrink-0 grow-0"
+                        size="small"
+                        icon={<UserOutlined />}
+                      />
                     </div>
                   ) : (
                     <div className="group mb-3 flex flex-grow items-start">
-                      <Avatar size="small" icon={<RobotOutlined />} />
+                      <Avatar
+                        className="shrink-0 grow-0"
+                        size="small"
+                        icon={<RobotOutlined />}
+                      />
                       <div className="ml-2 flex flex-col gap-1">
                         <div className="flex items-start gap-2">
                           <div
-                            className={`max-w-[280px] rounded-xl px-3 py-2 ${
+                            className={`max-w-full rounded-xl px-3 py-2 ${
                               item.verified ? 'bg-green-100' : 'bg-slate-100'
                             }`}
                           >
@@ -224,7 +232,7 @@ export const ChatbotToday: React.FC = () => {
                           {item.sourceDocuments &&
                             item.sourceDocuments.map((sourceDocument) => (
                               <div
-                                className="align-items-start flex h-fit w-fit max-w-[280px] justify-start gap-3 rounded-xl bg-slate-100 p-1 font-semibold"
+                                className="align-items-start flex h-fit w-fit max-w-full justify-start gap-3 rounded-xl bg-slate-100 p-1 font-semibold"
                                 key={sourceDocument.docName}
                               >
                                 <p className="px-2 py-1">
@@ -301,7 +309,7 @@ export const ChatbotToday: React.FC = () => {
         onChange={(e) => setInput(e.target.value)}
         placeholder="Ask something..."
         onPressEnter={handleAsk}
-        className="mt-auto w-4/5"
+        className="mt-0 w-4/5"
         suffix={
           <Button type="primary" className="bg-blue-900" onClick={handleAsk}>
             Ask

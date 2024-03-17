@@ -23,6 +23,7 @@ import { InteractionModel } from 'chatbot/interaction.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { QuestionTypeModel } from 'questionType/question-type.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import { CourseSettingsModel } from '../../src/course/course_settings.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { AsyncQuestionVotesModel } from 'asyncQuestion/asyncQuestionVotes.entity';
 
@@ -58,6 +59,13 @@ export const CourseFactory = new Factory(CourseModel)
   .attr('enabled', true)
   .attr('courseInviteCode', 'invite-code')
   .assocOne('semester', SemesterFactory);
+
+export const CourseSettingsFactory = new Factory(CourseSettingsModel)
+  .assocOne('course', CourseFactory)
+  .attr('chatBotEnabled', true)
+  .attr('asyncQueueEnabled', true)
+  .attr('adsEnabled', true)
+  .attr('queueEnabled', true);
 
 export const CourseSectionFactory = new Factory(CourseSectionMappingModel)
   .attr('crn', 12345)

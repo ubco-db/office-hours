@@ -2,8 +2,11 @@ import {
   BellOutlined,
   EditOutlined,
   QuestionCircleOutlined,
-  UploadOutlined,
   DownloadOutlined,
+  AppstoreAddOutlined,
+  RobotOutlined,
+  ScheduleOutlined,
+  TableOutlined,
 } from '@ant-design/icons'
 import { Col, Menu, Row, Space, Tooltip } from 'antd'
 import { useRouter } from 'next/router'
@@ -20,12 +23,17 @@ import { useRoleInCourse } from '../../hooks/useRoleInCourse'
 import { Role } from '@koh/common'
 import ChatbotSettings from './ChatbotSettings'
 import ChatbotQuestions from './ChatbotQuestions'
+import ToggleFeaturesPage from './ToggleFeaturesPage'
 import { ToasterProvider } from '../../providers/toast-provider'
 import EditCourse from './EditCourse'
+import useSWR from 'swr'
+import { API } from '@koh/api-client'
+
 export enum CourseAdminOptions {
   CHECK_IN = 'CHECK_IN',
   ROSTER = 'ROSTER',
   ADD = 'ADD',
+  FEATURES = 'FEATURES',
   EXPORT = 'EXPORT',
   EDIT = 'EDIT',
   EDIT_COURSE = 'EDIT_COURSE',
@@ -55,8 +63,15 @@ export default function CourseAdminPanel({
 }: CourseAdminPageProps): ReactElement {
   const role = useRoleInCourse(Number(courseId))
   const profile = useProfile()
+  const { data: courseFeatures } = useSWR(
+    `${Number(courseId)}/features`,
+    async () => await API.course.getCourseFeatures(Number(courseId)),
+  )
   const [currentSettings, setCurrentSettings] = useState(
-    defaultPage || CourseAdminOptions.CHECK_IN,
+    defaultPage ||
+      (courseFeatures?.queueEnabled
+        ? CourseAdminOptions.CHECK_IN
+        : CourseAdminOptions.ROSTER),
   )
 
   const router = useRouter()
@@ -94,12 +109,14 @@ export default function CourseAdminPanel({
         >
           {role === Role.PROFESSOR && (
             <>
-              <Menu.Item
-                key={CourseAdminOptions.CHECK_IN}
-                icon={<EditOutlined />}
-              >
-                TA Check In/Out Times
-              </Menu.Item>
+              {courseFeatures?.queueEnabled && (
+                <Menu.Item
+                  key={CourseAdminOptions.CHECK_IN}
+                  icon={<ScheduleOutlined />}
+                >
+                  TA Check In/Out Times
+                </Menu.Item>
+              )}
               <Menu.Item
                 key={CourseAdminOptions.ROSTER}
                 icon={<BellOutlined />}
@@ -115,6 +132,12 @@ export default function CourseAdminPanel({
               >
                 Update Course Invite Code
               </Menu.Item>
+              <Menu.Item
+                key={CourseAdminOptions.FEATURES}
+                icon={<AppstoreAddOutlined />}
+              >
+                Toggle Features
+              </Menu.Item>
             </>
           )}
           <Menu.Item
@@ -123,18 +146,18 @@ export default function CourseAdminPanel({
           >
             Export questions
           </Menu.Item>
-          <Menu.Item key={CourseAdminOptions.EDIT} icon={<EditOutlined />}>
+          <Menu.Item key={CourseAdminOptions.EDIT} icon={<TableOutlined />}>
             Edit questions
           </Menu.Item>
           <Menu.Item
             key={CourseAdminOptions.CHATBOT_SETTINGS}
-            icon={<EditOutlined />}
+            icon={<RobotOutlined />}
           >
             Chatbot Settings
           </Menu.Item>
           <Menu.Item
             key={CourseAdminOptions.CHATBOT_QUESTIONS}
-            icon={<EditOutlined />}
+            icon={<RobotOutlined />}
           >
             Chatbot Questions
           </Menu.Item>
@@ -155,6 +178,9 @@ export default function CourseAdminPanel({
           {/* {currentSettings === CourseAdminOptions.ADD && (
             <AddStudentsToCourse courseId={courseId} />
           )} */}
+          {currentSettings === CourseAdminOptions.FEATURES && (
+            <ToggleFeaturesPage courseId={courseId} />
+          )}
           {currentSettings === CourseAdminOptions.EXPORT && (
             <ExportQuestions courseId={courseId} />
           )}

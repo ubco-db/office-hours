@@ -20,6 +20,7 @@ import { QueueModel } from '../queue/queue.entity';
 import { SemesterModel } from '../semester/semester.entity';
 import { OrganizationCourseModel } from '../organization/organization-course.entity';
 import { ChatbotDocumentModel } from '../chatbot/chatbotDocument.entity';
+import { CourseSettingsModel } from './course_settings.entity';
 @Entity('course_model')
 export class CourseModel extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -104,4 +105,11 @@ export class CourseModel extends BaseEntity {
 
   @Column('text', { nullable: true })
   courseInviteCode: string;
+
+  @OneToOne(
+    (type) => CourseSettingsModel,
+    (courseSettings) => courseSettings.course,
+    { cascade: true },
+  )
+  courseSettings: CourseSettingsModel;
 }
