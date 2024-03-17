@@ -17,8 +17,6 @@ import PropTypes from 'prop-types'
 import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
-import { set } from 'lodash'
-import e from 'express'
 
 const Container = styled.div`
   flex: 1;
@@ -128,23 +126,24 @@ export default function AsyncQuestionsPage({
   }, [visibleFilter, statusFilter, questions, questionTypeInput, sortBy])
 
   function applySort(displayedQuestions: AsyncQuestion[]) {
-    if (sortBy === 'newest') {
-      return displayedQuestions.sort((a, b) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      })
-    } else if (sortBy === 'oldest') {
-      return displayedQuestions.sort((a, b) => {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      })
-    } else if (sortBy === 'most-votes') {
-      return displayedQuestions.sort((a, b) => {
-        return b.votesSum - a.votesSum
-      })
-    } else if (sortBy === 'least-votes') {
-      return displayedQuestions.sort((a, b) => {
-        return a.votesSum - b.votesSum
-      })
-    }
+    return displayedQuestions.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        case 'oldest':
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          )
+        case 'most-votes':
+          return b.votesSum - a.votesSum
+        case 'least-votes':
+          return a.votesSum - b.votesSum
+        default:
+          return 0
+      }
+    })
   }
 
   function RenderQueueInfoCol(): ReactElement {

@@ -480,6 +480,7 @@ export class AsyncQuestion {
   visible?: boolean
 
   @IsOptional()
+  @IsArray()
   votes?: AsyncQuestionVotes[]
 
   @IsOptional()

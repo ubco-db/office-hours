@@ -53,7 +53,7 @@ export class asyncQuestionController {
 
     if (!question) {
       res
-        .status(404)
+        .status(HttpStatus.NOT_FOUND)
         .send({ message: ERROR_MESSAGES.questionController.notFound });
       return;
     }
@@ -85,12 +85,10 @@ export class asyncQuestionController {
       where: { id: qid },
     });
 
-    res
-      .status(200)
-      .send({
-        questionSumVotes: updatedQuestion.votesSum,
-        vote: thisUserThisQuestionVote?.vote ?? 0,
-      });
+    res.status(HttpStatus.OK).send({
+      questionSumVotes: updatedQuestion.votesSum,
+      vote: thisUserThisQuestionVote?.vote ?? 0,
+    });
 
     return;
   }
@@ -133,7 +131,7 @@ export class asyncQuestionController {
     } catch (err) {
       console.error(err);
       res
-        .status(500)
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .send({ message: ERROR_MESSAGES.questionController.saveQError });
       return;
     }
