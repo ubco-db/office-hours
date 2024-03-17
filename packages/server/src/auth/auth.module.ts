@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from 'login/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailService } from 'mail/mail.service';
+import { MailModule } from 'mail/mail.module';
 
 @Module({
   imports: [
@@ -14,9 +16,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         secret: configService.get('JWT_SECRET'),
       }),
     }),
+    MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [JwtStrategy, AuthService, MailService],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -22,6 +22,7 @@ export const UserFactory = new Factory(UserModel)
   .attr('email', `user@ubc.ca`)
   .attr('firstName', 'User')
   .attr('lastName', 'Person')
+  .attr('emailVerified', true)
   .attr('hideInsights', []);
 
 export const StudentCourseFactory = new Factory(UserCourseModel).attr(

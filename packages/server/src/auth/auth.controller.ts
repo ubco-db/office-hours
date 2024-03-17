@@ -6,14 +6,37 @@ import {
   Query,
   Req,
   Res,
+  Post,
+  Body,
+  UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { ERROR_MESSAGES } from '@koh/common';
+import {
+  AccountRegistrationParams,
+  AccountType,
+  ERROR_MESSAGES,
+  PasswordRequestResetBody,
+  PasswordRequestResetWithTokenBody,
+  RegistrationTokenDetails,
+} from '@koh/common';
 import { JwtService } from '@nestjs/jwt';
 import { OrganizationModel } from 'organization/organization.entity';
-import { last } from 'lodash';
+import { UserModel } from 'profile/user.entity';
+import * as request from 'superagent';
+import { MailService } from 'mail/mail.service';
+import {
+  TokenAction,
+  TokenType,
+  UserTokenModel,
+} from 'profile/user-token.entity';
+import { JwtAuthGuard } from 'guards/jwt-auth.guard';
+import * as bcrypt from 'bcrypt';
+
+interface RequestUser {
+  userId: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -22,6 +45,7 @@ export class AuthController {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    private mailService: MailService,
     private authService: AuthService,
   ) {}
 
@@ -90,6 +114,305 @@ export class AuthController {
         return res
           .status(HttpStatus.BAD_REQUEST)
           .send({ message: 'Invalid auth method' });
+    }
+  }
+
+  @Post('registration/verify')
+  @UseGuards(JwtAuthGuard)
+  async validateRegistrationToken(
+    @Res() res: Response,
+    @Req() req: Request,
+    @Body() registrationTokenDetails: RegistrationTokenDetails,
+  ): Promise<Response<void>> {
+    const { token } = registrationTokenDetails;
+
+    const emailToken = await UserTokenModel.findOne({
+      where: {
+        token,
+        token_type: TokenType.EMAIL_VERIFICATION,
+        token_action: TokenAction.ACTION_PENDING,
+        user: { id: (req.user as RequestUser).userId },
+      },
+      relations: ['user'],
+    });
+
+    if (!emailToken) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Verification code was not found or it is not valid',
+      });
+    }
+
+    if (emailToken.expires_at < parseInt(new Date().getTime().toString())) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Verification code has expired',
+      });
+    }
+
+    emailToken.token_action = TokenAction.ACTION_COMPLETE;
+    emailToken.user.emailVerified = true;
+    await emailToken.user.save();
+    await emailToken.save();
+
+    return res.status(HttpStatus.ACCEPTED).send({
+      message: 'Email verified',
+    });
+  }
+
+  @Get('/password/reset/validate/:token')
+  async validatePasswordResetToken(
+    @Res() res: Response,
+    @Param('token') token: string,
+  ): Promise<Response<void>> {
+    const passwordToken = await UserTokenModel.findOne({
+      where: {
+        token,
+        token_type: TokenType.PASSWORD_RESET,
+        token_action: TokenAction.ACTION_PENDING,
+      },
+    });
+
+    if (!passwordToken) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Password reset token was not found or it is not valid',
+      });
+    }
+
+    if (passwordToken.expires_at < parseInt(new Date().getTime().toString())) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Password reset token has expired',
+      });
+    }
+
+    return res.status(HttpStatus.ACCEPTED).send({
+      message: 'Password reset token is valid',
+    });
+  }
+
+  @Post('/password/reset/:token')
+  async resetPasswordToken(
+    @Body() body: PasswordRequestResetWithTokenBody,
+    @Res() res: Response,
+    @Param('token') token: string,
+  ): Promise<Response<void>> {
+    const { password, confirmPassword } = body;
+
+    if (password !== confirmPassword) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Passwords do not match',
+      });
+    }
+
+    const passwordToken = await UserTokenModel.findOne({
+      where: {
+        token,
+        token_type: TokenType.PASSWORD_RESET,
+        token_action: TokenAction.ACTION_PENDING,
+      },
+      relations: ['user'],
+    });
+
+    if (!passwordToken) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Password reset token was not found or it is not valid',
+      });
+    }
+
+    if (passwordToken.expires_at < parseInt(new Date().getTime().toString())) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Password reset token has expired',
+      });
+    }
+
+    passwordToken.token_action = TokenAction.ACTION_COMPLETE;
+    passwordToken.expires_at = parseInt(new Date().getTime().toString());
+    await passwordToken.save();
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    passwordToken.user.password = hashedPassword;
+    await passwordToken.user.save();
+
+    return res.status(HttpStatus.ACCEPTED).send({
+      message: 'Password reset successful',
+    });
+  }
+
+  @Post('/password/reset')
+  async resetPassword(
+    @Body() body: PasswordRequestResetBody,
+    @Res() res: Response,
+  ): Promise<Response<void>> {
+    const { email, recaptchaToken, organizationId } = body;
+
+    if (!recaptchaToken) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Invalid recaptcha token' });
+    }
+
+    const response = await request.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.PRIVATE_RECAPTCHA_SITE_KEY}&response=${recaptchaToken}`,
+    );
+
+    if (!response.body.success) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Recaptcha token invalid',
+      });
+    }
+
+    const user = await UserModel.findOne({
+      where: {
+        email,
+        organizationUser: { organizationId },
+        accountType: AccountType.LEGACY,
+      },
+      relations: ['organizationUser'],
+    });
+
+    if (!user) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'User not found' });
+    }
+
+    if (!user.emailVerified) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Email not verified' });
+    }
+
+    const resetLink = await this.authService.createPasswordResetToken(user);
+
+    this.mailService.sendPasswordResetEmail(
+      user.email,
+      `${process.env.DOMAIN}/account/password/${resetLink}`,
+    );
+
+    return res.status(HttpStatus.ACCEPTED).send({
+      message: 'Password reset email sent',
+    });
+  }
+
+  @Post('register')
+  async register(
+    @Body() body: AccountRegistrationParams,
+    @Res() res: Response,
+  ): Promise<Response<void>> {
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      sid,
+      organizationId,
+      recaptchaToken,
+    } = body;
+
+    if (!recaptchaToken) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Invalid recaptcha token' });
+    }
+
+    const response = await request.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.PRIVATE_RECAPTCHA_SITE_KEY}&response=${recaptchaToken}`,
+    );
+
+    if (!response.body.success) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Recaptcha token invalid',
+      });
+    }
+
+    if (firstName.trim().length < 1 || lastName.trim().length < 1) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'First and last name must be at least 1 character' });
+    }
+
+    if (firstName.trim().length > 32 || lastName.trim().length > 32) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'First and last name must be at most 32 characters' });
+    }
+
+    if (email.trim().length < 4 || email.trim().length > 64) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Email must be between 4 and 64 characters' });
+    }
+
+    if (password.trim().length < 6 || password.trim().length > 32) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Password must be between 6 and 32 characters' });
+    }
+
+    if (password !== confirmPassword) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Passwords do not match' });
+    }
+
+    const organization = await OrganizationModel.findOne({
+      where: { id: organizationId },
+    });
+
+    if (!organization) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Organization not found' });
+    }
+
+    const user = await UserModel.findOne({ where: { email } });
+
+    if (user) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Email already exists' });
+    }
+
+    if (sid) {
+      const result = await this.authService.studentIdExists(
+        sid,
+        organizationId,
+      );
+      if (result) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .send({ message: 'Student ID already exists' });
+      }
+    }
+
+    try {
+      const userId = await this.authService.register(
+        firstName,
+        lastName,
+        email,
+        password,
+        sid ? sid : -1,
+        organizationId,
+      );
+
+      const authToken = await this.createAuthToken(userId);
+
+      if (authToken === null || authToken === undefined) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          message: ERROR_MESSAGES.loginController.invalidTempJWTToken,
+        });
+      }
+
+      return res
+        .cookie('auth_token', authToken, {
+          httpOnly: true,
+          secure: this.isSecure(),
+        })
+        .send({ message: 'Account created' });
+    } catch (err) {
+      console.log(err);
+      return res.status(HttpStatus.BAD_REQUEST).send({ message: err.message });
     }
   }
 
@@ -171,6 +494,14 @@ export class AuthController {
     res
       .cookie('auth_token', authToken, { httpOnly: true, secure: isSecure })
       .redirect(HttpStatus.FOUND, redirectUrl);
+  }
+
+  private async createAuthToken(userId: number): Promise<string> {
+    // Expires in 30 days
+    return await this.jwtService.signAsync({
+      userId,
+      expiresIn: 60 * 60 * 24 * 30,
+    });
   }
 
   private isSecure(): boolean {

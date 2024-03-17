@@ -57,14 +57,16 @@ describe('Question Integration', () => {
         creator: student1.user,
       });
 
-      const response = await supertest({ userId: 99 })
+      const response = await supertest({ userId: 1 })
         .get(`/questions/${q.id}`)
         .expect(200);
 
       expect(response.body).toMatchSnapshot();
     });
+
     it('fails to get a non-existent question', async () => {
-      await supertest({ userId: 99 }).get(`/questions/999`).expect(404);
+      await UserFactory.create();
+      await supertest({ userId: 1 }).get(`/questions/999`).expect(404);
     });
   });
 

@@ -27,9 +27,10 @@ import { AsyncQuestionModel } from './asyncQuestion.entity';
 import { asyncQuestionService } from './asyncQuestion.service';
 import { CourseModel } from 'course/course.entity';
 import { MailService } from 'mail/mail.service';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('asyncQuestions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 export class asyncQuestionController {
   constructor(
     private mailService: MailService,

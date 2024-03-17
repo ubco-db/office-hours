@@ -1295,7 +1295,7 @@ describe('Course Integration', () => {
       await supertest().post(`/courses/enroll_by_invite_code/123`).expect(401);
     });
 
-    it('should return 404 if user is not found', async () => {
+    it('should return 403 if user is not found', async () => {
       const course = await CourseFactory.create();
 
       const resp = await supertest({ userId: 1 })
@@ -1308,8 +1308,8 @@ describe('Course Integration', () => {
           selected_course: course.id,
         });
 
-      expect(resp.status).toBe(404);
-      expect(resp.body.message).toEqual('User not found');
+      expect(resp.status).toBe(403);
+      expect(resp.body.message).toEqual('Forbidden resource');
     });
 
     it('should return 404 if course is not found', async () => {

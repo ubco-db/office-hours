@@ -125,6 +125,7 @@ export class SeedController {
         firstName: 'kevin',
         lastName: 'wang',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -139,6 +140,7 @@ export class SeedController {
         firstName: 'Justin',
         lastName: 'Schultz',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -154,6 +156,7 @@ export class SeedController {
         firstName: 'Big',
         lastName: 'Boy',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -168,6 +171,7 @@ export class SeedController {
         firstName: 'Small',
         lastName: 'Boy',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -187,6 +191,7 @@ export class SeedController {
           'TotalStudents',
         ],
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({

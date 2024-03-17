@@ -21,9 +21,10 @@ import { UserModel } from 'profile/user.entity';
 import { Roles } from '../decorators/roles.decorator';
 import { AlertModel } from './alerts.entity';
 import { AlertsService } from './alerts.service';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('alerts')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 export class AlertsController {
   constructor(private alertsService: AlertsService) {}
 
