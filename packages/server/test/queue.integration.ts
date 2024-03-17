@@ -42,7 +42,7 @@ describe('Queue Integration', () => {
         .get(`/queues/${queue.id}`)
         .expect(200);
       expect(res.body).toMatchObject({
-        id: 2,
+        id: 3,
         notes: null,
         queueSize: 1,
         room: 'Online',

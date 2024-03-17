@@ -29,7 +29,7 @@ import {
   setupIntegrationTest,
 } from './util/testUtils';
 import { forEach } from 'lodash';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 
 describe('Question Integration', () => {
   const supertest = setupIntegrationTest(QuestionModule, modifyMockNotifs);
@@ -98,7 +98,17 @@ describe('Question Integration', () => {
         staffList: [ta.user],
       });
 
-      const questionType = await QuestionTypeFactory.create();
+      const questionType = await QuestionTypeFactory.create({
+        queueId: queue.id,
+      });
+
+      const sendQuestionTypes = {
+        id: questionType.id,
+        cid: questionType.cid,
+        name: questionType.name,
+        color: questionType.color,
+        queueId: questionType.queueId,
+      };
 
       await StudentCourseFactory.create({ user, courseId: queue.courseId });
       expect(await QuestionModel.count({ where: { queueId: 1 } })).toEqual(0);
@@ -106,7 +116,7 @@ describe('Question Integration', () => {
         .post('/questions')
         .send({
           text: "Don't know recursion",
-          questionTypes: [questionType],
+          questionTypes: [sendQuestionTypes],
           queueId: queue.id,
           force: false,
           groupable: true,
@@ -116,7 +126,7 @@ describe('Question Integration', () => {
         text: "Don't know recursion",
         helpedAt: null,
         closedAt: null,
-        questionTypes: [questionType],
+        questionTypes: [sendQuestionTypes],
         status: 'Drafting',
         groupable: true,
       });
@@ -134,14 +144,24 @@ describe('Question Integration', () => {
         allowQuestions: true,
         staffList: [ta.user],
       });
+
       const questionTypes = [];
+
       forEach(QuestionTypes, async (questionType) => {
         const currentQuestionType = await QuestionTypeFactory.create({
           name: questionType.name,
           color: questionType.color,
           cid: course.id,
         });
-        questionTypes.push(currentQuestionType);
+
+        const sendQuestionTypes = {
+          id: questionType.id,
+          cid: questionType.cid,
+          name: questionType.name,
+          color: questionType.color,
+          queueId: questionType.queueId,
+        };
+        questionTypes.push(sendQuestionTypes);
       });
 
       await TACourseFactory.create({ user, courseId: queue.courseId });

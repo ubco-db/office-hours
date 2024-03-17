@@ -17,7 +17,6 @@ import PropTypes from 'prop-types'
 import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
-import { useCourse } from '../../../hooks/useCourse'
 
 const Container = styled.div`
   flex: 1;

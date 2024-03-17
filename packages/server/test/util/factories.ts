@@ -15,7 +15,7 @@ import { ProfSectionGroupsModel } from 'login/prof-section-groups.entity';
 import { OrganizationModel } from '../../src/organization/organization.entity';
 import { InteractionModel } from 'chatbot/interaction.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 
 export const UserFactory = new Factory(UserModel)
@@ -71,6 +71,8 @@ export const QueueFactory = new Factory(QueueModel)
 export const QuestionTypeFactory = new Factory(QuestionTypeModel)
   .attr('cid', 1)
   .attr('name', 'Question Type')
+  .assocOne('queue', QueueFactory)
+  .attr('queueId', 1)
   .attr('color', '#000000')
   .attr('questions', []);
 
