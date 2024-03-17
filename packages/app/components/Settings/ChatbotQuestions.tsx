@@ -169,7 +169,7 @@ export default function ChatbotQuestions({
 
   // const toggleSuggested = async (newValue, index, questionId) => {
   //   // TODO: Loading & contextual disabling
-  //   // setLoading(true)
+  //   setLoading(true)
   //   try {
   //     await API.chatbot.editQuestion({
   //       data: {
@@ -220,9 +220,9 @@ export default function ChatbotQuestions({
         sourceDocuments: question.metadata.sourceDocuments,
         suggested: false,
       }))
-      //console.log(parsedQuestions);
+
       setChatQuestions(parsedQuestions)
-      setTotalQuestions(parsedQuestions.length) // Adjust based on actual total if available
+      setTotalQuestions(parsedQuestions.length)
     } catch (e) {
       console.error('Failed to fetch questions:', e)
       toast.error('Failed to load questions.')

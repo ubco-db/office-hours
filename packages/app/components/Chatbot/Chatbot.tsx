@@ -87,31 +87,6 @@ export const ChatbotComponent: React.FC = () => {
 
     const answer = result.answer || "Sorry, I couldn't find the answer"
     const sourceDocuments = result.sourceDocuments || []
-    //currently not using interactions and questions in the office hour repo
-    // let currentInteractionId = interactionId
-
-    // if (!interactionId) {
-    //   const interaction = await API.chatbot.createInteraction({
-    //     courseId: Number(cid),
-    //     userId: profile.id,
-    //   })
-    //   setInteractionId(interaction.id)
-
-    //   currentInteractionId = interaction.id // Update the current value if a new interaction was created
-    // }
-
-    // const sourceDocumentPages = sourceDocuments.map((sourceDocument) => ({
-    //   ...sourceDocument,
-    //   parts: sourceDocument.parts.map((part) => part.pageNumber),
-    // }))
-
-    // const question = await API.chatbot.createQuestion({
-    //   interactionId: currentInteractionId,
-    //   questionText: input,
-    //   responseText: answer,
-    //   sourceDocuments: sourceDocumentPages,
-    //   vectorStoreId: result.questionId,
-    // })
 
     setMessages([
       ...messages,
@@ -188,10 +163,14 @@ export const ChatbotComponent: React.FC = () => {
                             {item.message}
                             {item.verified && (
                               <Tooltip title="A similar question has been asked before, and the answer has been verified by a faculty member">
-                                  <CheckCircleOutlined
-                                    style={{ color: 'green', fontSize: '20px', marginLeft: '2px'}}
-                                  />
-                                </Tooltip>
+                                <CheckCircleOutlined
+                                  style={{
+                                    color: 'green',
+                                    fontSize: '20px',
+                                    marginLeft: '2px',
+                                  }}
+                                />
+                              </Tooltip>
                             )}
                           </div>
 

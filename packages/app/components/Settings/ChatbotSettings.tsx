@@ -45,7 +45,6 @@ export default function ChatbotSettings(): ReactElement {
     fileList,
     onChange(info) {
       setFileList(info.fileList)
-      // Optionally, if you're managing form values manually, update them here
     },
     beforeUpload: () => false, // Prevent automatic upload
   }
@@ -260,6 +259,12 @@ export default function ChatbotSettings(): ReactElement {
                   },
                 ]}
               >
+                <div>
+                  <p>
+                    <strong>Accepted File Types:</strong> .docx, .pptx, .txt,
+                    .csv, .pdf
+                  </p>
+                </div>
                 <Input placeholder="Enter URL for a pdf file..." />
               </Form.Item>
             )}
@@ -267,13 +272,12 @@ export default function ChatbotSettings(): ReactElement {
               <>
                 <Form.Item
                   name="files"
-
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //     message: 'Please provide document files.',
-                  //   },
-                  // ]}
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please provide document files.',
+                    },
+                  ]}
                 >
                   <div>
                     <p>
