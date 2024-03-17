@@ -9,6 +9,8 @@ import { useRoleInCourse } from '../../hooks/useRoleInCourse'
 import AlertsContainer from './AlertsContainer'
 import NavBarTabs, { NavBarTabsItem } from './NavBarTabs'
 import ProfileDrawer from './ProfileDrawer'
+import useSWR from 'swr'
+import { API } from '@koh/api-client'
 
 const Nav = styled.nav`
   padding: 0px 0px;
@@ -123,6 +125,11 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
 
   const openQueues = course?.queues?.filter((queue) => queue.isOpen)
 
+  const { data: courseFeatures } = useSWR(
+    `${courseId}/features`,
+    async () => await API.course.getCourseFeatures(courseId),
+  )
+
   const showDrawer = () => {
     setVisible(true)
   }
@@ -174,7 +181,7 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
     },
   ]
 
-  if (openQueues?.length > 0) {
+  if (openQueues?.length > 0 && courseFeatures?.queueEnabled) {
     tabs.push({
       text: 'Queue',
       queues: openQueues,
@@ -182,11 +189,14 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
     })
   }
 
-  tabs.push({
-    href: '/course/[cid]/schedule',
-    as: `/course/${courseId}/schedule`,
-    text: 'Schedule',
-  })
+  // assumption: the schedule is probably going to be unused if the queue feature is disabled
+  if (courseFeatures?.queueEnabled) {
+    tabs.push({
+      href: '/course/[cid]/schedule',
+      as: `/course/${courseId}/schedule`,
+      text: 'Schedule',
+    })
+  }
 
   if (role === Role.PROFESSOR || role === Role.TA) {
     tabs.push({

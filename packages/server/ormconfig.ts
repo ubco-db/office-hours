@@ -25,6 +25,7 @@ import { OrganizationUserModel } from './src/organization/organization-user.enti
 import { OrganizationModel } from './src/organization/organization.entity';
 import { OrganizationCourseModel } from './src/organization/organization-course.entity';
 import { ChatbotDocumentModel } from './src/chatbot/chatbotDocument.entity';
+import { CourseSettingsModel } from './src/course/course_settings.entity';
 import { AsyncQuestionVotesModel } from './src/asyncQuestion/asyncQuestionVotes.entity';
 import { UserTokenModel } from './src/profile/user-token.entity';
 
@@ -71,6 +72,7 @@ const typeorm = {
     OrganizationModel,
     OrganizationCourseModel,
     ChatbotDocumentModel,
+    CourseSettingsModel,
     AsyncQuestionVotesModel,
     UserTokenModel,
   ],

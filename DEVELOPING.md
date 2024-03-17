@@ -6,7 +6,8 @@
 - [Developing](#developing)
   - [Running locally outside of Docker container](#running-locally-outside-of-docker-container)
   - [Running locally within a Docker container](#running-locally-within-a-docker-container)
-- [Migrations](#migrations)
+  - [Database Changes](#database-changes)
+    - [Migrations](#migrations)
   - [Adding an API Route](#adding-an-api-route)
   - [Adding to the frontend app](#adding-to-the-frontend-app)
   - [Testing](#testing)
@@ -20,8 +21,10 @@
 2. Make sure you have [node](https://nodejs.org/en/download/), [yarn](https://classic.yarnpkg.com/en/docs/install), and [psql](https://blog.timescale.com/tutorials/how-to-install-psql-on-mac-ubuntu-debian-windows/) installed. `yarn -v` should be `1.x.x`. Do not get Yarn 2. Node should also be version 14.x.x. If it's not, install [nvm](https://github.com/nvm-sh/nvm)
 3. Run `yarn install` in this directory to get dependencies
 4. Run `yarn dev:db:up` to start the database via docker; `yarn dev:db:down` will stop it.
-5. Start the app in development with `yarn dev`
-6. Visit the app at http://localhost:3000
+5. Connect to the database and create two databases: `dev` and `test`
+6. Start the app in development with `yarn dev`
+7. Visit the app at http://localhost:3000/dev and seed the database
+8. Visit http://localhost:3000 to use the app!
 
 If you have any questions, feel free to reach out to a member of the team. If you think this document can be improved, make a PR!
 
@@ -80,7 +83,13 @@ docker-compose build && docker-compose up
 
 2. Visit the app at http://localhost:80 (or http://localhost)
 
-## Migrations
+### Database changes
+
+table_name.entity.ts files are used to define the database schema.
+
+Also, you must update the seed.controller.ts file to reflect the new database changes. This seed file is used to populate the database with dummy data on http://localhost:3000/dev.
+
+#### Migrations
 
 If you change an entity, you MUST run `yarn migration:generate -n [migration-name]`, to make the migration file, then `yarn typeorm migration:run` will automatically run on deployment to staging/production. Commit the migration file to Git!
 
@@ -104,6 +113,14 @@ To run them headlessly (without a graphics server), do `yarn cypress run`.
 To watch them actually run interactively, you can use `yarn cypress open`. Be aware that this is _super slow_ on local machines.
 
 If your tests are failing with a message about "deadlock something whatever", do `yarn test --run-in-band`. This makes the tests run sequentially.
+
+If `yarn test` is not running all of the tests, navigate to `server/test` folder and run `yarn jest --config ./test/jest-integration.json -i --run-in-band` if you would like to run all the tests. To run the tests of a specific file (e.g. course.integration.ts), you can use `yarn jest --config ./test/jest-integration.json -i --run-in-band course` 
+
+{% note %}
+
+**Note:** cypress is currently broken, only the endpoints are being tested right now
+
+{% endnote %}
 
 ### Installing new packages
 

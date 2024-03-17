@@ -5,6 +5,7 @@ import {
   IsDate,
   IsDefined,
   IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -940,6 +941,10 @@ export class UpdateOrganizationCourseDetailsParams {
   @IsArray()
   @IsOptional()
   profIds?: Array<number>
+
+  @IsArray()
+  @IsOptional()
+  courseSettings?: Array<CourseSettingsRequestBody>
 }
 
 export class ChatBotQuestionParams {
@@ -1457,6 +1462,51 @@ export type sendEmailAsync = {
   subject: string
   type: asyncQuestionEventType
 }
+
+export class CourseSettingsResponse {
+  @IsInt()
+  courseId!: number
+
+  @IsBoolean()
+  chatBotEnabled!: boolean
+
+  @IsBoolean()
+  asyncQueueEnabled!: boolean
+
+  @IsBoolean()
+  adsEnabled!: boolean
+
+  @IsBoolean()
+  queueEnabled!: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  settingsFound?: boolean = true //this is mostly just for debugging purposes by viewing network responses
+
+  constructor(init?: Partial<CourseSettingsResponse>) {
+    Object.assign(this, init)
+  }
+}
+
+const validFeatures = [
+  'chatBotEnabled',
+  'asyncQueueEnabled',
+  'adsEnabled',
+  'queueEnabled',
+]
+
+export class CourseSettingsRequestBody {
+  @IsBoolean()
+  value!: boolean
+
+  @IsIn(validFeatures)
+  feature!: string
+
+  static isValidFeature(feature: string): boolean {
+    return validFeatures.includes(feature)
+  }
+}
+
 export const ERROR_MESSAGES = {
   common: {
     pageOutOfBounds: "Can't retrieve out of bounds page.",

@@ -7,6 +7,7 @@ import { UserOutlined, RobotOutlined } from '@ant-design/icons'
 import router from 'next/router'
 import { useProfile } from '../../hooks/useProfile'
 import { Feedback } from './components/Feedback'
+import useSWR from 'swr'
 
 const ChatbotContainer = styled.div`
   position: fixed;
@@ -51,6 +52,12 @@ export const ChatbotComponent: React.FC = () => {
         'Hello, how can I assist you? I can help with anything course related.',
     },
   ])
+
+  const { data: courseFeatures } = useSWR(
+    `${Number(cid)}/features`,
+    async () => await API.course.getCourseFeatures(Number(cid)),
+  )
+
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -128,7 +135,7 @@ export const ChatbotComponent: React.FC = () => {
     }
   }
 
-  if (!cid) {
+  if (!cid || !courseFeatures?.chatBotEnabled) {
     return <></>
   }
   return (

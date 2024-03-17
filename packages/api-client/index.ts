@@ -51,6 +51,7 @@ import {
   OrganizationStatsResponse,
   QuestionTypeParams,
   UBCOuserParam,
+  CourseSettingsResponse,
 } from '@koh/common'
 import Axios, { AxiosInstance, Method } from 'axios'
 import { plainToClass } from 'class-transformer'
@@ -276,6 +277,19 @@ class APIClient {
         'PATCH',
         `/api/v1/courses/${courseId}/update_user_role/${userId}/${role}`,
       ),
+    setCourseFeature: async (
+      courseId: number,
+      feature: string,
+      value: boolean,
+    ): Promise<void> =>
+      this.req('PATCH', `/api/v1/courses/${courseId}/features`, undefined, {
+        feature,
+        value,
+      }),
+    getCourseFeatures: async (
+      courseId: number,
+    ): Promise<CourseSettingsResponse> =>
+      this.req('GET', `/api/v1/courses/${courseId}/features`),
   }
   taStatus = {
     checkIn: async (

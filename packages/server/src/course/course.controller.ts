@@ -2,6 +2,8 @@ import {
   AsyncQuestionResponse,
   asyncQuestionStatus,
   CoursePartial,
+  CourseSettingsRequestBody,
+  CourseSettingsResponse,
   EditCourseInfoParams,
   ERROR_MESSAGES,
   GetCourseResponse,
@@ -53,6 +55,7 @@ import { HeatmapService } from './heatmap.service';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
+import { CourseSettingsModel } from './course_settings.entity';
 import { EmailVerifiedGuard } from '../guards/email-verified.guard';
 
 @Controller('courses')
@@ -816,5 +819,76 @@ export class CourseController {
     }
     res.status(HttpStatus.OK).send({ message: 'Updated user course role' });
     return;
+  }
+
+  // UPDATE course_settings_model SET selectedFeature = false WHERE courseId = selectedCourseId;
+  // will also create a new course settings record if it doesn't exist for the course
+  @Patch(':id/features')
+  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @Roles(Role.PROFESSOR)
+  async enableDisableFeature(
+    @Param('id') courseId: number,
+    @Body() body: CourseSettingsRequestBody,
+  ): Promise<void> {
+    // fetch existing course settings
+    let courseSettings = await CourseSettingsModel.findOne({
+      where: { courseId: courseId },
+    });
+
+    // if no course settings exist yet, create new course settings for the course
+    if (!courseSettings) {
+      // first make sure the course exists in course table (this check might not be needed as the guards already make sure the user is in the course (therefore the course must exist), but this is a rare function to be called so the small performance hit is acceptable for later safety)
+      const course = await CourseModel.findOne({
+        where: { id: courseId },
+      });
+      if (!course) {
+        throw new NotFoundException(
+          'Error while creating course settings: Course not found',
+        );
+      }
+      courseSettings = new CourseSettingsModel(); // all features are enabled by default, adjust in CourseSettingsModel as needed
+      courseSettings.courseId = courseId;
+    }
+
+    // then, toggle the requested feature
+    try {
+      courseSettings[body.feature] = body.value;
+    } catch (err) {
+      throw new BadRequestException('Invalid feature');
+    }
+
+    try {
+      await courseSettings.save();
+    } catch (err) {
+      throw new HttpException(
+        'Error while saving course settings',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // SELECT * FROM course_settings_model WHERE courseId = selectedCourseId;
+  // if no settings for the courseid, return all true
+  @Get(':id/features')
+  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @Roles(Role.PROFESSOR, Role.STUDENT, Role.TA)
+  async getFeatures(
+    @Param('id') courseId: number,
+  ): Promise<CourseSettingsResponse> {
+    const courseSettings = await CourseSettingsModel.findOne({
+      where: { courseId },
+    });
+
+    // if no settings found for the courseid, return the default values
+    const response = new CourseSettingsResponse({
+      courseId: courseId,
+      chatBotEnabled: courseSettings?.chatBotEnabled ?? true, // the 'true' at the end here is the default value
+      asyncQueueEnabled: courseSettings?.asyncQueueEnabled ?? true,
+      adsEnabled: courseSettings?.adsEnabled ?? true,
+      queueEnabled: courseSettings?.queueEnabled ?? true,
+      settingsFound: !!courseSettings, // !! converts truthy/falsy into true/false
+    });
+
+    return response;
   }
 }
