@@ -1,6 +1,7 @@
 import { QuestionGroupModel } from 'question/question-group.entity';
 import {
   AlertType,
+  AsyncQuestion,
   OrganizationRole,
   Role,
   asyncQuestionStatus,
@@ -20,14 +21,16 @@ import { ProfSectionGroupsModel } from 'login/prof-section-groups.entity';
 import { OrganizationModel } from '../../src/organization/organization.entity';
 import { InteractionModel } from 'chatbot/interaction.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
+import { AsyncQuestionVotesModel } from 'asyncQuestion/asyncQuestionVotes.entity';
 
 export const UserFactory = new Factory(UserModel)
   .attr('email', `user@ubc.ca`)
   .attr('firstName', 'User')
   .attr('lastName', 'Person')
+  .attr('emailVerified', true)
   .attr('hideInsights', []);
 
 export const StudentCourseFactory = new Factory(UserCourseModel).attr(
@@ -63,8 +66,7 @@ export const CourseSectionFactory = new Factory(CourseSectionMappingModel)
 export const UserCourseFactory = new Factory(UserCourseModel)
   .assocOne('user', UserFactory)
   .assocOne('course', CourseFactory)
-  .attr('role', Role.STUDENT)
-  .attr('override', false);
+  .attr('role', Role.STUDENT);
 
 export const QueueFactory = new Factory(QueueModel)
   .attr('room', 'Online')
@@ -77,6 +79,8 @@ export const QueueFactory = new Factory(QueueModel)
 export const QuestionTypeFactory = new Factory(QuestionTypeModel)
   .attr('cid', 1)
   .attr('name', 'Question Type')
+  .assocOne('queue', QueueFactory)
+  .attr('queueId', 1)
   .attr('color', '#000000')
   .attr('questions', []);
 
@@ -108,6 +112,7 @@ export const LastRegistrationFactory = new Factory(LastRegistrationModel)
 export const ProfSectionGroupsFactory = new Factory(ProfSectionGroupsModel)
   .assocOne('prof', UserFactory)
   .attr('sectionGroups', []);
+
 export const AlertFactory = new Factory(AlertModel)
   .attr('alertType', AlertType.REPHRASE_QUESTION)
   .attr('sent', new Date(Date.now() - 86400000))
@@ -115,9 +120,15 @@ export const AlertFactory = new Factory(AlertModel)
   .assocOne('course', CourseFactory)
   .attr('payload', {});
 
+export const VotesFactory = new Factory(AsyncQuestionVotesModel)
+  .attr('vote', 0)
+  .attr('userId', 0);
+
 export const AsyncQuestionFactory = new Factory(AsyncQuestionModel)
   .assocOne('course', CourseFactory)
   .assocOne('creator', UserFactory)
+  .assocMany('votes', VotesFactory, 0)
+  .assocMany('questionTypes', QuestionTypeFactory, 0)
   .attr('questionAbstract', 'abstract')
   .attr('questionText', 'text')
   .attr('aiAnswerText', 'ai answer')

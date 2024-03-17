@@ -1,26 +1,31 @@
-import {
-  asyncQuestionEventType,
-  ERROR_MESSAGES,
-  sendEmailAsync,
-} from '@koh/common';
+import { asyncQuestionEventType, sendEmailAsync } from '@koh/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MailService {
   constructor(private mailerService: MailerService) {}
+  APPLICATION_NAME = 'UBC HelpMe';
 
-  async sendUserConfirmation(url: string, receiver: string): Promise<void> {
+  async sendUserVerificationCode(
+    code: string,
+    receiver: string,
+  ): Promise<void> {
     await this.mailerService.sendMail({
       to: receiver,
-      from: '"UBC HelpMe" <support@example.com>', // override default from
-      subject: 'Click the following link to reset your password',
-      text: `${url}`,
+      from: `"${this.APPLICATION_NAME}" <no-reply@coursehelp.ubc.ca>`,
+      subject: 'Verify your email address',
+      text: `Your one time verification code is: ${code}`,
+    });
+  }
+
+  async sendPasswordResetEmail(receiver: string, url: string): Promise<void> {
+    await this.mailerService.sendMail({
+      to: receiver,
+      from: `"${this.APPLICATION_NAME}" <no-reply@coursehelp.ubc.ca>`,
+      subject: 'Pasword Reset Request',
+      text: `You are receiving this email because you (or someone else) has requested the reset of the password for your account.\n\nPlease click on the following link, or paste this into your browser to complete the process:\n\n
+      ${url}\n\n`,
     });
   }
 
@@ -34,20 +39,12 @@ export class MailService {
       text = 'Async question created on UBC helpme ';
     }
     if (!text) {
-      throw new BadRequestException();
     }
-    await this.mailerService
-      .sendMail({
-        to: emailPost.receiver,
-        from: '"UBC helpme support" <support@example.com>', // override default from
-        subject: emailPost.subject,
-        text: text + '\n Check on :  https://help.cosc304.ok.ubc.ca',
-      })
-      .catch(() => {
-        throw new HttpException(
-          ERROR_MESSAGES.mailService.mailFailed,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
+    await this.mailerService.sendMail({
+      to: emailPost.receiver,
+      from: '"UBC helpme support" <support@example.com>', // override default from
+      subject: emailPost.subject,
+      text: text + '\n Check on :  https://help.cosc304.ok.ubc.ca',
+    });
   }
 }

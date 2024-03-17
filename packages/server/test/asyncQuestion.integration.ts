@@ -7,6 +7,7 @@ import {
   CourseFactory,
   UserCourseFactory,
   AsyncQuestionFactory,
+  VotesFactory,
 } from './util/factories';
 import { setupIntegrationTest } from './util/testUtils';
 import { asyncQuestionModule } from 'asyncQuestion/asyncQuestion.module';
@@ -121,6 +122,74 @@ describe('AsyncQuestion Integration', () => {
           status: 'HumanAnswered',
         })
         .expect(401);
+    });
+  });
+
+  describe('POST /asyncQuestions/:qid/:vote', () => {
+    it('should vote on a question', async () => {
+      const student = await UserFactory.create();
+      const question = await AsyncQuestionFactory.create({
+        createdAt: new Date('2020-03-01T05:00:00.000Z'),
+      });
+
+      const response = await supertest({ userId: student.id }).post(
+        `/asyncQuestions/${question.id}/1`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.vote).toBe(1);
+    });
+
+    it('should update an existing vote on a question', async () => {
+      const student = await UserFactory.create();
+      const question = await AsyncQuestionFactory.create({
+        createdAt: new Date('2020-03-01T05:00:00.000Z'),
+      });
+      await VotesFactory.create({ userId: student.id, vote: 1, question });
+
+      const response = await supertest({ userId: student.id }).post(
+        `/asyncQuestions/${question.id}/-1`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.vote).toBe(0);
+    });
+
+    it('should not allow voting beyond the allowed range', async () => {
+      const student = await UserFactory.create();
+      const question = await AsyncQuestionFactory.create({
+        createdAt: new Date('2020-03-01T05:00:00.000Z'),
+      });
+      await VotesFactory.create({ userId: student.id, vote: 1, question });
+
+      const response = await supertest({ userId: student.id }).post(
+        `/asyncQuestions/${question.id}/2`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.vote).toBe(1); // original vote
+    });
+
+    it('should not allow voting by unauthorized users', async () => {
+      const question = await AsyncQuestionFactory.create({
+        createdAt: new Date('2020-03-01T05:00:00.000Z'),
+      });
+
+      const response = await supertest().post(
+        `/asyncQuestions/${question.id}/1`,
+      );
+
+      expect(response.status).toBe(401);
+    });
+
+    it('should return an error if the question does not exist', async () => {
+      const student = await UserFactory.create();
+
+      const response = await supertest({ userId: student.id }).post(
+        `/asyncQuestions/9999/1`,
+      );
+
+      expect(response.status).toBe(404);
     });
   });
 });

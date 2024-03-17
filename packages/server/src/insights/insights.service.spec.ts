@@ -18,7 +18,7 @@ import {
   SimpleTableOutputType,
 } from '@koh/common';
 import { UserModel } from 'profile/user.entity';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 
 describe('InsightsService', () => {
   let service: InsightsService;

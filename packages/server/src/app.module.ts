@@ -27,6 +27,7 @@ import { ImageModule } from 'images/image.module';
 import { MailModule } from 'mail/mail.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { OrganizationModule } from 'organization/organization.module';
+import { QuestionTypeModule } from 'questionType/questionType.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeormConfig),
@@ -66,6 +67,7 @@ import { OrganizationModule } from 'organization/organization.module';
     ChatbotModule,
     OrganizationModule,
     AuthModule,
+    QuestionTypeModule,
   ],
 })
 export class AppModule {}

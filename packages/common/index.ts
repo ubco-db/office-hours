@@ -74,6 +74,7 @@ export class User {
   userRole!: string
   organization?: OrganizationUserPartial
   accountType!: AccountType
+  emailVerified!: boolean
 }
 
 export class OrganizationResponse {
@@ -118,6 +119,30 @@ export class UserPartial {
 export type CoursePartial = {
   id: number
   name: string
+}
+
+export class RegistrationTokenDetails {
+  @IsString()
+  token!: string
+}
+
+export class PasswordRequestResetBody {
+  @IsString()
+  email!: string
+
+  @IsString()
+  recaptchaToken!: string
+
+  @IsInt()
+  organizationId!: number
+}
+
+export class PasswordRequestResetWithTokenBody {
+  @IsString()
+  password!: string
+
+  @IsString()
+  confirmPassword!: string
 }
 
 /**
@@ -302,6 +327,7 @@ export class Question {
   @Type(() => Date)
   closedAt?: Date
 
+  @Type(() => QuestionTypeParams)
   questionTypes?: QuestionTypeParams[]
 
   status!: QuestionStatus
@@ -491,6 +517,27 @@ export class AsyncQuestion {
   @IsOptional()
   @IsBoolean()
   verified?: boolean
+
+  votes?: AsyncQuestionVotes[]
+
+  @IsOptional()
+  @IsInt()
+  votesSum?: number
+}
+
+export class AsyncQuestionVotes {
+  @IsOptional()
+  @IsInt()
+  id?: number
+
+  @IsInt()
+  questionId!: number
+
+  @IsInt()
+  userId!: number
+
+  @IsInt()
+  vote!: number
 }
 
 export class Image {
@@ -537,8 +584,12 @@ export class GetProfileResponse extends User {}
 export class UBCOloginParam {
   @IsString()
   email!: string
+
   @IsString()
   password!: string
+
+  @IsString()
+  recaptchaToken!: string
 }
 export class UBCOuserParam {
   @IsString()
@@ -864,26 +915,6 @@ export class GetSelfEnrollResponse {
   courses!: CoursePartial[]
 }
 
-export class GetCourseOverridesRow {
-  id!: number
-  role!: string
-  name!: string
-  email!: string
-}
-
-export class GetCourseOverridesResponse {
-  @Type(() => GetCourseOverridesRow)
-  data!: GetCourseOverridesRow[]
-}
-
-export class UpdateCourseOverrideBody {
-  @IsString()
-  email!: string
-
-  @IsString()
-  role!: Role
-}
-
 export class InteractionParams {
   @IsInt()
   courseId!: number
@@ -959,8 +990,6 @@ export class DocumentParams {
   @IsArray()
   subDocumentIds?: string[]
 }
-
-export class UpdateCourseOverrideResponse extends GetCourseOverridesRow {}
 
 export class GetQueueResponse extends QueuePartial {}
 
@@ -1096,6 +1125,10 @@ export class QuestionTypeParams {
   @IsString()
   @IsOptional()
   color?: string
+
+  @IsInt()
+  @IsOptional()
+  queueId?: number
 }
 
 export class TACheckinTimesResponse {
@@ -1243,6 +1276,33 @@ export class RegisterCourseParams {
 
   @IsString()
   timezone!: string
+}
+
+export class AccountRegistrationParams {
+  @IsString()
+  firstName!: string
+
+  @IsString()
+  lastName!: string
+
+  @IsString()
+  email!: string
+
+  @IsString()
+  password!: string
+
+  @IsString()
+  confirmPassword!: string
+
+  @IsNumber()
+  organizationId!: number
+
+  @IsNumber()
+  @IsOptional()
+  sid?: number
+
+  @IsString()
+  recaptchaToken!: string
 }
 
 export class EditCourseInfoParams {
@@ -1461,6 +1521,7 @@ export const ERROR_MESSAGES = {
       noNewQuestions: 'Queue not allowing new questions',
       closedQueue: 'Queue is closed',
       oneQuestionAtATime: "You can't create more than one question at a time.",
+      invalidQuestionType: 'Invalid question type',
     },
     updateQuestion: {
       fsmViolation: (

@@ -49,7 +49,7 @@ const CreateAsyncQuestionForm = ({
   }, [selectedImage])
 
   const populateQuestionTypes = async () => {
-    const questions = await API.questions.questionTypes(courseId)
+    const questions = await API.questionType.getQuestionTypes(courseId, null)
     setQuestionsTypeState(questions)
   }
   const getAiAnswer = async (questionText: string) => {

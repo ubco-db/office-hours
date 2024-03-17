@@ -15,6 +15,7 @@ import {
   Param,
   Patch,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
@@ -26,14 +27,71 @@ import { asyncQuestionService } from './asyncQuestion.service';
 import { CourseModel } from 'course/course.entity';
 import { MailService } from 'mail/mail.service';
 import { UserCourseModel } from 'profile/user-course.entity';
+import { Response } from 'express';
+import { AsyncQuestionVotesModel } from './asyncQuestionVotes.entity';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('asyncQuestions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 export class asyncQuestionController {
   constructor(
     private mailService: MailService,
     private questionService: asyncQuestionService,
   ) {}
+
+  @Post(':qid/:vote')
+  @Roles(Role.STUDENT, Role.TA, Role.PROFESSOR)
+  async voteQuestion(
+    @Param('qid') qid: number,
+    @Param('vote') vote: number,
+    @User() user: UserModel,
+    @Res() res: Response,
+  ): Promise<AsyncQuestion> {
+    const question = await AsyncQuestionModel.findOne({
+      where: { id: qid },
+    });
+
+    if (!question) {
+      res
+        .status(HttpStatus.NOT_FOUND)
+        .send({ message: ERROR_MESSAGES.questionController.notFound });
+      return;
+    }
+
+    let thisUserThisQuestionVote = await AsyncQuestionVotesModel.findOne({
+      where: { userId: user.id, questionId: qid },
+    });
+
+    const hasVoted = thisUserThisQuestionVote !== undefined;
+    const sumVotes = thisUserThisQuestionVote?.vote ?? 0;
+
+    const newValue = sumVotes + vote;
+
+    const canVote = newValue <= 1 && newValue >= -1;
+    if (canVote) {
+      if (hasVoted) {
+        thisUserThisQuestionVote.vote = newValue;
+      } else {
+        thisUserThisQuestionVote = new AsyncQuestionVotesModel();
+        thisUserThisQuestionVote.user = user;
+        thisUserThisQuestionVote.question = question;
+        thisUserThisQuestionVote.vote = newValue;
+      }
+    }
+
+    await thisUserThisQuestionVote.save();
+
+    const updatedQuestion = await AsyncQuestionModel.findOne({
+      where: { id: qid },
+    });
+
+    res.status(HttpStatus.OK).send({
+      questionSumVotes: updatedQuestion.votesSum,
+      vote: thisUserThisQuestionVote?.vote ?? 0,
+    });
+
+    return;
+  }
 
   @Post(':cid')
   @Roles(Role.STUDENT)
@@ -41,19 +99,18 @@ export class asyncQuestionController {
     @Body() body: CreateAsyncQuestions,
     @Param('cid') cid: number,
     @User() user: UserModel,
+    @Res() res: Response,
   ): Promise<any> {
-    // const { text, questionType, groupable, queueId, force } = body;
     const c = await CourseModel.findOne({
       where: { id: cid },
     });
 
     if (!c) {
-      throw new NotFoundException(
-        ERROR_MESSAGES.questionController.createQuestion.invalidQueue,
-      );
+      res
+        .status(HttpStatus.NOT_FOUND)
+        .send({ message: ERROR_MESSAGES.questionController.notFound });
+      return;
     }
-
-    //check whether there are images to be added
     try {
       const question = await AsyncQuestionModel.create({
         courseId: cid,
@@ -70,13 +127,14 @@ export class asyncQuestionController {
         verified: false,
         createdAt: new Date(),
       }).save();
-      return question;
+      res.status(HttpStatus.CREATED).send(question);
+      return;
     } catch (err) {
       console.error(err);
-      throw new HttpException(
-        ERROR_MESSAGES.questionController.saveQError,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send({ message: ERROR_MESSAGES.questionController.saveQError });
+      return;
     }
   }
 

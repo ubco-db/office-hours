@@ -6,12 +6,16 @@ import React, { ReactElement, useState } from 'react'
 // import { useTAInQueueInfo } from "../../../hooks/useTAInQueueInfo";
 import { CantFindButton, FinishHelpingButton } from '../Queue/Banner'
 import { UpdateQuestionForm } from './UpdateAsyncQuestionForm'
+import { useAsnycQuestions } from '../../../hooks/useAsyncQuestions'
+//import { useTeams } from "../../../hooks/useTeams";
 
 export default function StudentQuestionDetailButtons({
+  courseId,
   question,
   setIsExpandedTrue,
   onStatusChange,
 }: {
+  courseId: number
   question: AsyncQuestion
   setIsExpandedTrue: (event) => void
   onStatusChange: () => void
@@ -21,6 +25,7 @@ export default function StudentQuestionDetailButtons({
   //   setAnswerQuestionVisbile(false);
   // };
   // const [form] = Form.useForm();
+  const { mutateQuestions } = useAsnycQuestions(courseId)
 
   // if (question.status !== asyncQuestionStatus.Waiting) {
   //   return <></>
@@ -67,6 +72,7 @@ export default function StudentQuestionDetailButtons({
         visible={answerQuestionVisible}
         onStatusChange={onStatusChange}
         onClose={() => setAnswerQuestionVisbile(false)}
+        onQuestionUpdated={mutateQuestions}
       />
     </>
   )

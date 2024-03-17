@@ -20,7 +20,7 @@ export const TestTypeOrmModule = TypeOrmModule.forRoot({
   type: 'postgres',
   host: 'localhost',
   port: 5432,
-  username: 'postgres',
+  username: process.env.POSTGRES_USER || 'helpme',
   password: process.env.TESTDBPASS || '',
   database: 'test',
   entities: ['./**/*.entity.ts'],

@@ -19,11 +19,6 @@ export class ProfileService {
     private loginCourseService: LoginCourseService,
   ) {}
 
-  public async mail(url: string, receiver: string): Promise<void> {
-    // const testAccount = await nodemailer.createTestAccount();
-    await this.mailService.sendUserConfirmation(url, receiver);
-  }
-
   public async inQueue(user: UserModel): Promise<boolean> {
     const question = await QuestionModel.findOne({
       where: {
