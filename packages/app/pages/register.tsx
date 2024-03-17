@@ -1,5 +1,5 @@
 import { LeftOutlined } from '@ant-design/icons'
-import { Button, Card, Col, Form, Input, Row, Tag, message } from 'antd'
+import { Button, Card, Col, Form, Input, Row, message } from 'antd'
 import Router from 'next/router'
 import Head from 'next/head'
 import { ReactElement, useEffect, useState } from 'react'
@@ -112,9 +112,6 @@ export default function Register(): ReactElement {
       <Container>
         <Card className="mx-auto max-w-2xl sm:px-2 md:px-6">
           <h2 className="my-4 flex items-center text-left">
-            <Tag color="blue" className="uppercase">
-              beta
-            </Tag>
             Create new account
           </h2>
           <Button
