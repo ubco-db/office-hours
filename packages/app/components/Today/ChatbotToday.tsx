@@ -96,7 +96,6 @@ export const ChatbotToday: React.FC = () => {
     setIsLoading(true)
 
     const result = await query()
-    console.log('result', result)
     const answer = result.answer || "Sorry, I couldn't find the answer"
     const sourceDocuments = result.sourceDocuments || []
     //currently not using interactions and questions in the office hour repo
