@@ -297,7 +297,7 @@ export default function AsyncQuestionsPage({
 
   const RenderSortBy = () => {
     return (
-      <div className="flex items-center gap-x-4">
+      <div className="mb-1 flex items-center gap-x-4">
         <h2 className="flex-shrink-0">Sort By</h2>
         <Select
           id="sort-by-select"
