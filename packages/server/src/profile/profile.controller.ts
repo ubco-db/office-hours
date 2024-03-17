@@ -143,7 +143,7 @@ export class ProfileController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async get(
-    @User(['courses', 'courses.course', 'phoneNotif', 'desktopNotifs'])
+    @User(['courses', 'courses.course', 'desktopNotifs'])
     user: UserModel,
   ): Promise<GetProfileResponse> {
     if (user === null || user === undefined) {
@@ -195,7 +195,6 @@ export class ProfileController {
       'defaultMessage',
       'includeDefaultMessage',
       'desktopNotifsEnabled',
-      'phoneNotifsEnabled',
       'insights',
       'userRole',
       'accountType',
@@ -227,7 +226,6 @@ export class ProfileController {
     return {
       ...userResponse,
       courses,
-      phoneNumber: user.phoneNotif?.phoneNumber,
       desktopNotifs,
       pendingCourses,
       organization,
@@ -277,16 +275,6 @@ export class ProfileController {
     }
 
     user = Object.assign(user, userPatch);
-    // check that the user is trying to update the phone notifs
-    if (userPatch.phoneNotifsEnabled && userPatch.phoneNumber) {
-      // only register new phone if the notifs are enables and the phone number is new
-      if (
-        user.phoneNotifsEnabled &&
-        userPatch.phoneNumber !== user.phoneNotif?.phoneNumber
-      ) {
-        await this.notifService.registerPhone(userPatch.phoneNumber, user);
-      }
-    }
 
     await user
       .save()

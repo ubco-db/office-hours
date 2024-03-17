@@ -15,16 +15,16 @@
 - [Style](#style)
 - [Production](#production)
 
-## Installation
+## Installation to run locally
 
 1. [Get Docker](https://docs.docker.com/get-docker/) so we can automatically run and setup Postgres
 2. Make sure you have [node](https://nodejs.org/en/download/), [yarn](https://classic.yarnpkg.com/en/docs/install), and [psql](https://blog.timescale.com/tutorials/how-to-install-psql-on-mac-ubuntu-debian-windows/) installed. `yarn -v` should be `1.x.x`. Do not get Yarn 2. Node should also be version 14.x.x. If it's not, install [nvm](https://github.com/nvm-sh/nvm)
 3. Run `yarn install` in this directory to get dependencies
 4. Run `yarn dev:db:up` to start the database via docker; `yarn dev:db:down` will stop it.
-5. Connect to the database and create two databases: `dev` and `test`
-6. Start the app in development with `yarn dev`
-7. Visit the app at http://localhost:3000/dev and seed the database
-8. Visit http://localhost:3000 to use the app!
+5. Change the environment variables to match your environment. You can find the required environment variables in the `.env.development` file in the `packages/server` directory. If you are running the app in a Docker container, you should change the environment variables in the `.env.docker` file in the `packages/server` directory.
+5. Start the app in development with `yarn dev`
+6. Visit the app at http://localhost:3000/dev and seed the database
+7. Visit the app at http://localhost:3000
 
 If you have any questions, feel free to reach out to a member of the team. If you think this document can be improved, make a PR!
 
@@ -114,7 +114,7 @@ To watch them actually run interactively, you can use `yarn cypress open`. Be aw
 
 If your tests are failing with a message about "deadlock something whatever", do `yarn test --run-in-band`. This makes the tests run sequentially.
 
-If `yarn test` is not running all of the tests, navigate to `server/test` folder and run `yarn jest --config ./test/jest-integration.json -i --run-in-band` if you would like to run all the tests. To run the tests of a specific file (e.g. course.integration.ts), you can use `yarn jest --config ./test/jest-integration.json -i --run-in-band course` 
+If `yarn test` is not running all of the tests, navigate to `server/test` folder and run `yarn jest --config ./test/jest-integration.json -i --run-in-band` if you would like to run all the tests. To run the tests of a specific file (e.g. course.integration.ts), you can use `yarn jest --config ./test/jest-integration.json -i --run-in-band course`
 
 {% note %}
 

@@ -1,11 +1,10 @@
-import { CreateQuestionParams, OrganizationRole, Role } from '@koh/common';
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { OrganizationRole, Role } from '@koh/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AlertModel } from 'alerts/alerts.entity';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { LastRegistrationModel } from 'login/last-registration-model.entity';
 import { ProfSectionGroupsModel } from 'login/prof-section-groups.entity';
 import { DesktopNotifModel } from 'notification/desktop-notif.entity';
-import { PhoneNotifModel } from 'notification/phone-notif.entity';
 import { EventModel, EventType } from 'profile/event-model.entity';
 import { UserCourseModel } from 'profile/user-course.entity';
 import { UserModel } from 'profile/user.entity';
@@ -63,7 +62,6 @@ export class SeedController {
     await this.seedService.deleteAll(UserCourseModel);
     await this.seedService.deleteAll(EventModel);
     await this.seedService.deleteAll(DesktopNotifModel);
-    await this.seedService.deleteAll(PhoneNotifModel);
     await this.seedService.deleteAll(AlertModel);
     await this.seedService.deleteAll(UserModel);
     await this.seedService.deleteAll(CourseSectionMappingModel);
@@ -133,9 +131,9 @@ export class SeedController {
     if (!userExists) {
       // Student 1
       const user1 = await UserFactory.create({
-        email: 'kw@ubc.ca',
-        firstName: 'kevin',
-        lastName: 'wang',
+        email: 'studentOne@ubc.ca',
+        firstName: 'studentOne',
+        lastName: 'studentOne',
         password: hashedPassword1,
         emailVerified: true,
       });
@@ -148,9 +146,9 @@ export class SeedController {
 
       // Student 2
       const user2 = await UserFactory.create({
-        email: 'Justin@ubc.ca',
-        firstName: 'Justin',
-        lastName: 'Schultz',
+        email: 'studentTwo@ubc.ca',
+        firstName: 'studentTwo',
+        lastName: 'studentTwo',
         password: hashedPassword1,
         emailVerified: true,
       });
@@ -163,9 +161,9 @@ export class SeedController {
 
       // TA 1
       const user3 = await UserFactory.create({
-        email: 'big@ubc.ca',
-        firstName: 'Big',
-        lastName: 'Boy',
+        email: 'TaOne@ubc.ca',
+        firstName: 'TaOne',
+        lastName: 'TaOne',
         password: hashedPassword1,
         emailVerified: true,
       });
@@ -178,9 +176,9 @@ export class SeedController {
 
       // TA 2
       const user4 = await UserFactory.create({
-        email: 'small@ubc.ca',
-        firstName: 'Small',
-        lastName: 'Boy',
+        email: 'TaTwo@ubc.ca',
+        firstName: 'TaTwo',
+        lastName: 'TaTwo',
         password: hashedPassword1,
         emailVerified: true,
       });
@@ -193,7 +191,7 @@ export class SeedController {
 
       // Professor
       const user5 = await UserFactory.create({
-        email: 'bigRamon@ubc.ca',
+        email: 'Ramon@ubc.ca',
         firstName: 'Ramon',
         lastName: 'Lawrence',
         insights: [
@@ -293,7 +291,7 @@ export class SeedController {
 
     const eventTA = await UserModel.findOne({
       where: {
-        firstName: 'Big',
+        firstName: 'TaOne',
       },
     });
 

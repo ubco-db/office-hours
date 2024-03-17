@@ -35,7 +35,6 @@ export class UserAdmin extends AdminEntity {
     'name',
     'password',
     'desktopNotifsEnabled',
-    'phoneNotifsEnabled',
     'queues',
   ];
 }
