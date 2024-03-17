@@ -103,13 +103,11 @@ describe('Login Integration', () => {
       const user = await UserFactory.create({ password: password });
       await mockJWT.signAsync({ userId: user.id });
 
-      const res = await supertest()
-        .post('/ubc_login')
-        .send({
-          email: user.email,
-          password: 'realpassword',
-          recaptchaToken: 'token',
-        });
+      const res = await supertest().post('/ubc_login').send({
+        email: user.email,
+        password: 'realpassword',
+        recaptchaToken: 'token',
+      });
 
       expect(res.body).toMatchSnapshot();
       expect(res.status).toBe(200);

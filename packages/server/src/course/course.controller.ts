@@ -118,6 +118,9 @@ export class CourseController {
         courseId: cid,
       },
       relations: ['creator', 'course', 'images'],
+      order: {
+        createdAt: 'DESC',
+      },
     });
     if (!all) {
       throw NotFoundException;

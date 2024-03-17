@@ -12,7 +12,7 @@ import { UserModel } from '../profile/user.entity';
 import { QuestionModel } from '../question/question.entity';
 import { createQueryBuilder, SelectQueryBuilder } from 'typeorm';
 import { Cache } from 'cache-manager';
-import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
+import { AsyncQuestionModel } from '../asyncQuestion/asyncQuestion.entity';
 
 export type Filter = {
   type: string;
