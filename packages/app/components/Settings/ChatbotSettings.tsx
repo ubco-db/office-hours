@@ -1,18 +1,6 @@
-import {
-  Button,
-  Form,
-  Input,
-  Modal,
-  Pagination,
-  Table,
-  Tooltip,
-  UploadProps,
-  message,
-} from 'antd'
+import { Button, Form, Input, Modal, Pagination, Table, Tooltip } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import React, { ReactElement, useEffect, useState } from 'react'
-import { API } from '@koh/api-client'
-import { useDebounce } from '../../hooks/useDebounce'
 import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import {
@@ -44,33 +32,44 @@ export default function ChatbotSettings(): ReactElement {
   const [addDocumentModalOpen, setAddDocumentModalOpen] = useState(false)
   const [documentType, setDocumentType] = useState('FILE')
   const [search, setSearch] = useState('')
-  const debouncedValue = useDebounce<string>(search, 500)
-
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
   const [loading, setLoading] = useState(false)
   const [totalDocuments, setTotalDocuments] = useState(0)
-  const [chatbotDocuments, setChatbotDocuments] = useState()
+  const [chatbotDocuments, setChatbotDocuments] = useState([])
 
-  const columns: ColumnsType<ChatbotDocument> = [
-    {
-      title: 'Document ID',
-      dataIndex: 'id',
-      key: 'id',
+  const [fileList, setFileList] = useState([])
+
+  const props = {
+    name: 'file',
+    multiple: true,
+    accept: '.docx,.pptx,.txt,.csv,.pdf',
+    fileList,
+    onChange(info) {
+      setFileList(info.fileList)
     },
+    beforeUpload: () => false, // Prevent automatic upload
+  }
+
+  const columns = [
     {
       title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'docName',
+      key: 'docName',
     },
+
     {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      title: 'Source',
+      dataIndex: 'sourceLink',
+      key: 'sourceLink',
+      render: (text, record) => (
+        <a href={record.sourceLink} target="_blank" rel="noopener noreferrer">
+          Source Link
+        </a>
+      ),
     },
     {
       title: '',
-      render: (text, record, index) => (
+      key: 'action',
+      render: (text, record) => (
         <Button
           disabled={loading}
           onClick={() => handleDeleteDocument(record)}
@@ -84,20 +83,23 @@ export default function ChatbotSettings(): ReactElement {
 
   useEffect(() => {
     getDocuments()
-  }, [currentPage, pageSize, debouncedValue])
+  }, [])
 
   const getDocuments = async () => {
     setLoading(true)
     try {
-      const data: any = await API.chatbot.getDocuments(
-        Number(cid),
-        search,
-        pageSize,
-        currentPage,
-      )
-
-      setChatbotDocuments(data.chatDocuments)
-      setTotalDocuments(data.total)
+      fetch(`/chat/${cid}/aggregateDocuments`)
+        .then((res) => res.json())
+        .then((json) => {
+          // Convert the json to the expected format
+          const formattedDocuments = json.map((doc) => ({
+            docId: doc.id,
+            docName: doc.pageContent,
+            sourceLink: doc.metadata.source,
+            pageNumbers: [],
+          }))
+          setChatbotDocuments(formattedDocuments)
+        })
     } catch (e) {
       setChatbotDocuments([])
     }
@@ -111,23 +113,12 @@ export default function ChatbotSettings(): ReactElement {
         url: url,
       }
 
-      const uploadedDocument = await fetch(`/chat/${cid}/document/url/github`, {
+      await fetch(`/chat/${cid}/document/url/github`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      })
-
-      const documentJSON = await uploadedDocument.json()
-
-      const response = await API.chatbot.addDocument({
-        data: {
-          name: documentJSON.name,
-          type: documentJSON.type,
-          subDocumentIds: documentJSON.ids,
-        },
-        courseId: Number(cid),
       })
 
       toast.success('File uploaded.')
@@ -154,20 +145,9 @@ export default function ChatbotSettings(): ReactElement {
           new Blob([JSON.stringify(jsonData)], { type: 'application/json' }),
         )
 
-        const uploadedDocument = await fetch(`/chat/${cid}/document`, {
+        await fetch(`/chat/${cid}/document`, {
           method: 'POST',
           body: formData,
-        })
-
-        const documentJSON = await uploadedDocument.json()
-
-        await API.chatbot.addDocument({
-          data: {
-            name: documentJSON.name,
-            type: documentJSON.type,
-            subDocumentIds: documentJSON.ids,
-          },
-          courseId: Number(cid),
         })
 
         toast.success('File uploaded.')
@@ -177,17 +157,15 @@ export default function ChatbotSettings(): ReactElement {
     }
   }
 
-  const handleDeleteDocument = async (document: ChatbotDocument) => {
+  const handleDeleteDocument = async (record: any) => {
     setLoading(true)
     try {
-      const res1 = await fetch(`/chat/${cid}/document`, {
+      await fetch(`/chat/${record.docId}/document`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ subDocumentIds: document.subDocumentIds }),
       })
-      const res2 = await API.chatbot.deleteDocument({ documentId: document.id })
       toast.success('Document deleted.')
       getDocuments()
     } catch (e) {
@@ -207,23 +185,18 @@ export default function ChatbotSettings(): ReactElement {
       }
 
       if (documentType === 'FILE') {
-        const files = formData.files.fileList.map((file) => file.originFileObj)
+        const files = fileList.map((file) => file.originFileObj)
         await uploadFiles(files, formData.source)
       }
 
       setAddDocumentModalOpen(false)
       setLoading(false)
+      setFileList([])
       form.resetFields()
       getDocuments()
     } finally {
       setLoading(false)
     }
-  }
-
-  const props: UploadProps = {
-    name: 'file',
-    multiple: true,
-    accept: '.pdf',
   }
 
   return (
@@ -282,11 +255,16 @@ export default function ChatbotSettings(): ReactElement {
                 rules={[
                   {
                     required: true,
-                    message:
-                      'Please provide a document URL. (link to pdf files only)',
+                    message: 'Please provide a document URL.',
                   },
                 ]}
               >
+                <div>
+                  <p>
+                    <strong>Accepted File Types:</strong> .docx, .pptx, .txt,
+                    .csv, .pdf
+                  </p>
+                </div>
                 <Input placeholder="Enter URL for a pdf file..." />
               </Form.Item>
             )}
@@ -301,6 +279,12 @@ export default function ChatbotSettings(): ReactElement {
                     },
                   ]}
                 >
+                  <div>
+                    <p>
+                      <strong>Accepted File Types:</strong> .docx, .pptx, .txt,
+                      .csv, .pdf
+                    </p>
+                  </div>
                   <Dragger {...props}>
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
@@ -316,7 +300,7 @@ export default function ChatbotSettings(): ReactElement {
                 </Form.Item>
                 <Tooltip
                   title={
-                    'This preview URL will be used to redirect your students to view this file.'
+                    'This preview URL will be used to redirect your students to view this file. Make sure to include http header unless you want to redirect route on this site.'
                   }
                 >
                   <p>
@@ -376,13 +360,9 @@ export default function ChatbotSettings(): ReactElement {
       <div className="my-1"></div>
       <Pagination
         style={{ float: 'right' }}
-        current={currentPage}
-        pageSize={pageSize}
         total={totalDocuments}
-        onChange={(page) => setCurrentPage(page)}
         pageSizeOptions={[10, 20, 30, 50]}
         showSizeChanger
-        onShowSizeChange={(current, pageSize) => setPageSize(pageSize)}
       />
     </div>
   )
