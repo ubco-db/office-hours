@@ -12,6 +12,7 @@ import { UserModel } from '../profile/user.entity';
 import { QuestionModel } from '../question/question.entity';
 import { createQueryBuilder, SelectQueryBuilder } from 'typeorm';
 import { Cache } from 'cache-manager';
+import { AsyncQuestionModel } from '../asyncQuestion/asyncQuestion.entity';
 
 export type Filter = {
   type: string;
@@ -55,6 +56,19 @@ const APPLY_FILTER_MAP = {
     },
     timeframe: ({ query, filter }: ApplyFilterParams) => {
       query.andWhere('QuestionModel.createdAt BETWEEN :start AND :end', {
+        start: filter.start,
+        end: filter.end,
+      });
+    },
+  },
+  AsyncQuestionModel: {
+    courseId: ({ query, filter }: ApplyFilterParams) => {
+      query.andWhere('"courseId" = :courseId', {
+        courseId: filter.courseId,
+      });
+    },
+    timeframe: ({ query, filter }: ApplyFilterParams) => {
+      query.andWhere('AsyncQuestionModel.createdAt BETWEEN :start AND :end', {
         start: filter.start,
         end: filter.end,
       });
@@ -201,7 +215,7 @@ export const QuestionTypeBreakdown: InsightObject = {
   component: InsightComponent.BarChart,
   size: 'default' as const,
   async compute(filters): Promise<BarChartOutputType> {
-    const info = await addFilters({
+    const questionInfo = await addFilters({
       query: createQueryBuilder(QuestionModel)
         .leftJoinAndSelect('QuestionModel.questionTypes', 'questionType')
         .select('questionType.name', 'questionTypeName')
@@ -215,12 +229,36 @@ export const QuestionTypeBreakdown: InsightObject = {
       .having('questionType.name IS NOT NULL')
       .getRawMany();
 
-    info.forEach((pair) => {
-      pair['totalQuestions'] = Number.parseInt(pair['totalQuestions']);
-    });
+    const asyncQuestionInfo = await addFilters({
+      query: createQueryBuilder(AsyncQuestionModel)
+        .leftJoinAndSelect('AsyncQuestionModel.questionTypes', 'questionType')
+        .select('questionType.name', 'questionTypeName')
+        .addSelect('COUNT(AsyncQuestionModel.id)', 'totalQuestions')
+        .andWhere('questionType.name IS NOT NULL'),
+      modelName: AsyncQuestionModel.name,
+      allowedFilters: ['courseId', 'timeframe'],
+      filters,
+    })
+      .groupBy('questionType.name')
+      .having('questionType.name IS NOT NULL')
+      .getRawMany();
+
+    const combinedInfo = questionInfo.concat(asyncQuestionInfo);
+
+    const info = combinedInfo.reduce((accumulator, current) => {
+      if (accumulator[current['questionTypeName']]) {
+        accumulator[current['questionTypeName']]['totalQuestions'] +=
+          Number.parseInt(current['totalQuestions']);
+      } else {
+        accumulator[current['questionTypeName']] = current;
+        accumulator[current['questionTypeName']]['totalQuestions'] =
+          Number.parseInt(current['totalQuestions']);
+      }
+      return accumulator;
+    }, {});
 
     const insightObj = {
-      data: info.sort((a, b) =>
+      data: combinedInfo.sort((a, b) =>
         a.questionTypeName === b.questionTypeName
           ? 0
           : a.questionTypeName > b.questionTypeName

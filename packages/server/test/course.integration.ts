@@ -29,6 +29,7 @@ import {
 } from './util/factories';
 import { setupIntegrationTest } from './util/testUtils';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
+import s from 'connect-redis';
 import { CourseSettingsModel } from 'course/course_settings.entity';
 
 describe('Course Integration', () => {
@@ -618,61 +619,6 @@ describe('Course Integration', () => {
           isProfessorQueue: queue1.isProfessorQueue,
         })
         .expect(201);
-    });
-  });
-
-  describe('POST /courses/:id/update_override', () => {
-    it('tests creating override using the endpoint', async () => {
-      const course = await CourseFactory.create();
-      const user = await UserFactory.create();
-      const professor = await UserFactory.create();
-      await UserCourseFactory.create({
-        user: professor,
-        role: Role.PROFESSOR,
-        course,
-      });
-      await supertest({ userId: professor.id })
-        .post(`/courses/${course.id}/update_override`)
-        .send({ email: user.email, role: Role.STUDENT })
-        .expect(201);
-      const ucm = await UserCourseModel.findOne({
-        where: {
-          userId: user.id,
-        },
-      });
-      expect(ucm.role).toEqual(Role.STUDENT);
-      expect(ucm.override).toBeTruthy();
-    });
-  });
-
-  describe('DELETE /courses/:id/update_override', () => {
-    it('tests deleting override using the endpoint', async () => {
-      const course = await CourseFactory.create();
-      const user = await UserFactory.create();
-      const professor = await UserFactory.create();
-      await UserCourseFactory.create({
-        user: professor,
-        role: Role.PROFESSOR,
-        course,
-      });
-      await UserCourseFactory.create({
-        user: user,
-        role: Role.TA,
-        override: true,
-        course,
-      });
-
-      await supertest({ userId: professor.id })
-        .delete(`/courses/${course.id}/update_override`)
-        .send({ email: user.email, role: Role.STUDENT })
-        .expect(200);
-
-      const ucm = await UserCourseModel.findOne({
-        where: {
-          userId: user.id,
-        },
-      });
-      expect(ucm).toBeUndefined();
     });
   });
 
@@ -1297,7 +1243,7 @@ describe('Course Integration', () => {
       await supertest().post(`/courses/enroll_by_invite_code/123`).expect(401);
     });
 
-    it('should return 404 if user is not found', async () => {
+    it('should return 403 if user is not found', async () => {
       const course = await CourseFactory.create();
 
       const resp = await supertest({ userId: 1 })
@@ -1310,8 +1256,8 @@ describe('Course Integration', () => {
           selected_course: course.id,
         });
 
-      expect(resp.status).toBe(404);
-      expect(resp.body.message).toEqual('User not found');
+      expect(resp.status).toBe(403);
+      expect(resp.body.message).toEqual('Forbidden resource');
     });
 
     it('should return 404 if course is not found', async () => {
@@ -1576,6 +1522,102 @@ describe('Course Integration', () => {
         `/courses/${course.id}/add_student/${student.sid}`,
       );
       expect(resp.status).toBe(200);
+    });
+  });
+
+  describe('PATCH /courses/:id/update_user_role/:uid/:role', () => {
+    it('should return 404 with invalid course', async () => {
+      const professorUser = await UserFactory.create();
+      const course = await CourseFactory.create();
+
+      const notFoundCourseId = 123;
+
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${notFoundCourseId}/update_user_role/${professorUser.id}/${Role.TA}`,
+      );
+      expect(resp.status).toBe(404);
+    });
+
+    it('should return 404 with invalid user', async () => {
+      const professorUser = await UserFactory.create();
+      const course = await CourseFactory.create();
+
+      const notFoundUserId = 123;
+
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${notFoundUserId}/${Role.TA}`,
+      );
+      expect(resp.status).toBe(404);
+    });
+
+    it('should return 400 with invalid role', async () => {
+      const professorUser = await UserFactory.create();
+      const course = await CourseFactory.create();
+
+      const invalidRole = 'invalid_role';
+
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${professorUser.id}/${invalidRole}`,
+      );
+      expect(resp.status).toBe(400);
+    });
+
+    it('should return 401 if user is not a professor', async () => {
+      const studentUser = await UserFactory.create();
+      const course = await CourseFactory.create();
+
+      await UserCourseFactory.create({
+        user: studentUser,
+        role: Role.STUDENT,
+        course,
+      });
+
+      const resp = await supertest({ userId: studentUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${studentUser.id}/${Role.TA}`,
+      );
+      expect(resp.status).toBe(401);
+    });
+
+    it('should successfully update user role', async () => {
+      const course = await CourseFactory.create();
+      const professorUser = await UserFactory.create();
+      const studentUser = await UserFactory.create();
+
+      await UserCourseFactory.create({
+        user: studentUser,
+        role: Role.STUDENT,
+        course,
+      });
+
+      await UserCourseFactory.create({
+        user: professorUser,
+        role: Role.PROFESSOR,
+        course,
+      });
+
+      const resp = await supertest({ userId: professorUser.id }).patch(
+        `/courses/${course.id}/update_user_role/${studentUser.id}/${Role.TA}`,
+      );
+      expect(resp.status).toBe(200);
+      expect(resp.body.message).toEqual('Updated user course role');
     });
   });
 

@@ -24,13 +24,12 @@ import { CourseModel } from 'course/course.entity';
 import { User } from 'decorators/user.decorator';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'guards/jwt-auth.guard';
-//import * as httpSignature from 'http-signature';
 import { UserCourseModel } from 'profile/user-course.entity';
 import * as bcrypt from 'bcrypt';
 import { UserModel } from 'profile/user.entity';
-// import { questionEMail } from 'readline-sync';
 import { Connection } from 'typeorm';
 import { LoginCourseService } from './login-course.service';
+import * as request from 'superagent';
 
 @Controller()
 export class LoginController {
@@ -47,6 +46,22 @@ export class LoginController {
     @Res() res: Response,
     @Body() body: UBCOloginParam,
   ): Promise<any> {
+    if (!body.recaptchaToken) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Recaptcha token missing',
+      });
+    }
+
+    const response = await request.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.PRIVATE_RECAPTCHA_SITE_KEY}&response=${body.recaptchaToken}`,
+    );
+
+    if (!response.body.success) {
+      return res.status(HttpStatus.BAD_REQUEST).send({
+        message: 'Recaptcha token invalid',
+      });
+    }
+
     const user = await UserModel.findOne({
       where: { email: body.email },
       relations: ['organizationUser', 'organizationUser.organization'],
@@ -97,6 +112,7 @@ export class LoginController {
             message: 'Account deactivated',
           });
         }
+        delete body.recaptchaToken;
         return res.status(200).send({ token, ...body });
       } else {
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -162,42 +178,6 @@ export class LoginController {
   async selfEnrollEnabledAnywhere(): Promise<GetSelfEnrollResponse> {
     const courses = await CourseModel.find();
     return { courses: courses.filter((course) => course.selfEnroll) };
-  }
-
-  @Post('create_self_enroll_override/:id')
-  @UseGuards(JwtAuthGuard)
-  async createSelfEnrollOverride(
-    @Param('id') courseId: number,
-    @User() user: UserModel,
-  ): Promise<void> {
-    const course = await CourseModel.findOne(courseId);
-
-    if (!course.selfEnroll) {
-      throw new UnauthorizedException(
-        'Cannot self-enroll to this course currently',
-      );
-    }
-
-    const prevUCM = await UserCourseModel.findOne({
-      where: {
-        courseId,
-        userId: user.id,
-      },
-    });
-
-    if (prevUCM) {
-      throw new BadRequestException(
-        'User already has an override for this course',
-      );
-    }
-
-    await UserCourseModel.create({
-      userId: user.id,
-      courseId: courseId,
-      role: Role.STUDENT,
-      override: true,
-      expires: true,
-    }).save();
   }
 
   // get all courses related to user to log in.

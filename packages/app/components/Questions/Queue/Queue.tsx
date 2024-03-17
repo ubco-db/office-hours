@@ -518,6 +518,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
               finishQuestion={finishQuestionAndClose}
               position={studentQuestionIndex + 1}
               cancel={closeEditModal}
+              queueId={qid}
             />
             <CantFindModal
               visible={studentQuestion?.status === LimboQuestionStatus.CantFind}

@@ -68,7 +68,7 @@ export default function Courses(): ReactElement {
                 }}
                 cover={
                   <img
-                    alt="example banner"
+                    alt="Example Banner"
                     style={{ objectFit: 'cover', height: '20vh' }}
                     src="https://open-2021.sites.olt.ubc.ca/files/2020/10/OSIP-2020-Slider.jpg"
                   />

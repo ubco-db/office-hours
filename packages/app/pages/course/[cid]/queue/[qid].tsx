@@ -23,6 +23,7 @@ export default function Queue(): ReactElement {
   const { queue } = useQueue(Number(qid))
   useEffect(() => {
     setOpen(true)
+    return () => setOpen(false)
   }, [])
 
   useEffect(() => {

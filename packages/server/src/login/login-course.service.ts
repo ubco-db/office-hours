@@ -80,7 +80,7 @@ export class LoginCourseService {
         !this.hasUserCourse(userCourses, previousCourse) &&
         previousCourse.course.enabled
       ) {
-        if (!previousCourse.override) {
+        if (!previousCourse) {
           previousCourse.remove();
         } else {
           userCourses.push(previousCourse);
@@ -135,8 +135,7 @@ export class LoginCourseService {
     userCourse = await UserCourseModel.findOne({
       where: { userId, courseId },
     });
-    if (userCourse && userCourse.override && userCourse.role === role) {
-      userCourse.override = false;
+    if (userCourse && userCourse.role === role) {
       await userCourse.save();
     }
     if (!userCourse) {

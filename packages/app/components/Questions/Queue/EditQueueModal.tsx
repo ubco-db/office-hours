@@ -95,14 +95,17 @@ export function EditQueueModal({
 
   const courseNumber = Number(courseId)
   const getQuestions = async () => {
-    const temp = await API.questions.questionTypes(courseNumber)
+    const temp = await API.questionType.getQuestionTypes(courseNumber, queueId)
     setQuestionsTypeState(temp)
   }
 
   const onclick = useCallback(
-    async (s: string) => {
-      await API.questions.deleteQuestionType(courseNumber, s)
-      const temp = await API.questions.questionTypes(courseNumber)
+    async (questionTypeId: number) => {
+      await API.questionType.deleteQuestionType(courseNumber, questionTypeId)
+      const temp = await API.questionType.getQuestionTypes(
+        courseNumber,
+        queueId,
+      )
       await setQuestionsTypeState(temp)
     },
     [courseNumber],
@@ -128,14 +131,17 @@ export function EditQueueModal({
       return
     }
     try {
-      await API.questions.addQuestionType(courseNumber, {
+      await API.questionType.addQuestionType(courseNumber, {
         name: questionTypeAddState,
         color: color,
+        queueId: queueId,
       })
     } catch (e) {
       message.error('Question type already exists')
     }
-    setQuestionsTypeState(await API.questions.questionTypes(courseNumber))
+    setQuestionsTypeState(
+      await API.questionType.getQuestionTypes(courseNumber, queueId),
+    )
     setQuestionTypeAddState(null)
   }, [courseNumber, questionTypeAddState, color, isInputEmpty])
 
@@ -193,7 +199,7 @@ export function EditQueueModal({
                   key={index}
                   typeName={questionType.name}
                   typeColor={questionType.color}
-                  onClick={() => onclick(questionType.name)}
+                  onClick={() => onclick(questionType.id)}
                 />
               ))
             ) : (

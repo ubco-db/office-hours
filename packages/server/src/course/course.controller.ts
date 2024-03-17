@@ -6,7 +6,6 @@ import {
   CourseSettingsResponse,
   EditCourseInfoParams,
   ERROR_MESSAGES,
-  GetCourseOverridesResponse,
   GetCourseResponse,
   GetCourseUserInfoResponse,
   GetLimitedCourseResponse,
@@ -16,8 +15,6 @@ import {
   TACheckinTimesResponse,
   TACheckoutResponse,
   UBCOuserParam,
-  UpdateCourseOverrideBody,
-  UpdateCourseOverrideResponse,
 } from '@koh/common';
 import {
   BadRequestException,
@@ -58,6 +55,7 @@ import { HeatmapService } from './heatmap.service';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
+import { EmailVerifiedGuard } from '../guards/email-verified.guard';
 import { CourseSettingsModel } from './course_settings.entity';
 
 @Controller('courses')
@@ -82,7 +80,7 @@ export class CourseController {
   }
 
   @Get(':oid/organization_courses')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getOrganizationCourses(
     @Res() res: Response,
     @Param('oid') oid: number,
@@ -111,7 +109,7 @@ export class CourseController {
   }
 
   @Get(':cid/questions')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getAsyncQuestions(
     @Param('cid') cid: number,
   ): Promise<AsyncQuestionResponse> {
@@ -120,6 +118,9 @@ export class CourseController {
         courseId: cid,
       },
       relations: ['creator', 'course', 'images'],
+      order: {
+        createdAt: 'DESC',
+      },
     });
     if (!all) {
       throw NotFoundException;
@@ -194,7 +195,7 @@ export class CourseController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.STUDENT, Role.TA)
   async get(
     @Param('id') id: number,
@@ -316,7 +317,7 @@ export class CourseController {
   }
 
   @Patch(':id/edit_course')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async editCourseInfo(
     @Param('id') courseId: number,
@@ -326,7 +327,7 @@ export class CourseController {
   }
 
   @Post(':id/ta_location/:room')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async checkIn(
     @Param('id') courseId: number,
@@ -442,7 +443,7 @@ export class CourseController {
   }
 
   @Post(':id/generate_queue/:room')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async generateQueue(
     @Param('id') courseId: number,
@@ -510,7 +511,7 @@ export class CourseController {
   }
 
   @Delete(':id/ta_location/:room')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async checkOut(
     @Param('id') courseId: number,
@@ -590,111 +591,8 @@ export class CourseController {
     return { queueId: queue.id };
   }
 
-  @Get(':id/course_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
-  @Roles(Role.PROFESSOR)
-  async getCourseOverrides(
-    @Param('id') courseId: number,
-  ): Promise<GetCourseOverridesResponse> {
-    const resp = await UserCourseModel.find({
-      where: { courseId, override: true },
-      relations: ['user'],
-    });
-
-    if (resp === null || resp === undefined) {
-      throw new HttpException(
-        ERROR_MESSAGES.courseController.courseModelError,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return {
-      data: resp.map((row) => ({
-        id: row.id,
-        role: row.role,
-        name: row.user.name,
-        email: row.user.email,
-      })),
-    };
-  }
-
-  @Post(':id/update_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
-  @Roles(Role.PROFESSOR)
-  async addOverride(
-    @Param('id') courseId: number,
-    @Body() overrideInfo: UpdateCourseOverrideBody,
-  ): Promise<UpdateCourseOverrideResponse> {
-    const user = await UserModel.findOne({
-      where: { email: overrideInfo.email },
-    });
-    if (!user)
-      throw new BadRequestException(
-        ERROR_MESSAGES.courseController.noUserFound,
-      );
-    const userId = user.id;
-    let userCourse = await UserCourseModel.findOne({
-      where: { courseId, userId },
-    });
-    if (!userCourse) {
-      try {
-        userCourse = await UserCourseModel.create({
-          userId,
-          courseId,
-          role: overrideInfo.role,
-          override: true,
-        }).save();
-      } catch (err) {
-        console.error(err);
-        throw new HttpException(
-          ERROR_MESSAGES.courseController.createCourse,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    } else {
-      userCourse.override = true;
-      userCourse.role = overrideInfo.role;
-      try {
-        await userCourse.save();
-      } catch (err) {
-        console.error(err);
-        throw new HttpException(
-          ERROR_MESSAGES.courseController.updateCourse,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-    return {
-      id: userCourse.id,
-      role: userCourse.role,
-      name: user.name,
-      email: user.email,
-    };
-  }
-
-  @Delete(':id/update_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
-  @Roles(Role.PROFESSOR)
-  async deleteOverride(
-    @Param('id') courseId: number,
-    @Body() overrideInfo: UpdateCourseOverrideBody,
-  ): Promise<void> {
-    const user = await UserModel.findOne({
-      where: { email: overrideInfo.email },
-    });
-    if (!user)
-      throw new BadRequestException(
-        ERROR_MESSAGES.courseController.noUserFound,
-      );
-    const userId = user.id;
-    const userCourse = await UserCourseModel.findOne({
-      where: { courseId, userId, override: true },
-    });
-    await this.courseService.removeUserFromCourse(userCourse);
-  }
-
   @Delete(':id/withdraw_course')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async withdrawCourse(
     @Param('id') courseId: number,
     @UserId() userId: number,
@@ -706,7 +604,7 @@ export class CourseController {
   }
 
   @Post('/register_courses')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async registerCourses(
     @Body() body: RegisterCourseParams[],
@@ -716,7 +614,7 @@ export class CourseController {
   }
 
   @Get(':id/ta_check_in_times')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async taCheckinTimes(
     @Param('id') courseId: number,
@@ -739,7 +637,7 @@ export class CourseController {
   }
 
   @Get(':id/get_user_info/:page/:role?')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async getUserInfo(
     @Param('id') courseId: number,
@@ -762,7 +660,7 @@ export class CourseController {
   }
 
   @Post(':id/self_enroll')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async toggleSelfEnroll(@Param('id') courseId: number): Promise<void> {
     const course = await CourseModel.findOne(courseId);
@@ -771,7 +669,7 @@ export class CourseController {
   }
 
   @Post('enroll_by_invite_code/:code')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async enrollCourseByInviteCode(
     @Param('code') code: string,
     @Body() body: UBCOuserParam,
@@ -833,7 +731,7 @@ export class CourseController {
   }
 
   @Post(':id/add_student/:sid')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async addStudent(
     @Res() res: Response,
@@ -894,6 +792,32 @@ export class CourseController {
       .catch((err) => {
         res.status(HttpStatus.BAD_REQUEST).send({ message: err.message });
       });
+    return;
+  }
+
+  @Patch(':id/update_user_role/:uid/:role')
+  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @Roles(Role.PROFESSOR)
+  async updateUserRole(
+    @Param('id') courseId: number,
+    @Param('uid') userId: number,
+    @Param('role') role: Role,
+    @Res() res: Response,
+  ): Promise<void> {
+    const user = await UserCourseModel.findOne({ userId, courseId });
+
+    if (!user) {
+      res.status(HttpStatus.NOT_FOUND).send({ message: 'User not found' });
+      return;
+    }
+
+    try {
+      await UserCourseModel.update({ courseId, userId }, { role });
+    } catch (err) {
+      res.status(HttpStatus.BAD_REQUEST).send({ message: err.message });
+      return;
+    }
+    res.status(HttpStatus.OK).send({ message: 'Updated user course role' });
     return;
   }
 

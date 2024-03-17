@@ -17,7 +17,6 @@ import PropTypes from 'prop-types'
 import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
-import { useCourse } from '../../../hooks/useCourse'
 
 const Container = styled.div`
   flex: 1;
@@ -67,6 +66,8 @@ export default function AsyncQuestionsPage({
     [],
   )
 
+  const [sortBy, setSortBy] = useState('newest')
+
   const profile = useProfile()
 
   const onTypeChange = (selectedTypes) => {
@@ -115,12 +116,35 @@ export default function AsyncQuestionsPage({
         return questionTypeInput.every((type) => questionTypes.includes(type))
       })
     }
-    setDisplayedQuestions(displayedQuestions)
+
+    setDisplayedQuestions(applySort(displayedQuestions))
+
     const shownQuestionTypes = displayedQuestions
       .map((question) => question.questionTypes)
       .flat()
     setQuestionsTypeState(shownQuestionTypes)
-  }, [visibleFilter, statusFilter, questions, questionTypeInput])
+  }, [visibleFilter, statusFilter, questions, questionTypeInput, sortBy])
+
+  function applySort(displayedQuestions: AsyncQuestion[]) {
+    return displayedQuestions.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        case 'oldest':
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          )
+        case 'most-votes':
+          return b.votesSum - a.votesSum
+        case 'least-votes':
+          return a.votesSum - b.votesSum
+        default:
+          return 0
+      }
+    })
+  }
 
   function RenderQueueInfoCol(): ReactElement {
     return (
@@ -200,7 +224,7 @@ export default function AsyncQuestionsPage({
         mode="multiple"
         placeholder="Select question types"
         onChange={onTypeChange}
-        style={{ width: '100%' }}
+        style={{ width: '50%' }}
         value={questionTypeInput}
         tagRender={(props) => {
           const type = questionsTypeState.find(
@@ -232,6 +256,7 @@ export default function AsyncQuestionsPage({
           value={statusFilter}
           onChange={(value) => setStatusFilter(value)}
           className="select-filter"
+          style={{ width: 200 }}
         >
           <Select.Option value="all">Question Status</Select.Option>
           <Select.Option value="helped">Answered</Select.Option>
@@ -249,24 +274,12 @@ export default function AsyncQuestionsPage({
           value={visibleFilter}
           onChange={(value) => setVisibleFilter(value)}
           className="select-filter"
+          style={{ width: 200 }}
         >
           <Select.Option value="all">Question Visibility</Select.Option>
           <Select.Option value="visible">Visible Only</Select.Option>
           <Select.Option value="hidden">Hidden Only</Select.Option>
         </Select>
-      </>
-    )
-  }
-
-  const RenderCreatorFilter = () => {
-    return (
-      <>
-        <Select
-          id="creator-filter-select"
-          value={creatorFilter}
-          onChange={(value) => setCreatorFilter(value)}
-          className="select-filter"
-        ></Select>
       </>
     )
   }
@@ -284,6 +297,26 @@ export default function AsyncQuestionsPage({
     )
   }
 
+  const RenderSortBy = () => {
+    return (
+      <div className="mb-1 flex items-center gap-x-4">
+        <h2 className="flex-shrink-0">Sort By</h2>
+        <Select
+          id="sort-by-select"
+          value={sortBy}
+          className="sort-by-select"
+          style={{ width: 200 }}
+          onChange={(value) => setSortBy(value)}
+        >
+          <Select.Option value="newest">Newest</Select.Option>
+          <Select.Option value="oldest">Oldest</Select.Option>
+          <Select.Option value="most-votes">Most Votes</Select.Option>
+          <Select.Option value="least-votes">Least Votes</Select.Option>
+        </Select>
+      </div>
+    )
+  }
+
   return (
     <>
       <Container>
@@ -291,6 +324,7 @@ export default function AsyncQuestionsPage({
         <VerticalDivider />
         <QueueListContainer>
           <RenderFilters />
+          <RenderSortBy />
 
           <RenderQuestionList questions={displayedQuestions} />
         </QueueListContainer>
