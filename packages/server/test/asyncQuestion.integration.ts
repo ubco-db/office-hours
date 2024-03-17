@@ -1,5 +1,5 @@
 import { setupIntegrationTest } from './util/testUtils';
-import { asyncQuestionModule } from '../src/asyncQuestion/asyncQuestion.module';
+import { asyncQuestionTestingModule } from '../src/asyncQuestion/asyncQuestion.module';
 import {
   AsyncQuestionFactory,
   CourseFactory,
@@ -9,7 +9,7 @@ import {
 import { asyncQuestionStatus } from '@koh/common';
 
 describe('Async Question Integration', () => {
-  const supertest = setupIntegrationTest(asyncQuestionModule);
+  const supertest = setupIntegrationTest(asyncQuestionTestingModule);
 
   describe('POST /asyncQuestions/:qid/:vote', () => {
     it('should vote on a question', async () => {

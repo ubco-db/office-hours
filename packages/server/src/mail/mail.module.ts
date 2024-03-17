@@ -3,6 +3,7 @@ import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailController } from './mail.controller';
+import { sendEmailAsync } from '@koh/common';
 @Global()
 @Module({
   controllers: [MailController],
@@ -34,6 +35,7 @@ export class MailModule {}
       // Use an empty class for a mock implementation
       useValue: {
         sendUserVerificationCode: () => 'fake code',
+        sendEmail: (_emailPost: sendEmailAsync) => 'fake email',
       },
     },
   ],
