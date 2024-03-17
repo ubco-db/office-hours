@@ -75,6 +75,7 @@ export class User {
   userRole!: string
   organization?: OrganizationUserPartial
   accountType!: AccountType
+  emailVerified!: boolean
 }
 
 export class OrganizationResponse {
@@ -119,6 +120,30 @@ export class UserPartial {
 export type CoursePartial = {
   id: number
   name: string
+}
+
+export class RegistrationTokenDetails {
+  @IsString()
+  token!: string
+}
+
+export class PasswordRequestResetBody {
+  @IsString()
+  email!: string
+
+  @IsString()
+  recaptchaToken!: string
+
+  @IsInt()
+  organizationId!: number
+}
+
+export class PasswordRequestResetWithTokenBody {
+  @IsString()
+  password!: string
+
+  @IsString()
+  confirmPassword!: string
 }
 
 /**
@@ -303,16 +328,17 @@ export class Question {
   @Type(() => Date)
   closedAt?: Date
 
-  questionTypes?: AddQuestionTypeParams[]
-
-  groupable!: boolean
+  @Type(() => QuestionTypeParams)
+  questionTypes?: QuestionTypeParams[]
 
   status!: QuestionStatus
+
+  groupable!: boolean
 
   location?: string
 }
 
-export const QuestionTypes: AddQuestionTypeParams[] = [
+export const QuestionTypes: QuestionTypeParams[] = [
   {
     id: 1,
     cid: 1,
@@ -438,19 +464,8 @@ export class AsyncQuestion {
   creator?: UserPartial
 
   @IsOptional()
-  images?: Image[]
-
-  @IsOptional()
-  @IsString()
-  questionAbstract?: string
-
-  @IsOptional()
   @IsString()
   questionText?: string
-
-  @IsOptional()
-  @IsString()
-  answerText?: string
 
   @IsOptional()
   @IsInt()
@@ -462,20 +477,57 @@ export class AsyncQuestion {
   @Type(() => Date)
   createdAt?: Date
 
-  @Type(() => Date)
-  closedAt?: Date
-
   @IsOptional()
-  @IsString()
-  questionType?: string
+  questionTypes?: QuestionTypeParams[]
 
   @IsOptional()
   @IsString()
   status?: asyncQuestionStatus
 
   @IsOptional()
+  images?: Image[]
+
+  @IsOptional()
+  @IsString()
+  questionAbstract?: string
+
+  @IsOptional()
+  @IsString()
+  answerText?: string
+
+  @IsOptional()
+  @IsString()
+  aiAnswerText?: string
+
+  @Type(() => Date)
+  closedAt?: Date
+
+  @IsOptional()
   @IsBoolean()
   visible?: boolean
+
+  @IsOptional()
+  @IsArray()
+  votes?: AsyncQuestionVotes[]
+
+  @IsOptional()
+  @IsInt()
+  votesSum?: number
+}
+
+export class AsyncQuestionVotes {
+  @IsOptional()
+  @IsInt()
+  id?: number
+
+  @IsInt()
+  questionId!: number
+
+  @IsInt()
+  userId!: number
+
+  @IsInt()
+  vote!: number
 }
 
 export class Image {
@@ -522,8 +574,12 @@ export class GetProfileResponse extends User {}
 export class UBCOloginParam {
   @IsString()
   email!: string
+
   @IsString()
   password!: string
+
+  @IsString()
+  recaptchaToken!: string
 }
 export class UBCOuserParam {
   @IsString()
@@ -645,7 +701,7 @@ export class questions {
   text?: string
 
   @IsArray()
-  questionTypes?: AddQuestionTypeParams[]
+  questionTypes?: QuestionTypeParams[]
 
   @IsDate()
   @Type(() => Date)
@@ -1001,7 +1057,7 @@ export class CreateQuestionParams {
 
   @IsArray()
   @IsOptional()
-  questionTypes?: AddQuestionTypeParams[]
+  questionTypes?: QuestionTypeParams[]
 
   @IsBoolean()
   groupable!: boolean
@@ -1025,7 +1081,7 @@ export class UpdateQuestionParams {
 
   @IsArray()
   @IsOptional()
-  questionTypes?: AddQuestionTypeParams[]
+  questionTypes?: QuestionTypeParams[]
 
   @IsBoolean()
   @IsOptional()
@@ -1082,7 +1138,7 @@ export class UpdateQueueParams {
   allowQuestions?: boolean
 }
 
-export class AddQuestionTypeParams {
+export class QuestionTypeParams {
   @IsInt()
   @IsOptional()
   id?: number
@@ -1098,6 +1154,10 @@ export class AddQuestionTypeParams {
   @IsString()
   @IsOptional()
   color?: string
+
+  @IsInt()
+  @IsOptional()
+  queueId?: number
 }
 
 export class TACheckinTimesResponse {
@@ -1245,6 +1305,33 @@ export class RegisterCourseParams {
 
   @IsString()
   timezone!: string
+}
+
+export class AccountRegistrationParams {
+  @IsString()
+  firstName!: string
+
+  @IsString()
+  lastName!: string
+
+  @IsString()
+  email!: string
+
+  @IsString()
+  password!: string
+
+  @IsString()
+  confirmPassword!: string
+
+  @IsNumber()
+  organizationId!: number
+
+  @IsNumber()
+  @IsOptional()
+  sid?: number
+
+  @IsString()
+  recaptchaToken!: string
 }
 
 export class EditCourseInfoParams {
@@ -1508,6 +1595,7 @@ export const ERROR_MESSAGES = {
       noNewQuestions: 'Queue not allowing new questions',
       closedQueue: 'Queue is closed',
       oneQuestionAtATime: "You can't create more than one question at a time.",
+      invalidQuestionType: 'Invalid question type',
     },
     updateQuestion: {
       fsmViolation: (

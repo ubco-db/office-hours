@@ -36,9 +36,10 @@ import { QueueSSEService } from './queue-sse.service';
 import { QueueModel } from './queue.entity';
 import { QueueService } from './queue.service';
 import { QuestionModel } from '../question/question.entity';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('queues')
-@UseGuards(JwtAuthGuard, QueueRolesGuard)
+@UseGuards(JwtAuthGuard, QueueRolesGuard, EmailVerifiedGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class QueueController {
   constructor(

@@ -55,12 +55,18 @@ import { SemesterModel } from 'semester/semester.entity';
 import { In } from 'typeorm';
 import { UserCourseModel } from 'profile/user-course.entity';
 import { CourseSettingsModel } from 'course/course_settings.entity';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('organization')
 export class OrganizationController {
   constructor(private organizationService: OrganizationService) {}
   @Post(':oid/create_course')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN, OrganizationRole.PROFESSOR)
   async createCourse(
     @Param('oid') oid: number,
@@ -195,7 +201,12 @@ export class OrganizationController {
   }
 
   @Patch(':oid/update_course/:cid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN, OrganizationRole.PROFESSOR)
   async updateCourse(
     @Res() res: Response,
@@ -356,7 +367,12 @@ export class OrganizationController {
   }
 
   @Patch(':oid/update_course_access/:cid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   async updateCourseAccess(
     @Res() res: Response,
@@ -389,7 +405,7 @@ export class OrganizationController {
   }
 
   @Get(':oid/get_course/:cid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard)
+  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, EmailVerifiedGuard)
   @Roles(OrganizationRole.ADMIN, OrganizationRole.PROFESSOR)
   async getOrganizationCourse(
     @Res() res: Response,
@@ -411,7 +427,7 @@ export class OrganizationController {
   }
 
   @Get(':oid/get_banner/:photoUrl')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getBannerImage(
     @Param('photoUrl') photoUrl: string,
     @Param('oid') oid: number,
@@ -442,7 +458,7 @@ export class OrganizationController {
   }
 
   @Get(':oid/get_logo/:photoUrl')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getLogoImage(
     @Param('photoUrl') photoUrl: string,
     @Param('oid') oid: number,
@@ -473,7 +489,12 @@ export class OrganizationController {
   }
 
   @Post(':oid/upload_banner')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -548,7 +569,12 @@ export class OrganizationController {
   }
 
   @Post(':oid/upload_logo')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -623,7 +649,12 @@ export class OrganizationController {
   }
 
   @Patch(':oid/update_account_access/:uid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   async updateUserAccountAccess(
     @Res() res: Response,
@@ -663,7 +694,7 @@ export class OrganizationController {
   }
 
   @Post(':oid/add_course/:cid')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async addCourseToOrganization(
     @Res() res: Response,
     @Param('oid') oid: string,
@@ -725,7 +756,7 @@ export class OrganizationController {
   }
 
   @Get(':oid')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async get(@Res() res: Response, @Param('oid') oid: string): Promise<void> {
     OrganizationModel.findOne({
       where: { id: oid },
@@ -745,7 +776,12 @@ export class OrganizationController {
   }
 
   @Patch(':oid/update_user_role')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   async updateUserOrganizationRole(
     @Res() res: Response,
@@ -811,7 +847,7 @@ export class OrganizationController {
   }
 
   @Patch(':oid/update')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard)
+  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, EmailVerifiedGuard)
   @Roles(OrganizationRole.ADMIN)
   async update(
     @Res() res: Response,
@@ -880,7 +916,7 @@ export class OrganizationController {
   }
 
   @Get(':oid/stats')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard)
+  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, EmailVerifiedGuard)
   @Roles(OrganizationRole.ADMIN)
   async getStats(@Param('oid') oid: number): Promise<{
     members: number;
@@ -914,7 +950,12 @@ export class OrganizationController {
   }
 
   @Delete(':oid/drop_user_courses/:uid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   async deleteUserCourses(
     @Res() res: Response,
@@ -958,7 +999,12 @@ export class OrganizationController {
   }
 
   @Delete(':oid/delete_profile_picture/:uid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   async deleteUserProfilePicture(
     @Res() res: Response,
@@ -1009,7 +1055,12 @@ export class OrganizationController {
   }
 
   @Patch(':oid/edit_user/:uid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   async patchUserInfo(
     @Res() res: Response,
@@ -1093,7 +1144,12 @@ export class OrganizationController {
   }
 
   @Get(':oid/get_user/:uid')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, OrganizationGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    OrganizationRolesGuard,
+    OrganizationGuard,
+    EmailVerifiedGuard,
+  )
   @Roles(OrganizationRole.ADMIN)
   async getUser(
     @Res() res: Response,
@@ -1114,7 +1170,7 @@ export class OrganizationController {
   }
 
   @Get(':oid/get_users/:page?')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard)
+  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, EmailVerifiedGuard)
   @Roles(OrganizationRole.ADMIN)
   async getUsers(
     @Param('oid') oid: number,
@@ -1138,7 +1194,7 @@ export class OrganizationController {
   }
 
   @Get(':oid/get_courses/:page?')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard)
+  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, EmailVerifiedGuard)
   @Roles(OrganizationRole.ADMIN)
   async getCourses(
     @Param('oid') oid: number,
@@ -1162,7 +1218,7 @@ export class OrganizationController {
   }
 
   @Get(':oid/get_professors')
-  @UseGuards(JwtAuthGuard, OrganizationRolesGuard)
+  @UseGuards(JwtAuthGuard, OrganizationRolesGuard, EmailVerifiedGuard)
   @Roles(OrganizationRole.ADMIN)
   async getProfessors(@Param('oid') oid: number): Promise<any> {
     const orgProfs = OrganizationUserModel.find({
@@ -1176,7 +1232,7 @@ export class OrganizationController {
   }
 
   @Post(':oid/add_member/:uid')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async addUserToOrganization(
     @Res() res: Response,
     @Param('oid') oid: string,
