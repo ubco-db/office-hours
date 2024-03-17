@@ -186,7 +186,6 @@ export function AsyncQuestionForm({
   }
 
   const onFinish = (value) => {
-    console.log(value)
     if (!question) {
       createQuestion(value)
     } else {
@@ -206,7 +205,7 @@ export function AsyncQuestionForm({
     let isCancelled = false
 
     const fetchQuestions = async () => {
-      const questions = await API.questions.questionTypes(courseId)
+      const questions = await API.questionType.getQuestionTypes(courseId, null)
       if (!isCancelled) {
         setQuestionsTypeState(questions)
       }

@@ -27,9 +27,10 @@ import { UserModel } from 'profile/user.entity';
 import { Roles } from 'decorators/roles.decorator';
 import { CourseRole } from '../decorators/course-role.decorator';
 import { Filter } from './insight-objects';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('insights')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class InsightsController {
   constructor(

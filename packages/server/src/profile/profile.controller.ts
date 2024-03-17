@@ -5,7 +5,6 @@ import {
   // isProd,
   QuestionStatusKeys,
   UpdateProfileParams,
-  PROD_URL,
   AccountType,
 } from '@koh/common';
 import {
@@ -20,10 +19,8 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   Res,
   ServiceUnavailableException,
-  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -46,11 +43,11 @@ import { UserCourseModel } from './user-course.entity';
 import { Role } from '@koh/common';
 import { throwError } from 'rxjs';
 import { QuestionModel } from 'question/question.entity';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'mail/mail.service';
 import { OrganizationService } from '../organization/organization.service';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 @Controller('profile')
 export class ProfileController {
   constructor(
@@ -63,129 +60,10 @@ export class ProfileController {
     private organizationService: OrganizationService,
   ) {}
 
-  //forgetpassword route used for creating links to be sent to the email
-  @Post('/forgetpassword/:e')
-  async forgetpassword(
-    @Res() res: Response,
-    @Param('e') e: string,
-  ): Promise<any> {
-    UserModel.findOne({
-      where: { email: e },
-    })
-      .then(async (user) => {
-        if (!user) {
-          throw new HttpException(
-            ERROR_MESSAGES.profileController.accountNotAvailable,
-            HttpStatus.NOT_FOUND,
-          );
-        }
-        const token = await this.jwtService.signAsync(
-          { userId: user.id },
-          { expiresIn: 60 },
-        );
-        if (token === null || token === undefined) {
-          console.error('Temporary JWT is invalid');
-          throw new HttpException(
-            ERROR_MESSAGES.loginController.invalidTempJWTToken,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
-        return res.status(200).send({ token, e });
-      })
-      .catch((err) => {
-        res.status(500).send({ message: err });
-      });
-  }
-
-  // enter reset page
-  @Get('/enter_resetpassword')
-  async enterReset(
-    @Res() res: Response,
-    @Query('token') token: string,
-  ): Promise<void> {
-    const isVerified = await this.jwtService.verifyAsync(token);
-
-    if (!isVerified) {
-      throw new UnauthorizedException();
-    }
-    const payload = this.jwtService.decode(token) as { userId: number };
-    this.enter(res, payload.userId);
-  }
-
-  private async enter(res: Response, userId: number) {
-    // Expires in 6 minutes
-    const authToken = await this.jwtService.signAsync({
-      userId,
-      expiresIn: 60 * 10,
-    });
-    const user = await UserModel.findOne({
-      where: { id: userId },
-    });
-    if (authToken === null || authToken === undefined) {
-      console.error('Authroziation JWT is invalid');
-      throw new HttpException(
-        ERROR_MESSAGES.loginController.invalidTempJWTToken,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-    //final step to send below link to user's email
-    // currently the following code are commented due to problems in configurations of env.
-    // if (isProd()) {
-    //   console.log('prod mode');
-    //   this.profileService.mail(
-    //     PROD_URL + `/forgetpassword/reset/${authToken}`,
-    //     user.email,
-    //   );
-    // } else {
-    //   this.profileService.mail(
-    //     this.configService.get<string>('DOMAIN') +
-    //       `/forgetpassword/reset/${authToken}`,
-    //     user.email,
-    //   );
-    // }
-    this.profileService.mail(
-      PROD_URL + `/forgetpassword/reset/${authToken}`,
-      user.email,
-    );
-  }
-
-  //two functions, one is verify user through authToken, another is to update password using userId and new password
-  @Get('verify_token')
-  async verifyToken(@Query('token') token: string): Promise<boolean> {
-    const isVerified = await this.jwtService.verifyAsync(token).catch(() => {
-      return false;
-    });
-    if (!isVerified) {
-      return false;
-    }
-    return true;
-  }
-
-  @Patch(':password/update_password')
-  async updatePassword(
-    @Param('password') p: string,
-    @Query('token') token: string,
-  ): Promise<void> {
-    const payload = this.jwtService.decode(token) as { userId: number };
-    UserModel.findOne({
-      where: { id: payload.userId },
-    }).then(async (user) => {
-      if (!user) {
-        throw new NotFoundException();
-      } else {
-        console.log(p);
-        const salt = await bcrypt.genSalt(10);
-        const newPassword = await bcrypt.hash(p, salt);
-        user = Object.assign(user, { password: newPassword });
-        await user.save();
-      }
-    });
-  }
-
   //potential problem-should fix later. Currently checking whether question in database, but student can be in different queues(so find with both queues and user id)
   //get all student in course
   @Get(':c/id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getAllStudents(
     @Param('c') c: number,
     @Res() res: Response,
@@ -237,7 +115,7 @@ export class ProfileController {
   }
 
   @Get(':id/inQueue')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async inQueue(
     @Param('id') id: number,
     @Res() res: Response,
@@ -321,6 +199,7 @@ export class ProfileController {
       'insights',
       'userRole',
       'accountType',
+      'emailVerified',
     ]);
 
     if (userResponse === null || userResponse === undefined) {
@@ -356,7 +235,7 @@ export class ProfileController {
   }
 
   @Patch()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async patch(
     @Res() res: Response,
     @Body() userPatch: UpdateProfileParams,
@@ -422,7 +301,7 @@ export class ProfileController {
   }
 
   @Post('/upload_picture')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -469,7 +348,7 @@ export class ProfileController {
   }
 
   @Get('/get_picture/:photoURL')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getImage(
     @Param('photoURL') photoURL: string,
     @Res() res: Response,
@@ -494,7 +373,7 @@ export class ProfileController {
   }
 
   @Delete('/delete_profile_picture')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async deleteProfilePicture(@User() user: UserModel): Promise<void> {
     if (user.photoURL) {
       if (user.photoURL.startsWith('http')) {

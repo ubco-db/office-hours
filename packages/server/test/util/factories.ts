@@ -21,7 +21,7 @@ import { ProfSectionGroupsModel } from 'login/prof-section-groups.entity';
 import { OrganizationModel } from '../../src/organization/organization.entity';
 import { InteractionModel } from 'chatbot/interaction.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { AsyncQuestionVotesModel } from 'asyncQuestion/asyncQuestionVotes.entity';
@@ -30,6 +30,7 @@ export const UserFactory = new Factory(UserModel)
   .attr('email', `user@ubc.ca`)
   .attr('firstName', 'User')
   .attr('lastName', 'Person')
+  .attr('emailVerified', true)
   .attr('hideInsights', []);
 
 export const StudentCourseFactory = new Factory(UserCourseModel).attr(
@@ -79,6 +80,8 @@ export const QueueFactory = new Factory(QueueModel)
 export const QuestionTypeFactory = new Factory(QuestionTypeModel)
   .attr('cid', 1)
   .attr('name', 'Question Type')
+  .assocOne('queue', QueueFactory)
+  .attr('queueId', 1)
   .attr('color', '#000000')
   .attr('questions', []);
 

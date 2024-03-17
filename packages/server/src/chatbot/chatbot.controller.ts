@@ -15,9 +15,10 @@ import { InteractionModel } from './interaction.entity';
 import { ChatbotQuestionModel } from './question.entity';
 import { InteractionParams } from '@koh/common';
 import { ChatbotDocumentModel } from './chatbotDocument.entity';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('chatbot')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 export class ChatbotController {
   constructor(private readonly ChatbotService: ChatbotService) {}
 

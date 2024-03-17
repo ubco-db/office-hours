@@ -51,7 +51,6 @@ export function AnswerQuestionModal({
           type="primary"
           onClick={async () => {
             const value = await form.validateFields()
-            console.log(value)
             postReponse(value)
             onClose()
           }}

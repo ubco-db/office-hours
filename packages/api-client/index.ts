@@ -128,15 +128,8 @@ class APIClient {
       this.req('GET', `/api/v1/profile/${sid}/student`, undefined),
     inQueue: async (sid: number): Promise<boolean> =>
       this.req('GET', `/api/v1/profile/${sid}/inQueue`, undefined),
-    updatePassword: async (password: string, token: string): Promise<void> =>
-      this.req(
-        'PATCH',
-        `/api/v1/profile/${password}/update_password?token=${token}`,
-        undefined,
-      ),
-    verifyResetPassword: async (token: string): Promise<boolean> =>
-      this.req('GET', `/api/v1/profile/verify_token?token=${token}`, undefined),
   }
+
   chatbot = {
     createInteraction: async (body: {
       courseId: number
@@ -378,25 +371,24 @@ class APIClient {
         undefined,
         { queueId },
       ),
-    questionTypes: async (courseId: number): Promise<any> =>
-      this.req('GET', `/api/v1/questions/${courseId}/questionType`, undefined),
+  }
+  questionType = {
+    getQuestionTypes: async (
+      courseId: number,
+      queueId: number | null,
+    ): Promise<any> =>
+      this.req('GET', `/api/v1/questionType/${courseId}/${queueId}`, undefined),
     addQuestionType: async (
       courseId: number,
       body: QuestionTypeParams,
     ): Promise<any> =>
-      this.req(
-        'POST',
-        `/api/v1/questions/${courseId}/questionType`,
-        undefined,
-        body,
-      ),
+      this.req('POST', `/api/v1/questionType/${courseId}`, undefined, body),
     deleteQuestionType: async (
       courseId: number,
-      questionType: string,
+      questionTypeId: number,
     ): Promise<void> =>
-      this.req('DELETE', `/api/v1/questions/${courseId}/${questionType}`),
+      this.req('DELETE', `/api/v1/questionType/${courseId}/${questionTypeId}`),
   }
-
   calendar = {
     addCalendar: async (body: Calendar): Promise<Calendar> =>
       this.req('POST', `/api/v1/calendar`, undefined, body),

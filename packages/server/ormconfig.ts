@@ -14,7 +14,7 @@ import { QueueModel } from './src/queue/queue.entity';
 import { AlertModel } from './src/alerts/alerts.entity';
 import { LastRegistrationModel } from './src/login/last-registration-model.entity';
 import { ProfSectionGroupsModel } from './src/login/prof-section-groups.entity';
-import { QuestionTypeModel } from './src/question/question-type.entity';
+import { QuestionTypeModel } from './src/questionType/question-type.entity';
 import { AsyncQuestionModel } from './src/asyncQuestion/asyncQuestion.entity';
 import { ChatbotQuestionModel } from './src/chatbot/question.entity';
 import { InteractionModel } from './src/chatbot/interaction.entity';
@@ -26,6 +26,8 @@ import { OrganizationModel } from './src/organization/organization.entity';
 import { OrganizationCourseModel } from './src/organization/organization-course.entity';
 import { ChatbotDocumentModel } from './src/chatbot/chatbotDocument.entity';
 import { AsyncQuestionVotesModel } from './src/asyncQuestion/asyncQuestionVotes.entity';
+import { UserTokenModel } from './src/profile/user-token.entity';
+
 config();
 
 // Options only used whe run via CLI
@@ -70,6 +72,7 @@ const typeorm = {
     OrganizationCourseModel,
     ChatbotDocumentModel,
     AsyncQuestionVotesModel,
+    UserTokenModel,
   ],
   keepConnectionAlive: true,
   logging:

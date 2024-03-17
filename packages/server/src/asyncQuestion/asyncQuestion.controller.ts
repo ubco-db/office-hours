@@ -30,9 +30,10 @@ import { CourseModel } from 'course/course.entity';
 import { MailService } from 'mail/mail.service';
 import { Response } from 'express';
 import { AsyncQuestionVotesModel } from './asyncQuestionVotes.entity';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 @Controller('asyncQuestions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 export class asyncQuestionController {
   constructor(
     private mailService: MailService,
