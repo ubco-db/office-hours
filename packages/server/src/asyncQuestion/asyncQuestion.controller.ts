@@ -107,7 +107,7 @@ export class asyncQuestionController {
 
     if (!c) {
       res
-        .status(404)
+        .status(HttpStatus.NOT_FOUND)
         .send({ message: ERROR_MESSAGES.questionController.notFound });
       return;
     }
@@ -126,7 +126,7 @@ export class asyncQuestionController {
         visible: body.visible || false,
         createdAt: new Date(),
       }).save();
-      res.status(201).send(question);
+      res.status(HttpStatus.CREATED).send(question);
       return;
     } catch (err) {
       console.error(err);
