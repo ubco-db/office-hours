@@ -88,7 +88,6 @@ export default function Edit(): ReactElement {
     )
 
     if (error) {
-      console.log('Error: ', error)
       return (
         <DefaultErrorPage
           statusCode={error.response.status}
