@@ -26,6 +26,7 @@ import {
   OrganizationFactory,
   OrganizationUserFactory,
   OrganizationCourseFactory,
+  QuestionTypeFactory,
 } from '../../test/util/factories';
 import { CourseModel } from '../course/course.entity';
 import { NonProductionGuard } from '../guards/non-production.guard';
@@ -34,7 +35,7 @@ import { QueueModel } from '../queue/queue.entity';
 import { SeedService } from './seed.service';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { OrganizationUserModel } from 'organization/organization-user.entity';
-import { QuestionTypeModel } from 'question/question-type.entity';
+import { QuestionTypeModel } from 'questionType/question-type.entity';
 
 @UseGuards(NonProductionGuard)
 @Controller('seeds')
@@ -48,7 +49,7 @@ export class SeedController {
   async deleteAll(): Promise<string> {
     // NOTE: order of deletion matters for tables with foreign keys.
     // Children tables should be removed as early as possible.
-
+    await this.seedService.deleteAll(QuestionTypeModel);
     await this.seedService.deleteAll(OrganizationCourseModel);
     await this.seedService.deleteAll(OrganizationUserModel);
     await this.seedService.deleteAll(LastRegistrationModel);
@@ -124,6 +125,7 @@ export class SeedController {
         firstName: 'kevin',
         lastName: 'wang',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -138,6 +140,7 @@ export class SeedController {
         firstName: 'Justin',
         lastName: 'Schultz',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -153,6 +156,7 @@ export class SeedController {
         firstName: 'Big',
         lastName: 'Boy',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -167,6 +171,7 @@ export class SeedController {
         firstName: 'Small',
         lastName: 'Boy',
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -186,6 +191,7 @@ export class SeedController {
           'TotalStudents',
         ],
         password: hashedPassword1,
+        emailVerified: true,
       });
 
       await UserCourseFactory.create({
@@ -252,17 +258,26 @@ export class SeedController {
       allowQuestions: true,
     });
 
+    const questionType = await QuestionTypeFactory.create({
+      queue: queue,
+    });
+
     await QuestionFactory.create({
       queue: queue,
       createdAt: new Date(Date.now() - 3500000),
+      questionTypes: [questionType],
     });
+
     await QuestionFactory.create({
       queue: queue,
       createdAt: new Date(Date.now() - 2500000),
+      questionTypes: [questionType],
     });
+
     await QuestionFactory.create({
       queue: queue,
       createdAt: new Date(Date.now() - 1500000),
+      questionTypes: [questionType],
     });
 
     const eventTA = await UserModel.findOne({
@@ -321,17 +336,24 @@ export class SeedController {
   async fillQueue(): Promise<string> {
     const queue = await QueueModel.findOne();
 
+    const questionType = await QuestionTypeFactory.create({
+      queue: queue,
+    });
+
     await QuestionFactory.create({
       queue: queue,
       createdAt: new Date(Date.now() - 1500000),
+      questionTypes: [questionType],
     });
     await QuestionFactory.create({
       queue: queue,
       createdAt: new Date(Date.now() - 1500000),
+      questionTypes: [questionType],
     });
     await QuestionFactory.create({
       queue: queue,
       createdAt: new Date(Date.now() - 1500000),
+      questionTypes: [questionType],
     });
 
     return 'Data successfully seeded';

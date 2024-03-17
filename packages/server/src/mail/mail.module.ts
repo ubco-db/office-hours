@@ -1,24 +1,20 @@
 import { MailerModule } from '@nestjs-modules/mailer';
-// import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
-import { config } from 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailController } from './mail.controller';
-@Global() // 👈 global module
+@Global()
 @Module({
   controllers: [MailController],
   imports: [
     MailerModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async () => ({
-        // transport: config.get("MAIL_TRANSPORT"),
-        // or
+      useFactory: async (configService: ConfigService) => ({
         transport: {
           service: 'gmail',
           auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS,
+            user: configService.get<string>('GMAIL_USER'),
+            pass: configService.get<string>('GMAIL_PASSWORD'),
           },
         },
       }),
@@ -29,3 +25,18 @@ import { MailController } from './mail.controller';
   exports: [MailService],
 })
 export class MailModule {}
+
+@Module({
+  controllers: [MailController],
+  providers: [
+    {
+      provide: MailService,
+      // Use an empty class for a mock implementation
+      useValue: {
+        sendUserVerificationCode: () => 'fake code',
+      },
+    },
+  ],
+  exports: [MailService],
+})
+export class MailTestingModule {}

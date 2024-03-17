@@ -1,5 +1,4 @@
 import {
-  AddQuestionTypeParams,
   ClosedQuestionStatus,
   CreateQuestionParams,
   CreateQuestionResponse,
@@ -10,6 +9,7 @@ import {
   OpenQuestionStatus,
   questions,
   QuestionStatusKeys,
+  QuestionTypeParams,
   Role,
   UpdateQuestionParams,
   UpdateQuestionResponse,
@@ -48,14 +48,15 @@ import { QuestionGroupModel } from './question-group.entity';
 import { QuestionRolesGuard } from '../guards/question-role.guard';
 import { QuestionModel } from './question.entity';
 import { QuestionService } from './question.service';
-import { QuestionTypeModel } from './question-type.entity';
+import { QuestionTypeModel } from '../questionType/question-type.entity';
 import { pick } from 'lodash';
+import { EmailVerifiedGuard } from 'guards/email-verified.guard';
 
 // NOTE: FIXME: EVERY REQUEST INTO QUESTIONCONTROLLER REQUIRES THE BODY TO HAVE A
 // FIELD questionId OR queueId! If not, stupid weird untraceable bugs will happen
 // and you will lose a lot of development time
 @Controller('questions')
-@UseGuards(JwtAuthGuard, QuestionRolesGuard)
+@UseGuards(JwtAuthGuard, QuestionRolesGuard, EmailVerifiedGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class QuestionController {
   constructor(
@@ -239,13 +240,31 @@ export class QuestionController {
         );
       }
     }
+    let types = [];
+    if (questionTypes) {
+      types = await Promise.all(
+        questionTypes.map(async (type) => {
+          const questionType = await QuestionTypeModel.findOne({
+            where: {
+              id: type.id,
+            },
+          });
+          if (!questionType) {
+            throw new BadRequestException(
+              ERROR_MESSAGES.questionController.createQuestion.invalidQuestionType,
+            );
+          }
+          return questionType;
+        }),
+      );
+    }
 
     try {
       const question = await QuestionModel.create({
         queueId: queueId,
         creator: user,
         text,
-        questionTypes,
+        questionTypes: types,
         groupable,
         status: QuestionStatusKeys.Drafting,
         createdAt: new Date(),
@@ -290,15 +309,20 @@ export class QuestionController {
       }
       question = Object.assign(question, body);
       if (body.questionTypes) {
-        question.questionTypes = body.questionTypes.map(
-          (type: AddQuestionTypeParams) => {
-            const questionType = new QuestionTypeModel();
-            questionType.id = type.id;
-            questionType.cid = type.cid;
-            questionType.name = type.name;
-            questionType.color = type.color;
+        question.questionTypes = await Promise.all(
+          body.questionTypes.map(async (type) => {
+            const questionType = await QuestionTypeModel.findOne({
+              where: {
+                id: type.id,
+              },
+            });
+            if (!questionType) {
+              throw new BadRequestException(
+                ERROR_MESSAGES.questionController.createQuestion.invalidQuestionType,
+              );
+            }
             return questionType;
-          },
+          }),
         );
       }
 
@@ -464,63 +488,6 @@ export class QuestionController {
       }
     }
 
-    return;
-  }
-
-  @Post(':c/questionType')
-  async addQuestions(
-    @Res() res: Response,
-    @Param('c') course: number,
-    @Body() newQuestionType: AddQuestionTypeParams,
-  ): Promise<void> {
-    const questionType = await QuestionTypeModel.findOne({
-      where: {
-        cid: course,
-        name: newQuestionType.name,
-      },
-    });
-    if (!questionType) {
-      await QuestionTypeModel.create({
-        cid: course,
-        name: newQuestionType.name,
-        color: newQuestionType.color,
-      }).save();
-      res.status(200).send('success');
-      return;
-    } else {
-      res.status(400).send('Question already exists');
-      return;
-    }
-  }
-
-  @Get(':c/questionType')
-  async getQuestionType(
-    @Res() res: Response,
-    @Param('c') course: number,
-  ): Promise<QuestionTypeModel[]> {
-    const questions = await QuestionTypeModel.find({
-      where: {
-        cid: course,
-      },
-    });
-    if (!questions) {
-      res.status(400).send('None');
-      return;
-    }
-    res.status(200).send(questions);
-  }
-
-  @Delete(':c/:questionType')
-  async deleteQuestionType(
-    @Res() res: Response,
-    @Param('c') course: number,
-    @Param('questionType') questionType: string,
-  ): Promise<void> {
-    await QuestionTypeModel.delete({
-      cid: course,
-      name: questionType,
-    });
-    res.status(200).send('success');
     return;
   }
 }

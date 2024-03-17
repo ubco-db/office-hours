@@ -30,6 +30,7 @@ Object {
           "color": "#000000",
           "id": 1,
           "name": "Question Type",
+          "queueId": 1,
         },
       ],
       "status": "Queued",

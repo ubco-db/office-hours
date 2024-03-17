@@ -56,6 +56,7 @@ import { HeatmapService } from './heatmap.service';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
+import { EmailVerifiedGuard } from '../guards/email-verified.guard';
 
 @Controller('courses')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -79,7 +80,7 @@ export class CourseController {
   }
 
   @Get(':oid/organization_courses')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getOrganizationCourses(
     @Res() res: Response,
     @Param('oid') oid: number,
@@ -108,7 +109,7 @@ export class CourseController {
   }
 
   @Get(':cid/questions')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getAsyncQuestions(
     @Param('cid') cid: number,
   ): Promise<AsyncQuestionResponse> {
@@ -117,6 +118,9 @@ export class CourseController {
         courseId: cid,
       },
       relations: ['creator', 'course', 'images'],
+      order: {
+        createdAt: 'DESC',
+      },
     });
     if (!all) {
       throw NotFoundException;
@@ -191,7 +195,7 @@ export class CourseController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.STUDENT, Role.TA)
   async get(
     @Param('id') id: number,
@@ -313,7 +317,7 @@ export class CourseController {
   }
 
   @Patch(':id/edit_course')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async editCourseInfo(
     @Param('id') courseId: number,
@@ -323,7 +327,7 @@ export class CourseController {
   }
 
   @Post(':id/ta_location/:room')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async checkIn(
     @Param('id') courseId: number,
@@ -439,7 +443,7 @@ export class CourseController {
   }
 
   @Post(':id/generate_queue/:room')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async generateQueue(
     @Param('id') courseId: number,
@@ -507,7 +511,7 @@ export class CourseController {
   }
 
   @Delete(':id/ta_location/:room')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR, Role.TA)
   async checkOut(
     @Param('id') courseId: number,
@@ -588,7 +592,7 @@ export class CourseController {
   }
 
   @Get(':id/course_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async getCourseOverrides(
     @Param('id') courseId: number,
@@ -616,7 +620,7 @@ export class CourseController {
   }
 
   @Post(':id/update_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async addOverride(
     @Param('id') courseId: number,
@@ -670,7 +674,7 @@ export class CourseController {
   }
 
   @Delete(':id/update_override')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async deleteOverride(
     @Param('id') courseId: number,
@@ -691,7 +695,7 @@ export class CourseController {
   }
 
   @Delete(':id/withdraw_course')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async withdrawCourse(
     @Param('id') courseId: number,
     @UserId() userId: number,
@@ -703,7 +707,7 @@ export class CourseController {
   }
 
   @Post('/register_courses')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async registerCourses(
     @Body() body: RegisterCourseParams[],
@@ -713,7 +717,7 @@ export class CourseController {
   }
 
   @Get(':id/ta_check_in_times')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async taCheckinTimes(
     @Param('id') courseId: number,
@@ -736,7 +740,7 @@ export class CourseController {
   }
 
   @Get(':id/get_user_info/:page/:role?')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async getUserInfo(
     @Param('id') courseId: number,
@@ -759,7 +763,7 @@ export class CourseController {
   }
 
   @Post(':id/self_enroll')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async toggleSelfEnroll(@Param('id') courseId: number): Promise<void> {
     const course = await CourseModel.findOne(courseId);
@@ -768,7 +772,7 @@ export class CourseController {
   }
 
   @Post('enroll_by_invite_code/:code')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async enrollCourseByInviteCode(
     @Param('code') code: string,
     @Body() body: UBCOuserParam,
@@ -830,7 +834,7 @@ export class CourseController {
   }
 
   @Post(':id/add_student/:sid')
-  @UseGuards(JwtAuthGuard, CourseRolesGuard)
+  @UseGuards(JwtAuthGuard, CourseRolesGuard, EmailVerifiedGuard)
   @Roles(Role.PROFESSOR)
   async addStudent(
     @Res() res: Response,

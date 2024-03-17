@@ -16,6 +16,7 @@ Object {
   "desktopNotifs": Array [],
   "desktopNotifsEnabled": false,
   "email": "user@ubc.ca",
+  "emailVerified": true,
   "firstName": "User",
   "id": 1,
   "includeDefaultMessage": true,
