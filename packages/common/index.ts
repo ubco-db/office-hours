@@ -493,9 +493,6 @@ export class AsyncQuestion {
   status?: asyncQuestionStatus
 
   @IsOptional()
-  images?: Image[]
-
-  @IsOptional()
   @IsString()
   questionAbstract?: string
 

@@ -1,15 +1,6 @@
 import { ReactElement, useEffect, useState } from 'react'
 import Modal from 'antd/lib/modal/Modal'
-import {
-  Input,
-  Form,
-  Button,
-  message,
-  Checkbox,
-  Image,
-  Tooltip,
-  Switch,
-} from 'antd'
+import { Input, Form, Button, message, Switch } from 'antd'
 import { API } from '@koh/api-client'
 import { AsyncQuestion, asyncQuestionStatus } from '@koh/common'
 import { default as React } from 'react'
@@ -75,16 +66,6 @@ export function AnswerQuestionModal({
           <strong>{question.questionAbstract}</strong>
         </p>
         <p> {question.questionText}</p>
-        {question?.images.map((i) => {
-          return (
-            <Image
-              height={100}
-              src={`/api/v1/image/${i.id}`}
-              alt="none"
-              key={i.id}
-            />
-          )
-        })}
         <br></br>
       </span>
       <br></br>

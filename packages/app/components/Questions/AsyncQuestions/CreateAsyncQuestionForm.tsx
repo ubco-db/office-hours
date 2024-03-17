@@ -30,8 +30,6 @@ const CreateAsyncQuestionForm = ({
   const router = useRouter()
   const courseId = Number(router.query['cid'])
   const [form] = Form.useForm()
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [preview, setPreview] = useState<string | undefined>()
   const [questionsTypeState, setQuestionsTypeState] = useState<
     QuestionTypeParams[]
   >([])
@@ -39,14 +37,7 @@ const CreateAsyncQuestionForm = ({
 
   useEffect(() => {
     populateQuestionTypes()
-    if (!selectedImage) {
-      setPreview(undefined)
-      return
-    }
-    const objectURL = window.URL.createObjectURL(selectedImage)
-    setPreview(objectURL)
-    return () => window.URL.revokeObjectURL(objectURL)
-  }, [selectedImage])
+  }, [])
 
   const populateQuestionTypes = async () => {
     const questions = await API.questionType.getQuestionTypes(courseId, null)
@@ -76,30 +67,16 @@ const CreateAsyncQuestionForm = ({
     const aiAnswer = await getAiAnswer(
       value.QuestionAbstract + ' ' + value.questionText,
     )
-    await API.asyncQuestions
-      .create(
-        {
-          questionTypes: questionTypeInput,
-          questionText: value.questionText,
-          aiAnswerText: aiAnswer,
-          answerText: aiAnswer,
-          questionAbstract: value.QuestionAbstract,
-        },
-        courseId,
-      )
-      .then((response) => {
-        if (selectedImage && response) {
-          const data = new FormData()
-          data.append('AsyncQuestionId', String(response.id))
-          data.append('file', selectedImage)
-          fetch('/api/v1/image', {
-            method: 'POST',
-            body: data,
-          }).catch((err) => {
-            message.warning(err + ': Image failed to upload')
-          })
-        }
-      })
+    await API.asyncQuestions.create(
+      {
+        questionTypes: questionTypeInput,
+        questionText: value.questionText,
+        aiAnswerText: aiAnswer,
+        answerText: aiAnswer,
+        questionAbstract: value.QuestionAbstract,
+      },
+      courseId,
+    )
     onStatusChange()
     message.success('Question Posted')
   }
@@ -159,22 +136,6 @@ const CreateAsyncQuestionForm = ({
               </Select>
             </>
           )}
-          <Form.Item name="images">
-            <Input
-              type="file"
-              onChange={(event) => {
-                setSelectedImage(event.target.files[0])
-              }}
-              name="questionImage"
-            />
-            {preview && (
-              <img
-                src={preview}
-                style={{ maxWidth: '100%', marginTop: '10px' }}
-                alt="Preview"
-              />
-            )}
-          </Form.Item>
         </Form>
       </Container>
     </Modal>

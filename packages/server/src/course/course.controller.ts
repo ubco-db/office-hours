@@ -132,7 +132,7 @@ export class CourseController {
       where: {
         courseId: cid,
       },
-      relations: ['creator', 'taHelped', 'images'],
+      relations: ['creator', 'taHelped'],
       order: {
         createdAt: 'DESC',
       },

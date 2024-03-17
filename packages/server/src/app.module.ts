@@ -23,7 +23,6 @@ import { SeedModule } from './seed/seed.module';
 import { SSEModule } from './sse/sse.module';
 import { SemesterModule } from 'semester/semester.module';
 import { asyncQuestionModule } from 'asyncQuestion/asyncQuestion.module';
-import { ImageModule } from 'images/image.module';
 import { MailModule } from 'mail/mail.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { OrganizationModule } from 'organization/organization.module';
@@ -54,7 +53,6 @@ import { QuestionTypeModule } from 'questionType/questionType.module';
     SSEModule,
     BackfillModule,
     InsightsModule,
-    ImageModule,
     // Only use 'pub' for publishing events, 'sub' for subscribing, and 'db' for writing to key/value store
     RedisModule.register([
       { name: 'pub', host: process.env.REDIS_HOST || 'localhost' },

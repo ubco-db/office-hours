@@ -41,8 +41,6 @@ export function UpdateQuestionForm({
   const router = useRouter()
   const courseId = Number(router.query['cid'])
   const [form] = Form.useForm()
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [preview, setPreview] = useState<string>()
   const [questionsTypeState, setQuestionsTypeState] = useState<
     QuestionTypeParams[]
   >([])
@@ -50,38 +48,14 @@ export function UpdateQuestionForm({
     QuestionTypeParams[]
   >(question?.questionTypes || [])
 
-  //image stuff
-  useEffect(() => {
-    if (!selectedImage) {
-      setPreview(undefined)
-      return
-    }
-    const objectURL = window.URL.createObjectURL(selectedImage)
-    setPreview(objectURL)
-    return () => window.URL.revokeObjectURL(objectURL)
-  }, [selectedImage])
   //update question, no new text generated
 
   const updateQuestion = async (value) => {
-    await API.asyncQuestions
-      .update(question.id, {
-        questionTypes: questionTypeInput,
-        questionText: value.questionText,
-        questionAbstract: value.QuestionAbstract,
-      })
-      .then((response) => {
-        if (selectedImage && response) {
-          const data = new FormData()
-          data.append('ImageId', String(response.images[0].id))
-          data.append('file', selectedImage)
-          fetch(`/api/v1/image/${response.images[0].id}/update`, {
-            method: 'PATCH',
-            body: data,
-          }).catch((err) => {
-            message.warning(err + ': Image failed to upload')
-          })
-        }
-      })
+    await API.asyncQuestions.update(question.id, {
+      questionTypes: questionTypeInput,
+      questionText: value.questionText,
+      questionAbstract: value.QuestionAbstract,
+    })
     message.success('Question Updated')
     onStatusChange()
   }
@@ -140,7 +114,6 @@ export function UpdateQuestionForm({
           initialValues={{
             QuestionAbstract: question?.questionAbstract,
             questionText: question?.questionText,
-            images: question?.images[0],
           }}
         >
           <QuestionText>What do you need help with?</QuestionText>
@@ -188,24 +161,7 @@ export function UpdateQuestionForm({
           ) : (
             <p>No Question types found</p>
           )}
-          <Form.Item name="images">
-            <Input
-              type="file"
-              onChange={(event) => {
-                setSelectedImage(event.target.files[0])
-              }}
-              name="questionImage"
-            ></Input>
-            {preview ? (
-              <img
-                src={preview}
-                style={{ maxWidth: '100%', padding: '10px' }}
-                alt="none"
-              />
-            ) : (
-              <></>
-            )}
-          </Form.Item>
+
           <br></br>
           <br></br>
           <QuestionText>Your question will be anonymous.</QuestionText>

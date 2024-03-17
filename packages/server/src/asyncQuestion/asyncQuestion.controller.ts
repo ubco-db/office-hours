@@ -146,7 +146,7 @@ export class asyncQuestionController {
   ): Promise<AsyncQuestion> {
     const question = await AsyncQuestionModel.findOne({
       where: { id: questionId },
-      relations: ['creator', 'images'],
+      relations: ['creator'],
     });
     if (question === undefined) {
       throw new NotFoundException();

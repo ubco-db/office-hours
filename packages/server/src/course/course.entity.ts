@@ -90,13 +90,6 @@ export class CourseModel extends BaseEntity {
   @Column('boolean', { nullable: true, default: false })
   selfEnroll: boolean;
 
-  @OneToMany(
-    (type) => AsyncQuestionModel,
-    (asyncQuestion) => asyncQuestion.course,
-  )
-  @Exclude()
-  images: AsyncQuestionModel[];
-
   @Column('text', { array: true, nullable: true, default: [] })
   asyncQuestionDisplayTypes: string[];
 
