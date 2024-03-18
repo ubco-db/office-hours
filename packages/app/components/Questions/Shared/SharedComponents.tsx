@@ -47,9 +47,20 @@ export const QueueInfoColumnButtonStyle = styled(Button)`
   border: 1px solid #cfd6de;
   border-radius: 6px;
   margin-bottom: 12px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // less margin and width on mobile
+  @media (max-width: 650px) {
+    margin-bottom: 0;
+    width: 30%;
+  }
 `
+
 export const QueueInfoColumnButton = (props: ButtonProps): ReactElement => (
-  <QueueInfoColumnButtonStyle size="large" block {...props} />
+  <QueueInfoColumnButtonStyle size="large" {...props} />
 )
 
 export const EditQueueButton = styled(QueueInfoColumnButton)`
