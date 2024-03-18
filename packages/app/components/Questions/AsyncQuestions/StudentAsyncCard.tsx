@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react'
-import { Button, Card, Image } from 'antd'
+import { Button } from 'antd'
 import { Text } from '../Shared/SharedComponents'
 import { QuestionType } from '../Shared/QuestionType'
 import { KOHAvatar } from '../../common/SelfAvatar'
@@ -9,7 +9,6 @@ import { AsyncQuestion } from '@koh/common'
 import StudentQuestionDetailButtons from './StudentQuestionDetailButtons'
 import { DownOutlined, UpOutlined } from '@ant-design/icons'
 import { API } from '@koh/api-client'
-import { set } from 'lodash'
 
 interface StudentAsyncCardProps {
   question: AsyncQuestion
@@ -31,10 +30,6 @@ export default function StudentAsyncCard({
   const [isExpanded, setIsExpanded] = useState(false)
   const [voteCount, setVoteCount] = useState(question.votesSum)
   const [thisUserThisQuestionVote, setThisUserThisQuestionVote] = useState()
-
-  const handleImageClick = (event) => {
-    event.stopPropagation() // Prevents the click from closing the card
-  }
 
   const setIsExpandedTrue = (event) => {
     event.stopPropagation()
@@ -133,17 +128,6 @@ export default function StudentAsyncCard({
             <h4 className="font-bold">{question.questionAbstract}</h4>
             {isExpanded && (
               <div>
-                {question?.images.map((i) => {
-                  return (
-                    <Image
-                      height={300}
-                      src={`/api/v1/image/${i.id}`}
-                      alt="none"
-                      key={i.id}
-                      onClick={handleImageClick}
-                    />
-                  )
-                })}
                 {question.questionText && <Text>{question.questionText}</Text>}
 
                 {question.answerText ? (

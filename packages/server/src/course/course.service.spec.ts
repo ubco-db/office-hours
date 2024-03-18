@@ -73,7 +73,6 @@ describe('CourseService', () => {
         course: algo,
         role: Role.PROFESSOR,
       });
-      // Initialize Iris as professor in only fundies
       profIris = await UserFactory.create({
         firstName: 'Iris',
         lastName: 'Liu',

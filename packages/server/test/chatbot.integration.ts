@@ -5,7 +5,7 @@ import {
   UserFactory,
   CourseFactory,
   UserCourseFactory,
-} from './util/factories'; // Assuming you have these factories
+} from './util/factories';
 import { setupIntegrationTest } from './util/testUtils';
 import { ChatbotQuestionModel } from 'chatbot/question.entity';
 

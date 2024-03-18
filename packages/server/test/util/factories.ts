@@ -128,6 +128,24 @@ export const AlertFactory = new Factory(AlertModel)
   .assocOne('course', CourseFactory)
   .attr('payload', {});
 
+export const VotesFactory = new Factory(AsyncQuestionVotesModel)
+  .attr('vote', 0)
+  .attr('userId', 0);
+
+export const AsyncQuestionFactory = new Factory(AsyncQuestionModel)
+  .assocOne('course', CourseFactory)
+  .assocOne('creator', UserFactory)
+  .assocMany('votes', VotesFactory, 0)
+  .assocMany('questionTypes', QuestionTypeFactory, 0)
+  .attr('questionAbstract', 'abstract')
+  .attr('questionText', 'text')
+  .attr('aiAnswerText', 'ai answer')
+  .attr('answerText', 'answer')
+  .attr('status', asyncQuestionStatus.AIAnswered)
+  .attr('visible', false)
+  .attr('verified', false)
+  .attr('createdAt', new Date());
+
 export const OrganizationFactory = new Factory(OrganizationModel)
   .attr('name', 'UBCO')
   .attr('description', 'UBC Okanagan');
@@ -145,15 +163,3 @@ export const OrganizationUserFactory = new Factory(OrganizationUserModel)
   .assocOne('organization', OrganizationFactory)
   .assocOne('organizationUser', UserFactory)
   .attr('role', OrganizationRole.MEMBER);
-
-export const VotesFactory = new Factory(AsyncQuestionVotesModel)
-  .attr('vote', 0)
-  .attr('userId', 0);
-
-export const AsyncQuestionFactory = new Factory(AsyncQuestionModel)
-  .attr('questionAbstract', 'question abstract')
-  .attr('questionText', 'question text')
-  .attr('createdAt', new Date())
-  .attr('status', asyncQuestionStatus.Resolved)
-  .assocMany('votes', VotesFactory, 0)
-  .assocMany('questionTypes', QuestionTypeFactory, 0);
