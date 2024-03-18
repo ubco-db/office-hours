@@ -224,6 +224,12 @@ export default function ChatbotSettings(): ReactElement {
         ]}
       >
         <>
+          <div>
+            <p>
+              <strong>Accepted File Types:</strong> .docx, .pptx, .txt, .csv,
+              .pdf
+            </p>
+          </div>
           <div className="mb-2 flex h-fit w-full items-center justify-center gap-2">
             <div
               className={`${
@@ -259,12 +265,6 @@ export default function ChatbotSettings(): ReactElement {
                   },
                 ]}
               >
-                <div>
-                  <p>
-                    <strong>Accepted File Types:</strong> .docx, .pptx, .txt,
-                    .csv, .pdf
-                  </p>
-                </div>
                 <Input placeholder="Enter URL for a pdf file..." />
               </Form.Item>
             )}
@@ -279,12 +279,6 @@ export default function ChatbotSettings(): ReactElement {
                     },
                   ]}
                 >
-                  <div>
-                    <p>
-                      <strong>Accepted File Types:</strong> .docx, .pptx, .txt,
-                      .csv, .pdf
-                    </p>
-                  </div>
                   <Dragger {...props}>
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
