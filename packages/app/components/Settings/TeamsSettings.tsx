@@ -42,7 +42,7 @@ export default function TeamsSettings(): ReactElement {
             name="includeDefaultMessage"
             valuePropName="checked"
           >
-            <Switch style={{ backgroundColor: '#1677ff' }} />
+            <Switch />
           </Form.Item>
           <Form.Item shouldUpdate noStyle style={{ marginTop: '30px' }}>
             {() =>
@@ -50,7 +50,6 @@ export default function TeamsSettings(): ReactElement {
                 <Form.Item
                   label="Default Teams Message"
                   name="defaultMessage"
-                  data-cy="defaultMessageInput"
                   rules={[
                     {
                       required: true,

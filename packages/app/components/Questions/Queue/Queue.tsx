@@ -326,7 +326,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
               />
             </Tooltip>
             <EditQueueButton
-              data-cy="editQueue"
               onClick={() => setQueueSettingsModal(true)}
               icon={<EditOutlined />}
             >
@@ -336,7 +335,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
               </span>
             </EditQueueButton>
             <EditQueueButton
-              data-cy="addStudents"
               disabled={!isCheckedIn}
               onClick={() => setAddStudentsModal(true)}
               icon={<PlusOutlined />}
@@ -380,7 +378,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
                   isJoinQueueModalLoading ||
                   queue.staffList.length < 1 // the endpoint will throw a 500 error if you try to join with no staff in the queue
                 }
-                data-cy="join-queue-button"
                 onClick={joinQueue}
                 icon={<LoginOutlined aria-hidden="true" />}
                 title={
@@ -415,7 +412,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
 
   function RenderQueueQuestions({ questions }: QueueProps) {
     return (
-      <div data-cy="queueQuestions" aria-label="Queue questions">
+      <div aria-label="Queue questions">
         {questions?.length === 0 ? (
           <NoQuestionsText>There are no questions in the queue</NoQuestionsText>
         ) : (

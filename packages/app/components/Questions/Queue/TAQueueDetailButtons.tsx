@@ -152,10 +152,7 @@ export default function TAQueueDetailButtons({
           }}
         >
           <Tooltip title="Requeue Student">
-            <RequeueButton
-              icon={<UndoOutlined />}
-              data-cy="requeue-student-button"
-            />
+            <RequeueButton icon={<UndoOutlined />} />
           </Tooltip>
         </Popconfirm>
         <Popconfirm
@@ -169,11 +166,7 @@ export default function TAQueueDetailButtons({
           }}
         >
           <Tooltip title="Can't Find">
-            <CantFindButton
-              shape="circle"
-              icon={<CloseOutlined />}
-              data-cy="cant-find-button"
-            />
+            <CantFindButton shape="circle" icon={<CloseOutlined />} />
           </Tooltip>
         </Popconfirm>
         <Tooltip title="Finish Helping">
@@ -183,7 +176,6 @@ export default function TAQueueDetailButtons({
               // setCheckOutTimer()
               changeStatus(ClosedQuestionStatus.Resolved)
             }}
-            data-cy="finish-helping-button"
           />
         </Tooltip>
       </>
@@ -243,7 +235,6 @@ export default function TAQueueDetailButtons({
                 <BannerDangerButton
                   shape="circle"
                   icon={<DeleteOutlined />}
-                  data-cy="remove-from-queue"
                   disabled={!isCheckedIn}
                 />
               </span>
@@ -255,7 +246,6 @@ export default function TAQueueDetailButtons({
                 shape="circle"
                 icon={<QuestionOutlined />}
                 onClick={sendRephraseAlert}
-                data-cy="request-rephrase-question"
                 disabled={!canRephrase}
               />
             </span>
@@ -270,7 +260,6 @@ export default function TAQueueDetailButtons({
                   helpStudent()
                 }}
                 disabled={!canHelp}
-                data-cy="help-student"
               />
             </span>
           </Tooltip>

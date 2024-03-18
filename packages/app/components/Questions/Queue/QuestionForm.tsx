@@ -201,7 +201,6 @@ export default function QuestionForm({
             <FormButton onClick={cancel}>Cancel</FormButton>
           )}
           <SaveChangesButton
-            data-cy="finishQuestion"
             type="primary"
             disabled={!questionTypeInput}
             onClick={onClickSubmit}
@@ -251,7 +250,6 @@ export default function QuestionForm({
             What do you need help with?
           </QuestionText>
           <Input.TextArea
-            data-cy="questionText"
             value={questionText}
             placeholder="I’m having trouble understanding list abstractions, particularly in Assignment 5."
             autoSize={{ minRows: 3, maxRows: 6 }}

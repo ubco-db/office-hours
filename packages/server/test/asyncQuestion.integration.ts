@@ -2,7 +2,6 @@ import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { CourseModel } from 'course/course.entity';
 import { UserModel } from 'profile/user.entity';
 import {
-  InteractionFactory,
   UserFactory,
   CourseFactory,
   UserCourseFactory,

@@ -97,7 +97,7 @@ function StatusCard({
 }: StatusCardProps): ReactElement {
   const isBusy = !!helpedAt
   return (
-    <StyledCard data-cy="ta-status-card">
+    <StyledCard>
       <KOHAvatar
         size={48}
         name={taName}

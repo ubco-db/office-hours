@@ -12,7 +12,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DesktopNotifModel } from '../notification/desktop-notif.entity';
-import { PhoneNotifModel } from '../notification/phone-notif.entity';
 import { QueueModel } from '../queue/queue.entity';
 import { EventModel } from './event-model.entity';
 import { UserCourseModel } from './user-course.entity';
@@ -67,20 +66,12 @@ export class UserModel extends BaseEntity {
   @Exclude()
   desktopNotifsEnabled: boolean; // Does user want notifications sent to their desktops?
 
-  @Column({ type: 'boolean', default: false })
-  @Exclude()
-  phoneNotifsEnabled: boolean; // Does user want notifications sent to their phone?
-
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   userRole: UserRole;
 
   @OneToMany((type) => DesktopNotifModel, (notif) => notif.user)
   @Exclude()
   desktopNotifs: DesktopNotifModel[];
-
-  @OneToOne((type) => PhoneNotifModel, (notif) => notif.user)
-  @Exclude()
-  phoneNotif: PhoneNotifModel;
 
   @Exclude()
   @ManyToMany((type) => QueueModel, (queue) => queue.staffList)

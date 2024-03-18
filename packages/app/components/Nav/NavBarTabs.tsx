@@ -77,7 +77,6 @@ function createQueueTab(
   return (
     // need to manually add the ant-menu-item-selected class for this submenu and it's menu items since antd isn't adding it automatically like it should be
     <QueueMenu
-      data-cy="queue-tab"
       title="Queue"
       className={
         currentPath?.includes(`/course/${queueTabItem.courseId}/queue/`)
@@ -92,7 +91,6 @@ function createQueueTab(
         return (
           <QueueMenuItem
             key={openQueue.id}
-            data-cy={`queue-menu-item-${openQueue.room}`}
             className={isSelected ? 'ant-menu-item-selected' : ''}
             onClick={onClose} // close the mobile drawer when clicked
           >

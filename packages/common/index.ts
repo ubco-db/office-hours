@@ -17,7 +17,7 @@ import {
 import 'reflect-metadata'
 import { Cache } from 'cache-manager'
 
-export const PROD_URL = 'https://help.cosc304.ok.ubc.ca'
+export const PROD_URL = 'https://coursehelp.ubc.ca'
 
 // Get domain. works on node and browser
 const domain = (): string | false =>
@@ -69,8 +69,6 @@ export class User {
   desktopNotifsEnabled!: boolean
   @Type(() => DesktopNotifPartial)
   desktopNotifs!: DesktopNotifPartial[]
-  phoneNotifsEnabled?: boolean
-  phoneNumber?: string
   insights!: string[]
   userRole!: string
   organization?: OrganizationUserPartial
@@ -568,10 +566,6 @@ export type DesktopNotifBody = {
   name?: string
 }
 
-export type PhoneNotifBody = {
-  phoneNumber: string
-}
-
 // =================== API Route Types ===========================
 // On backend, validated with https://docs.nestjs.com/techniques/validation
 // API route Params and Responses
@@ -759,15 +753,6 @@ export class UpdateProfileParams {
   @IsBoolean()
   @IsOptional()
   desktopNotifsEnabled?: boolean
-
-  @IsBoolean()
-  @IsOptional()
-  phoneNotifsEnabled?: boolean
-
-  @ValidateIf((o) => o.phoneNotifsEnabled)
-  @IsString()
-  @IsNotEmpty()
-  phoneNumber?: string
 
   @IsString()
   @IsOptional()
@@ -1363,28 +1348,6 @@ export class SSEQueueResponse {
   questions?: ListQuestionsResponse
 }
 
-export interface TwilioBody {
-  ToCountry: string
-  ToState: string
-  SmsMessageSid: string
-  NumMedia: string
-  ToCity: string
-  FromZip: string
-  SmsSid: string
-  FromState: string
-  SmsStatus: string
-  FromCity: string
-  Body: string
-  FromCountry: string
-  To: string
-  ToZip: string
-  NumSegments: string
-  MessageSid: string
-  AccountSid: string
-  From: string
-  ApiVersion: string
-}
-
 export type GetInsightOutputResponse = PossibleOutputTypes
 
 export type ListInsightsResponse = Record<string, InsightDisplayInfo>
@@ -1596,12 +1559,6 @@ export const ERROR_MESSAGES = {
     invalidTempJWTToken: 'Error occurred while signing a JWT token',
     addUserFromKhoury:
       'Error occurred while translating account from Khoury to Office Hours',
-  },
-  notificationController: {
-    messageNotFromTwilio: 'Message not from Twilio',
-  },
-  notificationService: {
-    registerPhone: 'phone number invalid',
   },
   questionRoleGuard: {
     questionNotFound: 'Question not found',

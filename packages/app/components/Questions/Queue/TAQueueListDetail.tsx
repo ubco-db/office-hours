@@ -144,7 +144,7 @@ export default function TAQueueListDetail({
     return (
       <EmptyQueueInfo>
         <NoQuestionsText>There are no questions in the queue</NoQuestionsText>
-        {!user.phoneNotifsEnabled && !user.desktopNotifsEnabled && (
+        {!user.desktopNotifsEnabled && (
           <NotifReminderButton courseId={courseId} />
         )}
       </EmptyQueueInfo>
@@ -152,7 +152,7 @@ export default function TAQueueListDetail({
   }
   const list = (
     <List>
-      <div data-cy="list-helping">
+      <div>
         <TAQueueListSection
           title={'Currently Helping'}
           questions={helpingQuestions}
@@ -160,7 +160,7 @@ export default function TAQueueListDetail({
           selectedQuestionId={selectedQuestionId}
         />
       </div>
-      <div data-cy="list-group">
+      <div>
         <TAQueueListSection
           title="Group Students"
           questions={groupedQuestions}
@@ -179,7 +179,7 @@ export default function TAQueueListDetail({
           }
         />
       </div>
-      <div data-cy="list-priority">
+      <div>
         <TAQueueListSection
           title={
             <span>
@@ -195,7 +195,7 @@ export default function TAQueueListDetail({
           collapsible
         />
       </div>
-      <div data-cy="list-queue">
+      <div>
         <TAQueueListSection
           title="Waiting In Line"
           questions={questions.queue}

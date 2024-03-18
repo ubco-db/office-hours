@@ -124,7 +124,7 @@ export default function QuestionListDetail({
     <List>
       {Role.STUDENT === role ? (
         <>
-          <div data-cy="your-questions">
+          <div>
             <StudentListSection
               title="Your Questions"
               questions={studentQuestions}
@@ -134,7 +134,7 @@ export default function QuestionListDetail({
               showNumbers
             />
           </div>
-          <div data-cy="visible questions">
+          <div>
             <StudentListSection
               title="Questions visible to all"
               questions={questions.visibleQuestions}
@@ -147,7 +147,7 @@ export default function QuestionListDetail({
         </>
       ) : (
         <>
-          <div data-cy="list-helping">
+          <div>
             <TAquestionListSection
               title="Waiting In Line"
               questions={questions.waitingQuestions}
@@ -157,7 +157,7 @@ export default function QuestionListDetail({
               showNumbers
             />
           </div>
-          <div data-cy="list-resolved">
+          <div>
             <TAquestionListSection
               title="Resolved Questions"
               questions={questions.helpedQuestions}
@@ -167,7 +167,7 @@ export default function QuestionListDetail({
               showNumbers
             />
           </div>
-          <div data-cy="visible questions">
+          <div>
             <TAquestionListSection
               title="Questions visible to all"
               questions={questions.visibleQuestions}
@@ -177,7 +177,7 @@ export default function QuestionListDetail({
               showNumbers
             />
           </div>
-          {/* <div data-cy="list-deleted">
+          {/* <div>
             <TAquestionListSection
               title="Deleted Questions"
               questions={questions.otherQuestions}
