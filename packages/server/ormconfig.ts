@@ -29,7 +29,6 @@ import { CourseSettingsModel } from './src/course/course_settings.entity';
 import { AsyncQuestionVotesModel } from './src/asyncQuestion/asyncQuestionVotes.entity';
 import { UserTokenModel } from './src/profile/user-token.entity';
 
-import { CourseSettingsModel } from './src/course/course_settings.entity';
 config();
 
 // Options only used whe run via CLI
@@ -76,7 +75,6 @@ const typeorm = {
     CourseSettingsModel,
     AsyncQuestionVotesModel,
     UserTokenModel,
-    CourseSettingsModel,
   ],
   keepConnectionAlive: true,
   logging:

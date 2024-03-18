@@ -299,8 +299,6 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       useState(false)
 
     const joinQueue = useCallback(async () => {
-      console.log('allow questions: ' + !queue?.allowQuestions)
-      console.log('isDisabled: ' + queue?.isDisabled)
       setIsJoinQueueModalLoading(true)
       await joinQueueOpenModal(false)
       setIsJoinQueueModalLoading(false)

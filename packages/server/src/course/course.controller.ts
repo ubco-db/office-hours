@@ -57,7 +57,6 @@ import { AsyncQuestionModel } from 'asyncQuestion/asyncQuestion.entity';
 import { OrganizationCourseModel } from 'organization/organization-course.entity';
 import { CourseSettingsModel } from './course_settings.entity';
 import { EmailVerifiedGuard } from '../guards/email-verified.guard';
-import { CourseSettingsModel } from './course_settings.entity';
 
 @Controller('courses')
 @UseInterceptors(ClassSerializerInterceptor)
