@@ -31,7 +31,6 @@ import {
   GetCourseUserInfoResponse,
   questions,
   CreateAsyncQuestions,
-  AsyncQuestionResponse,
   UpdateAsyncQuestions,
   AsyncQuestion,
   CoursePartial,
@@ -203,12 +202,8 @@ class APIClient {
       ),
     getOrganizationCourses: async (organizationId: number) =>
       this.req('GET', `/api/v1/courses/${organizationId}/organization_courses`),
-    getAsyncQuestions: async (cid: number) =>
-      this.req(
-        'GET',
-        `/api/v1/courses/${cid}/questions`,
-        AsyncQuestionResponse,
-      ),
+    getAsyncQuestions: async (cid: number): Promise<AsyncQuestion[]> =>
+      this.req('GET', `/api/v1/courses/${cid}/questions`, undefined),
     getAllCourses: async (): Promise<CoursePartial[]> =>
       this.req('GET', `/api/v1/courses`),
     get: async (courseId: number) =>

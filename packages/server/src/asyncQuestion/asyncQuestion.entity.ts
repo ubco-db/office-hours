@@ -2,7 +2,6 @@
 import { asyncQuestionStatus } from '@koh/common';
 import { Exclude } from 'class-transformer';
 import { CourseModel } from '../course/course.entity';
-import { ImageModel } from '../images/image.entity';
 import {
   AfterLoad,
   BaseEntity,
@@ -28,10 +27,6 @@ export class AsyncQuestionModel extends BaseEntity {
   @JoinColumn({ name: 'courseId' })
   @Exclude()
   course: CourseModel;
-
-  @OneToMany((type) => ImageModel, (image) => image.asyncQuestion)
-  @Exclude()
-  images: ImageModel[];
 
   @Column({ nullable: true })
   @Exclude()
@@ -85,6 +80,9 @@ export class AsyncQuestionModel extends BaseEntity {
 
   @Column('boolean', { nullable: true })
   visible: boolean;
+
+  @Column('boolean')
+  verified: boolean;
 
   @OneToMany(() => AsyncQuestionVotesModel, (vote) => vote.question, {
     eager: true,

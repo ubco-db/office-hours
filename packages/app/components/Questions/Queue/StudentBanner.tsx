@@ -1,6 +1,4 @@
 import {
-  CheckOutlined,
-  CloseOutlined,
   DeleteRowOutlined,
   EditOutlined,
   TeamOutlined,
@@ -10,7 +8,7 @@ import { API } from '@koh/api-client'
 import { OpenQuestionStatus, Question } from '@koh/common'
 import { Button, Col, Popconfirm, Tooltip } from 'antd'
 import router from 'next/router'
-import React, { ReactElement } from 'react'
+import React, { ReactElement, useEffect } from 'react'
 import styled from 'styled-components'
 import { useCourse } from '../../../hooks/useCourse'
 import { useQueue } from '../../../hooks/useQueue'
@@ -60,6 +58,18 @@ export default function StudentBanner({
   const isQueueOnline = useQueue(queueId).queue?.room.startsWith('Online')
   const { cid } = router.query
   const { course } = useCourse(Number(cid))
+
+  // for accessibility: focus the user on their current queue position when it changes
+  // no idea if it actually works, since it's kinda hard to test that locally
+  useEffect(() => {
+    const currentQueuePosition = document.getElementById(
+      'current-queue-position',
+    )
+    if (currentQueuePosition) {
+      currentQueuePosition.focus()
+    }
+  }, [studentQuestionIndex])
+
   switch (studentQuestion?.status) {
     case 'Drafting':
       return (
@@ -95,7 +105,7 @@ export default function StudentBanner({
           titleColor="#3684C6"
           contentColor="#ABD4F3"
           title={
-            <span>
+            <span id="current-queue-position">
               You are{' '}
               <BoldNumber>{toOrdinal(studentQuestionIndex + 1)}</BoldNumber> in
               queue
@@ -122,7 +132,7 @@ export default function StudentBanner({
           titleColor="#66BB6A"
           contentColor="#82C985"
           title={
-            <span>
+            <span id="current-queue-position">
               <BoldNumber>{studentQuestion.taHelped.name}</BoldNumber> is coming
               to help you
             </span>

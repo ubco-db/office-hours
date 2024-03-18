@@ -12,7 +12,6 @@ import {
 import styled from 'styled-components'
 import { useLocalStorage } from '../../../hooks/useLocalStorage'
 import { toOrdinal } from '../../../utils/ordinal'
-import { useHotkeys } from 'react-hotkeys-hook'
 import { API } from '@koh/api-client'
 import { QuestionTypeSelector } from '../Shared/QuestionType'
 import PropTypes from 'prop-types'
@@ -154,12 +153,6 @@ export default function QuestionForm({
     }
   }
 
-  useHotkeys('enter', () => onClickSubmit(), { enableOnTags: ['TEXTAREA'] }, [
-    questionTypeInput,
-    questionText,
-    router,
-    courseId,
-  ])
   // all possible questions, use courseId
   const courseNumber = Number(courseId)
   const getQuestions = useCallback(() => {
@@ -238,43 +231,66 @@ export default function QuestionForm({
           />
         )}
         {questionsTypeState.length > 0 ? (
-          <>
-            <QuestionText>
-              What category(s) does your question fall under?
+          <section>
+            <QuestionText id="question-type-text">
+              What categories does your question fall under?
             </QuestionText>
             <QuestionTypeSelector
               onChange={onTypeChange}
               value={questionTypeInput.map((type) => type.id)}
               questionTypes={questionsTypeState}
               className="mb-4"
+              ariaLabelledBy="question-type-text"
             ></QuestionTypeSelector>
-          </>
+          </section>
         ) : (
           <p>No Question types found</p>
         )}
-        <QuestionText>What do you need help with?</QuestionText>
-        <Input.TextArea
-          data-cy="questionText"
-          value={questionText}
-          placeholder="I’m having trouble understanding list abstractions, particularly in Assignment 5."
-          autoSize={{ minRows: 3, maxRows: 6 }}
-          onChange={onQuestionTextChange}
-        />
-        <QuestionCaption>
-          Be as descriptive and specific as possible in your answer. Your name
-          will be hidden to other students, but your question will be visible so
-          don&apos;t frame your question in a way that gives away the answer.
-        </QuestionCaption>
+        <section>
+          <QuestionText id="question-form-text">
+            What do you need help with?
+          </QuestionText>
+          <Input.TextArea
+            data-cy="questionText"
+            value={questionText}
+            placeholder="I’m having trouble understanding list abstractions, particularly in Assignment 5."
+            autoSize={{ minRows: 3, maxRows: 6 }}
+            onChange={onQuestionTextChange}
+            aria-labelledby="question-form-text"
+            aria-describedby="question-form-text-caption"
+          />
+          <QuestionCaption id="question-form-text-caption">
+            Be as descriptive and specific as possible in your answer. Your name
+            will be hidden to other students, but your question will be visible
+            so don&apos;t frame your question in a way that gives away the
+            answer.
+          </QuestionCaption>
+        </section>
 
-        <QuestionText>Are you joining in person office hours?</QuestionText>
-        <Radio.Group
-          value={inperson}
-          onChange={onLocationChange}
-          style={{ marginBottom: 5 }}
-        >
-          <Radio value={true}>Yes</Radio>
-          <Radio value={false}>No</Radio>
-        </Radio.Group>
+        <section>
+          <QuestionText id="question-form-office-hours-text">
+            Are you joining in-person office hours?
+          </QuestionText>
+          <Radio.Group
+            value={inperson}
+            onChange={onLocationChange}
+            style={{ marginBottom: 5 }}
+          >
+            <Radio
+              // this is technically not the right way to get the text to get read, but this old version of antd once again does not seem to allow the proper way
+              aria-describedby="question-form-office-hours-text"
+              value={true}
+            >
+              Yes
+            </Radio>
+            <Radio
+              aria-describedby="question-form-office-hours-text"
+              value={false}
+            >
+              No
+            </Radio>
+          </Radio.Group>
+        </section>
         {/* <QuestionText>
           Would you like the option of being helped in a group session?
         </QuestionText>

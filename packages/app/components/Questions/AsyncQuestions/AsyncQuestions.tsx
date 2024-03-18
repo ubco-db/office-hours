@@ -1,22 +1,23 @@
 import {
   AsyncQuestion,
-  AsyncQuestionResponse,
   QuestionTypeParams,
   Role,
+  asyncQuestionStatus,
 } from '@koh/common'
 import React, { ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useRoleInCourse } from '../../../hooks/useRoleInCourse'
 import { SettingsLeftPanel } from './SettingsLeftPanel'
-import { Select } from 'antd'
+import { Select, Switch } from 'antd'
 import { useAsnycQuestions } from '../../../hooks/useAsyncQuestions'
-import StudentAsyncCard from './StudentAsyncCard'
+import AsyncCard from './AsyncCard'
 import { VerticalDivider, EditQueueButton } from '../Shared/SharedComponents'
-import { AsyncQuestionForm } from './AsyncQuestionForm'
 import PropTypes from 'prop-types'
 import { EditAsyncQuestionsModal } from './EditAsyncQuestions'
 import { QuestionType } from '../Shared/QuestionType'
 import { useProfile } from '../../../hooks/useProfile'
+import CreateAsyncQuestionForm from './CreateAsyncQuestionForm'
+import { create } from 'lodash'
 
 const Container = styled.div`
   flex: 1;
@@ -39,7 +40,7 @@ const NoQuestionsText = styled.div`
 `
 
 AsyncQuestionsPage.propTypes = {
-  questions: PropTypes.instanceOf(AsyncQuestionResponse),
+  questions: PropTypes.instanceOf(AsyncQuestion),
   onClose: PropTypes.func.isRequired,
   value: PropTypes.any.isRequired,
 }
@@ -55,6 +56,7 @@ export default function AsyncQuestionsPage({
   const [editAsyncQuestionsModal, setEditAsyncQuestionsModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [visibleFilter, setVisibleFilter] = useState('all')
+  const [creatorFilter, setCreatorFilter] = useState('all') // 'all' or 'mine'
 
   const [questionTypeInput, setQuestionTypeInput] = useState([])
 
@@ -77,29 +79,20 @@ export default function AsyncQuestionsPage({
   const { questions, mutateQuestions } = useAsnycQuestions(courseId)
 
   useEffect(() => {
-    const allQuestionsList: AsyncQuestion[] = questions
-      ? [...questions.helpedQuestions, ...questions.waitingQuestions]
-      : []
-
-    let displayedQuestions = []
-    if (isStaff) {
-      displayedQuestions = allQuestionsList
-    } else {
-      displayedQuestions = allQuestionsList.filter(
-        (question) => question.visible || question.creatorId === profile?.id,
-      )
-    }
-
+    let displayedQuestions = questions || []
+    // Apply status filter
     if (statusFilter === 'helped') {
       displayedQuestions = displayedQuestions.filter(
-        (question) => question.status === 'Resolved',
+        (question) => question.status === asyncQuestionStatus.HumanAnswered,
       )
     } else if (statusFilter === 'unhelped') {
       displayedQuestions = displayedQuestions.filter(
-        (question) => question.status === 'Waiting',
+        (question) =>
+          question.status === asyncQuestionStatus.AIAnswered ||
+          question.status === asyncQuestionStatus.AIAnsweredNeedsAttention,
       )
     }
-
+    // Apply visibility filter
     if (visibleFilter === 'visible') {
       displayedQuestions = displayedQuestions.filter(
         (question) => question.visible,
@@ -110,6 +103,7 @@ export default function AsyncQuestionsPage({
       )
     }
 
+    // Apply question type filter
     if (questionTypeInput.length > 0) {
       displayedQuestions = displayedQuestions.filter((question) => {
         const questionTypes = question.questionTypes.map((type) => type.id)
@@ -117,13 +111,29 @@ export default function AsyncQuestionsPage({
       })
     }
 
-    setDisplayedQuestions(applySort(displayedQuestions))
+    if (creatorFilter === 'mine') {
+      displayedQuestions = displayedQuestions.filter(
+        (question) => question.creatorId === profile.id,
+      )
+    }
+
+    displayedQuestions = applySort(displayedQuestions)
+    setDisplayedQuestions(displayedQuestions)
 
     const shownQuestionTypes = displayedQuestions
       .map((question) => question.questionTypes)
       .flat()
     setQuestionsTypeState(shownQuestionTypes)
-  }, [visibleFilter, statusFilter, questions, questionTypeInput, sortBy])
+  }, [
+    visibleFilter,
+    statusFilter,
+    questions,
+    questionTypeInput,
+    isStaff,
+    creatorFilter,
+    profile?.id,
+    sortBy,
+  ])
 
   function applySort(displayedQuestions: AsyncQuestion[]) {
     return displayedQuestions.sort((a, b) => {
@@ -154,7 +164,10 @@ export default function AsyncQuestionsPage({
             isStaff={false}
             buttons={
               <>
-                <EditQueueButton onClick={() => setStudentQuestionModal(true)}>
+                <EditQueueButton
+                  onClick={() => setStudentQuestionModal(true)}
+                  id="post-question-button"
+                >
                   Post your Question
                 </EditQueueButton>
                 <div style={{ marginBottom: '12px' }}></div>
@@ -180,21 +193,19 @@ export default function AsyncQuestionsPage({
     )
   }
 
-  const RenderQuestionList = ({ questions }) => {
-    if (!questions) {
+  const RenderQuestionList = ({ renderQuestions }: any) => {
+    if (!renderQuestions) {
       return (
         <NoQuestionsText>There are no questions in the queue</NoQuestionsText>
       )
     }
-
     return (
       <>
-        {questions.map((question) => (
-          <StudentAsyncCard
+        {renderQuestions.map((question) => (
+          <AsyncCard
             key={question.id}
             question={question}
-            cid={courseId}
-            qid={undefined}
+            onStatusChange={mutateQuestions}
             isStaff={isStaff}
             userId={profile?.id}
             onQuestionTypeClick={(questionType) => {
@@ -245,6 +256,20 @@ export default function AsyncQuestionsPage({
     )
   }
 
+  const RenderCreatorFilter = () => {
+    return (
+      <Select
+        id="creator-filter-select"
+        value={creatorFilter}
+        onChange={(value) => setCreatorFilter(value)}
+        className="select-filter"
+      >
+        <Select.Option value="all">All Questions</Select.Option>
+        <Select.Option value="mine">My Questions</Select.Option>
+      </Select>
+    )
+  }
+
   const RenderQuestionStatusFilter = () => {
     return (
       <>
@@ -255,9 +280,9 @@ export default function AsyncQuestionsPage({
           className="select-filter"
           style={{ width: 200 }}
         >
-          <Select.Option value="all">Question Status</Select.Option>
-          <Select.Option value="helped">Answered</Select.Option>
-          <Select.Option value="unhelped">Unanswered</Select.Option>
+          <Select.Option value="all">Verification status</Select.Option>
+          <Select.Option value="helped">Verified questions</Select.Option>
+          <Select.Option value="unhelped">Unverified questions</Select.Option>
         </Select>
       </>
     )
@@ -273,7 +298,7 @@ export default function AsyncQuestionsPage({
           className="select-filter"
           style={{ width: 200 }}
         >
-          <Select.Option value="all">Question Visibility</Select.Option>
+          <Select.Option value="all">Visibility</Select.Option>
           <Select.Option value="visible">Visible Only</Select.Option>
           <Select.Option value="hidden">Hidden Only</Select.Option>
         </Select>
@@ -288,6 +313,7 @@ export default function AsyncQuestionsPage({
         <div className="mb-4 flex items-center gap-x-4">
           <RenderQuestionStatusFilter />
           <RenderVisibleFilter />
+          {!isStaff && <RenderCreatorFilter />}
           <RenderQuestionTypeFilter />
         </div>
       </>
@@ -323,7 +349,7 @@ export default function AsyncQuestionsPage({
           <RenderFilters />
           <RenderSortBy />
 
-          <RenderQuestionList questions={displayedQuestions} />
+          <RenderQuestionList renderQuestions={displayedQuestions} />
         </QueueListContainer>
       </Container>
       {isStaff ? (
@@ -333,12 +359,10 @@ export default function AsyncQuestionsPage({
           courseId={courseId}
         />
       ) : (
-        <AsyncQuestionForm
-          question={undefined}
+        <CreateAsyncQuestionForm
           visible={studentQuestionModal}
           onClose={() => setStudentQuestionModal(false)}
-          // refresh the queue after a question is added
-          onQuestionUpdated={mutateQuestions}
+          onStatusChange={mutateQuestions}
         />
       )}
     </>

@@ -97,7 +97,12 @@ function createQueueTab(
             onClick={onClose} // close the mobile drawer when clicked
           >
             <Link href="/course/[cid]/queue/[qid]" as={queuePath}>
-              <a>{openQueue.room}</a>
+              <a
+                aria-current={isSelected ? 'page' : 'false'}
+                tabIndex={isSelected ? -1 : null}
+              >
+                {openQueue.room}
+              </a>
             </Link>
           </QueueMenuItem>
         )
@@ -106,11 +111,17 @@ function createQueueTab(
   )
 }
 
-function createGeneralTab(tabItem: NavBarGeneralTabItem) {
+function createGeneralTab(tabItem: NavBarGeneralTabItem, currentPath: string) {
+  const isSelected = currentPath === tabItem.href
   return (
     <MenuItem key={tabItem.href}>
       <Link href={tabItem.href} as={tabItem.as}>
-        <a className={tabItem.className}>{tabItem.text}</a>
+        <a
+          className={tabItem.className}
+          aria-current={isSelected ? 'page' : 'false'}
+        >
+          {tabItem.text}
+        </a>
       </Link>
     </MenuItem>
   )
@@ -127,10 +138,11 @@ export default function NavBarTabs({
     <HorizontalMenu
       selectedKeys={[currentHref]}
       mode={horizontal ? 'horizontal' : 'vertical'}
+      tabIndex={0}
     >
       {tabs.map((tab) =>
         tab.text !== 'Queue'
-          ? createGeneralTab(tab as NavBarGeneralTabItem)
+          ? createGeneralTab(tab as NavBarGeneralTabItem, currentHref)
           : createQueueTab(tab as NavBarQueueTabItem, hrefAsPath, onClose),
       )}
     </HorizontalMenu>

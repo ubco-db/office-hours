@@ -2,12 +2,11 @@ import { Module } from '@nestjs/common';
 import { NotificationModule } from '../notification/notification.module';
 import { asyncQuestionController } from './asyncQuestion.controller';
 import { asyncQuestionService } from './asyncQuestion.service';
-import { MailModule, MailTestingModule } from '../mail/mail.module';
 
 @Module({
   controllers: [asyncQuestionController],
   providers: [asyncQuestionService],
-  imports: [NotificationModule, MailModule],
+  imports: [NotificationModule],
   exports: [asyncQuestionService],
 })
 export class asyncQuestionModule {}
@@ -15,7 +14,7 @@ export class asyncQuestionModule {}
 @Module({
   controllers: [asyncQuestionController],
   providers: [asyncQuestionService],
-  imports: [NotificationModule, MailTestingModule],
+  imports: [NotificationModule],
   exports: [asyncQuestionService],
 })
 export class asyncQuestionTestingModule {}

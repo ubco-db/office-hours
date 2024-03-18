@@ -18,8 +18,18 @@ const NoPaddingPopover: typeof Popover = styled(StyleablePopover)`
   }
 `
 
-const AvatarButton = styled.div`
+const AvatarButton = styled.button`
   cursor: pointer;
+  border: none;
+  padding: 0;
+  background: none;
+
+  // hover/focus effect
+  transition: transform 0.3s ease;
+  &:hover,
+  &:focus {
+    transform: scale(1.1);
+  }
 
   // give it a bit of margins in the mobile navbar drawer
   @media (max-width: 650px) {
@@ -28,27 +38,30 @@ const AvatarButton = styled.div`
   }
 `
 
-export default function ProfileDrawer(): ReactElement {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+export default function ProfileDrawer(ariaUser: string): ReactElement {
   return (
     <>
       <NoPaddingPopover
         content={
-          <Menu mode="inline">
-            <Menu.Item icon={<SettingOutlined />}>
-              <Link href={{ pathname: '/settings' }}>Settings</Link>
+          <Menu mode="inline" tabIndex={-1}>
+            <Menu.Item key="settings" icon={<SettingOutlined />} tabIndex={-1}>
+              <Link href={{ pathname: '/settings' }}>
+                <a aria-label="User Settings">Settings</a>
+              </Link>
             </Menu.Item>
-            <Menu.Item key="2" icon={<LogoutOutlined />}>
-              <Link href={'/api/v1/logout'}>Logout</Link>
+            <Menu.Item key="logout" icon={<LogoutOutlined />} tabIndex={-1}>
+              <Link href={'/api/v1/logout'}>
+                <a>Logout</a>
+              </Link>
             </Menu.Item>
           </Menu>
         }
         placement="bottomLeft"
-        trigger="click"
-        open={isPopoverOpen}
-        onOpenChange={setIsPopoverOpen}
+        trigger={['click']}
+        // insert the popup container right after the AvatarButton in the DOM to ensure you can tab to the menu items right away after opening the dropdown (normally, it will insert the popover at the top of the DOM, which will mess up the tab order)
+        getPopupContainer={(trigger) => trigger.parentNode as HTMLElement}
       >
-        <AvatarButton>
+        <AvatarButton aria-label="User Menu">
           {/* show a larger avatar icon for mobile */}
           <SelfAvatar className="hidden sm:inline-block" size={40} />
           <SelfAvatar className="inline-block sm:hidden" size={50} />

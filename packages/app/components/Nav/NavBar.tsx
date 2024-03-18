@@ -217,7 +217,7 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
   tabs.push({
     href: '/courses',
     as: `/courses`,
-    text: 'My Courses >',
+    text: 'My Courses \u200B>\u200B', // zero-width space, to make the arrow invisible to screen readers
   })
 
   return courseId ? (
@@ -226,13 +226,17 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
       <AlertsContainer courseId={courseId} />
       <Nav>
         {course?.organizationCourse && (
-          <a href={`/course/${course?.id}/today`}>
+          <a
+            href={`/course/${course?.id}/today`}
+            aria-hidden="true"
+            aria-disabled="true"
+            tabIndex={-1}
+          >
             <LogoContainer>
               <Logo>
                 <Image
                   width={40}
                   preview={false}
-                  alt="Organization Logo"
                   src={`/api/v1/organization/${profile?.organization.orgId}/get_logo/${profile?.organization.organizationLogoUrl}`}
                 />
               </Logo>
@@ -274,13 +278,14 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
           // put the organisation logo and name into the drawer title
           title={
             course?.organizationCourse && (
-              <span className="flex items-center ">
+              <span className="flex items-center " aria-hidden="true">
                 <LogoContainer>
                   <Logo>
                     <Image
                       width={30}
                       preview={false}
                       src={`/api/v1/organization/${profile?.organization.orgId}/get_logo/${profile?.organization.organizationLogoUrl}`}
+                      aria-hidden="true"
                     />
                   </Logo>
                 </LogoContainer>
@@ -310,14 +315,13 @@ export default function NavBar({ courseId }: NavBarProps): ReactElement {
     <>
       <NavBG />
       <Nav>
-        <LogoContainer>
+        <LogoContainer aria-hidden="true">
           <Logo>
             {profile?.organization && (
-              <a href="/courses">
+              <a href="/courses" aria-disabled="true" tabIndex={-1}>
                 <Image
                   width={40}
                   preview={false}
-                  alt="Organization Logo"
                   src={`/api/v1/organization/${profile?.organization.orgId}/get_logo/${profile?.organization.organizationLogoUrl}`}
                 />
               </a>
