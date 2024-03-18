@@ -382,7 +382,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
                 }
                 data-cy="join-queue-button"
                 onClick={joinQueue}
-                icon={<LoginOutlined />}
+                icon={<LoginOutlined aria-hidden="true" />}
                 title={
                   queue.staffList.length < 1
                     ? 'No staff are checked into this queue'

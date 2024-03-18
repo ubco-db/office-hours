@@ -233,7 +233,7 @@ export default function QuestionForm({
         {questionsTypeState.length > 0 ? (
           <section aria-labelledby="question-type-text">
             <QuestionText id="question-type-text">
-              What category(s) does your question fall under?
+              What categories does your question fall under?
             </QuestionText>
             <QuestionTypeSelector
               onChange={onTypeChange}

@@ -61,7 +61,7 @@ export default function ProfileDrawer(ariaUser: string): ReactElement {
         // insert the popup container right after the AvatarButton in the DOM to ensure you can tab to the menu items right away after opening the dropdown (normally, it will insert the popover at the top of the DOM, which will mess up the tab order)
         getPopupContainer={(trigger) => trigger.parentNode as HTMLElement}
       >
-        <AvatarButton aria-label="User Menu Button">
+        <AvatarButton aria-label="User Menu">
           {/* show a larger avatar icon for mobile */}
           <SelfAvatar className="hidden sm:inline-block" size={40} />
           <SelfAvatar className="inline-block sm:hidden" size={50} />
