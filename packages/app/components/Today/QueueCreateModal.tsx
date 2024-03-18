@@ -64,7 +64,7 @@ export default function QueueCreateModal({
           valuePropName="checked"
           tooltip="Online queues automatically open a Teams chat when helping a student"
         >
-          <Switch data-cy="qc-isonline" onChange={onIsOnlineUpdate} />
+          <Switch onChange={onIsOnlineUpdate} />
         </Form.Item>
 
         <Form.Item
@@ -73,13 +73,9 @@ export default function QueueCreateModal({
           name="allowTA"
           initialValue={true}
         >
-          <Radio.Group onChange={updateRoomName} data-cy="qc-allowTA">
-            <Radio data-cy="qc-allowTA-unchecked" value={false}>
-              Allow professors only
-            </Radio>
-            <Radio data-cy="qc-allowTA-checked" value={true}>
-              Allow TAs to check in
-            </Radio>
+          <Radio.Group onChange={updateRoomName}>
+            <Radio value={false}>Allow professors only</Radio>
+            <Radio value={true}>Allow TAs to check in</Radio>
           </Radio.Group>
         </Form.Item>
 
@@ -94,7 +90,6 @@ export default function QueueCreateModal({
           ]}
         >
           <Input
-            data-cy="qc-location"
             placeholder={'Ex: ISEC 102'}
             disabled={!locEditable}
             style={{ width: 350 }}
@@ -106,7 +101,7 @@ export default function QueueCreateModal({
           name="notes"
           style={{ width: '100%' }}
         >
-          <TextArea data-cy="qc-notes" rows={4} placeholder="Notes" />
+          <TextArea rows={4} placeholder="Notes" />
         </Form.Item>
       </Form>
     </Modal>

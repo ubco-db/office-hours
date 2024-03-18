@@ -91,7 +91,6 @@ export default function ProfileSettings(): ReactElement {
               <Form.Item
                 label="First Name"
                 name="firstName"
-                data-cy="firstNameInput"
                 rules={[
                   {
                     required: true,
@@ -107,7 +106,6 @@ export default function ProfileSettings(): ReactElement {
               <Form.Item
                 label="Last Name"
                 name="lastName"
-                data-cy="lastNameInput"
                 rules={[
                   {
                     required: true,
@@ -125,7 +123,6 @@ export default function ProfileSettings(): ReactElement {
               <Form.Item
                 label="Email"
                 name="email"
-                data-cy="emailInput"
                 rules={[
                   {
                     required: profile.accountType === AccountType.LEGACY,
@@ -141,7 +138,6 @@ export default function ProfileSettings(): ReactElement {
               <Form.Item
                 label="Student ID"
                 name="sid"
-                data-cy="studentIdInput"
                 rules={[
                   {
                     required: true,
@@ -157,7 +153,6 @@ export default function ProfileSettings(): ReactElement {
         <Button
           key="submit"
           type="primary"
-          data-cy="saveButton"
           onClick={handleOk}
           style={{ marginBottom: '15px' }}
         >

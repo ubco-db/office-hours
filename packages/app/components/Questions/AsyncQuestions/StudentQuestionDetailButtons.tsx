@@ -50,7 +50,6 @@ export default function StudentQuestionDetailButtons({
           <CantFindButton
             shape="circle"
             icon={<CloseOutlined />}
-            data-cy="cant-find-button"
             onClick={(event) => {
               setIsExpandedTrue(event)
             }}
@@ -64,7 +63,6 @@ export default function StudentQuestionDetailButtons({
             setAnswerQuestionVisbile(true)
             setIsExpandedTrue(event)
           }}
-          data-cy="edit-question-button"
         />
       </Tooltip>
       <UpdateQuestionForm

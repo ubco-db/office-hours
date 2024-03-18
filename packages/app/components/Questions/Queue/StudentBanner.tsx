@@ -88,7 +88,6 @@ export default function StudentBanner({
               </Tooltip>
               <Tooltip title="Finish Draft">
                 <BannerButton
-                  data-cy="edit-question"
                   icon={<EditOutlined />}
                   onClick={async () => {
                     editQuestion()
@@ -115,11 +114,7 @@ export default function StudentBanner({
             <>
               <LeaveQueueButton leaveQueue={leaveQueue} />
               <Tooltip title="Edit Question">
-                <BannerButton
-                  data-cy="edit-question"
-                  icon={<EditOutlined />}
-                  onClick={editQuestion}
-                />
+                <BannerButton icon={<EditOutlined />} onClick={editQuestion} />
               </Tooltip>
             </>
           }
@@ -183,7 +178,6 @@ export default function StudentBanner({
                     })
                   }}
                   type="primary"
-                  data-cy="re-join-queue"
                   size="large"
                 />
               </Tooltip>
@@ -220,11 +214,7 @@ export default function StudentBanner({
             <>
               <LeaveQueueButton leaveQueue={leaveQueue} />
               <Tooltip title="Edit Question">
-                <BannerButton
-                  data-cy="edit-question"
-                  icon={<EditOutlined />}
-                  onClick={editQuestion}
-                />
+                <BannerButton icon={<EditOutlined />} onClick={editQuestion} />
               </Tooltip>
             </>
           }
@@ -245,10 +235,7 @@ function LeaveQueueButton({ leaveQueue }: { leaveQueue: () => void }) {
       onConfirm={leaveQueue}
     >
       <Tooltip title="Leave Queue">
-        <BannerDangerButton
-          data-cy="leave-queue"
-          icon={<DeleteRowOutlined />}
-        />
+        <BannerDangerButton icon={<DeleteRowOutlined />} />
       </Tooltip>
     </Popconfirm>
   )

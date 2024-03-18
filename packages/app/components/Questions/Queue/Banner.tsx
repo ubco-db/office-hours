@@ -52,7 +52,7 @@ interface BannerProps {
  */
 export default function Banner(props: BannerProps): ReactElement {
   return (
-    <BannerContainer data-cy="banner">
+    <BannerContainer>
       <TitleContainer color={props.titleColor}>
         <Title>{props.title}</Title>
         <ButtonContainer>{props.buttons}</ButtonContainer>

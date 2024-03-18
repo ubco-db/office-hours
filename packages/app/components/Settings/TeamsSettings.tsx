@@ -50,7 +50,6 @@ export default function TeamsSettings(): ReactElement {
                 <Form.Item
                   label="Default Teams Message"
                   name="defaultMessage"
-                  data-cy="defaultMessageInput"
                   rules={[
                     {
                       required: true,

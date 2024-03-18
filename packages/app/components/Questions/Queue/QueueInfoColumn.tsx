@@ -160,7 +160,7 @@ export function QueueInfoColumn({
     <InfoColumnContainer>
       {/* only show the queue title and warning here on desktop, move down on mobile */}
       <QueueInfo className="justify-left hidden items-center sm:flex">
-        <QueueTitle data-cy="room-title">
+        <QueueTitle>
           {queue?.room} {queue?.isDisabled && <b>(disabled)</b>}
         </QueueTitle>
 
@@ -168,7 +168,6 @@ export function QueueInfoColumn({
           {!queue.allowQuestions && (
             <Tooltip title="This queue is no longer accepting questions">
               <StopOutlined
-                data-cy="stopQuestions"
                 style={{ color: 'red', fontSize: '24px', marginLeft: '8px' }}
               />
             </Tooltip>
@@ -251,7 +250,6 @@ export function QueueInfoColumn({
           {/* Hide button on mobile (it gets moved to edit queue modal) */}
           <DisableQueueButton
             onClick={() => confirmDisable(queueId, queue)}
-            data-cy="queue-disable-button"
             disabled={queue?.isDisabled}
           >
             {queue?.isDisabled ? `Queue deleted` : `Delete Queue`}

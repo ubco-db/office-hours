@@ -264,7 +264,6 @@ export function EditQueueModal({
             <div className="flex flex-row space-x-4">
               <DisableQueueButton
                 onClick={() => confirmDisable(queueId, queue)}
-                data-cy="queue-disable-button"
                 disabled={queue?.isDisabled}
                 className="!w-fit"
               >

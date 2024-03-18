@@ -249,7 +249,7 @@ export default function SchedulePanel({
                   name="repeat"
                   valuePropName="checked"
                 >
-                  <Switch data-cy="repeat-toggle" />
+                  <Switch />
                 </Form.Item>
               </Form>
             </Modal>

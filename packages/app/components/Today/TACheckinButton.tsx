@@ -93,7 +93,6 @@ export default function TACheckinButton({
           type="default"
           size="large"
           disabled={disabled}
-          data-cy="check-out-button"
           onClick={async () => {
             await API.taStatus.checkOut(courseId, room)
             mutateCourse()
@@ -110,7 +109,6 @@ export default function TACheckinButton({
           size="large"
           onClick={() => checkInTA()}
           disabled={disabled || !course}
-          data-cy="check-in-button"
           className={className}
           icon={<LoginOutlined />}
         >

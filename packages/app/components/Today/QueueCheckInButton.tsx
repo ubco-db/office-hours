@@ -113,7 +113,6 @@ export default function TodayPageCheckinButton({
         <CheckinButton
           type="default"
           size="large"
-          data-cy="check-in-modal-button"
           onClick={() => renderProperModal()}
           className="w-fit"
           icon={<LoginOutlined />}

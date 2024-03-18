@@ -36,7 +36,6 @@ export function TAquestionDetailButtons({
           <CantFindButton
             shape="circle"
             icon={<CloseOutlined />}
-            data-cy="cant-find-button"
             onClick={(event) => {
               setIsExpandedTrue(event)
             }}
@@ -50,7 +49,6 @@ export function TAquestionDetailButtons({
             setAnswerQuestionVisbile(true)
             setIsExpandedTrue(event)
           }}
-          data-cy="finish-helping-button"
         />
       </Tooltip>
       <AnswerQuestionModal
