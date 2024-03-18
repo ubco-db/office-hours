@@ -164,7 +164,10 @@ export default function AsyncQuestionsPage({
             isStaff={false}
             buttons={
               <>
-                <EditQueueButton onClick={() => setStudentQuestionModal(true)}>
+                <EditQueueButton
+                  onClick={() => setStudentQuestionModal(true)}
+                  id="post-question-button"
+                >
                   Post your Question
                 </EditQueueButton>
                 <div style={{ marginBottom: '12px' }}></div>

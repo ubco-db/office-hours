@@ -25,6 +25,10 @@ export default function Queue(): ReactElement {
           <Head>
             <title> UBC Office Hours</title>
           </Head>
+          {/* accessiblity thing that lets users skip tabbing through the navbar */}
+          <a href={`#post-question-button`} className="skip-link">
+            Skip to main content
+          </a>
           <NavBar courseId={Number(cid)} />
           <AsyncQuestionsPage courseId={Number(cid)} />
         </Container>
