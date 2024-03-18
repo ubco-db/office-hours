@@ -1,4 +1,4 @@
-### server .env (place in packages/server)
+## server .env (place in packages/server)
 
 ###### DB_URL
 
@@ -115,7 +115,7 @@
 **How to get:** Probably fine to leave as is.
 
 
-### client .env (place in packages/app)
+## client .env (place in packages/app)
 
 ###### NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 
