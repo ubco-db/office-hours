@@ -17,7 +17,7 @@ import {
 import 'reflect-metadata'
 import { Cache } from 'cache-manager'
 
-export const PROD_URL = 'https://help.cosc304.ok.ubc.ca'
+export const PROD_URL = 'https://coursehelp.ubc.ca'
 
 // Get domain. works on node and browser
 const domain = (): string | false =>
