@@ -11,6 +11,8 @@ export default function ProfileSettings(): ReactElement {
   )
   const [form] = Form.useForm()
 
+  const [screenReaderMessage, setScreenReaderMessage] = React.useState(' ')
+
   const editProfile = async (updateProfile: UpdateProfileParams) => {
     let newProfile = null
 
@@ -67,10 +69,16 @@ export default function ProfileSettings(): ReactElement {
 
     form.setFieldsValue(newProfile)
     message.success('Your profile settings have been successfully updated')
+    setScreenReaderMessage(
+      'Your profile settings have been successfully updated',
+    )
   }
 
   return profile ? (
     <div>
+      <div aria-live="polite" className="sr-only">
+        {screenReaderMessage}
+      </div>
       <Card title="Personal Information" className="mt-5">
         <Form
           wrapperCol={{ span: 24 }}

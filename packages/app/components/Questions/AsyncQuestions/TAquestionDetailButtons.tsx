@@ -9,9 +9,11 @@ import { CantFindButton, FinishHelpingButton } from '../Queue/Banner'
 export function TAquestionDetailButtons({
   question,
   setIsExpandedTrue,
+  onStatusChange,
 }: {
   question: AsyncQuestion
   setIsExpandedTrue: (event) => void
+  onStatusChange: () => void
 }): ReactElement {
   const [answerQuestionVisible, setAnswerQuestionVisbile] = useState(false)
 
@@ -22,10 +24,12 @@ export function TAquestionDetailButtons({
         okText="Yes"
         cancelText="No"
         onConfirm={async () => {
-          message.success('Removed Question')
           await API.asyncQuestions.update(question.id, {
             status: asyncQuestionStatus.TADeleted,
+            visible: false,
           })
+          message.success('Removed Question')
+          onStatusChange()
         }}
       >
         <Tooltip title="Delete Question">
@@ -33,7 +37,9 @@ export function TAquestionDetailButtons({
             shape="circle"
             icon={<CloseOutlined />}
             data-cy="cant-find-button"
-            onClick={(event) => setIsExpandedTrue(event)}
+            onClick={(event) => {
+              setIsExpandedTrue(event)
+            }}
           />
         </Tooltip>
       </Popconfirm>

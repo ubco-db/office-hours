@@ -30,7 +30,7 @@ const config = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  i18n: {
+  i18n: { // speaking language configuration
     locales: ["en"],
     defaultLocale: "en",
   },

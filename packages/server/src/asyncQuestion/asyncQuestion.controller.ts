@@ -5,8 +5,6 @@ import {
   AsyncQuestion,
   asyncQuestionStatus,
   UpdateAsyncQuestions,
-  sendEmailAsync,
-  asyncQuestionEventType,
 } from '@koh/common';
 import {
   Body,
@@ -28,6 +26,7 @@ import { AsyncQuestionModel } from './asyncQuestion.entity';
 import { asyncQuestionService } from './asyncQuestion.service';
 import { CourseModel } from 'course/course.entity';
 import { MailService } from 'mail/mail.service';
+import { UserCourseModel } from 'profile/user-course.entity';
 import { Response } from 'express';
 import { AsyncQuestionVotesModel } from './asyncQuestionVotes.entity';
 import { EmailVerifiedGuard } from 'guards/email-verified.guard';
@@ -123,8 +122,9 @@ export class asyncQuestionController {
         answerText: body.answerText || null,
         aiAnswerText: body.aiAnswerText,
         questionTypes: body.questionTypes,
-        status: asyncQuestionStatus.Waiting,
-        visible: body.visible || false,
+        status: body.status || asyncQuestionStatus.AIAnswered,
+        visible: false,
+        verified: false,
         createdAt: new Date(),
       }).save();
       res.status(HttpStatus.CREATED).send(question);
@@ -142,10 +142,11 @@ export class asyncQuestionController {
   async updateQuestion(
     @Param('questionId') questionId: number,
     @Body() body: UpdateAsyncQuestions,
+    @User() user: UserModel,
   ): Promise<AsyncQuestion> {
     const question = await AsyncQuestionModel.findOne({
       where: { id: questionId },
-      relations: ['creator', 'images'],
+      relations: ['creator'],
     });
     if (question === undefined) {
       throw new NotFoundException();
@@ -157,30 +158,31 @@ export class asyncQuestionController {
     //If not creator, check if user is TA/PROF of course of question
 
     Object.assign(question, body);
-    question.closedAt = new Date();
-    question.save().then(async () => {
-      //send notification
-      const receiver = await UserModel.findOne({
+    if (
+      body.status === asyncQuestionStatus.HumanAnswered ||
+      body.status === asyncQuestionStatus.AIAnsweredResolved
+    ) {
+      question.closedAt = new Date();
+    }
+    if (body.status === asyncQuestionStatus.HumanAnswered) {
+      question.taHelpedId = user.id;
+    }
+    // if creator, can update question anytime
+    // otherwise has to be TA/PROF of course
+    if (question.creatorId !== user.id) {
+      const requester = await UserCourseModel.findOne({
         where: {
-          id: question.creatorId,
+          userId: user.id,
         },
       });
-      if (!receiver) {
-        throw NotFoundException;
+      if (requester.role === Role.STUDENT) {
+        throw new HttpException(
+          'No permission to update question.',
+          HttpStatus.UNAUTHORIZED,
+        );
       }
-      const post: sendEmailAsync = {
-        receiver: receiver.email,
-        subject: 'UBC helpme Async question status change',
-        type: asyncQuestionEventType.deleted,
-      };
-      if (body.status === asyncQuestionStatus.Resolved) {
-        post.type = asyncQuestionEventType.answered;
-        this.mailService.sendEmail(post);
-      } else if (body.status === asyncQuestionStatus.TADeleted) {
-        post.type = asyncQuestionEventType.deleted;
-        this.mailService.sendEmail(post);
-      }
-    });
+    }
+    question.save();
     return question;
   }
 }

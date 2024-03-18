@@ -9,7 +9,6 @@ import {
   LimboQuestionStatus,
   OpenQuestionStatus,
   Question,
-  QuestionStatusKeys,
   Role,
 } from '@koh/common'
 import { useTAInQueueInfo } from '../../../hooks/useTAInQueueInfo'
@@ -20,7 +19,7 @@ import {
   VerticalDivider,
 } from '../Shared/SharedComponents'
 import { QueueInfoColumn } from '../Queue/QueueInfoColumn'
-import { Popconfirm, Tooltip, message, notification, Spin } from 'antd'
+import { Popconfirm, Tooltip, message, notification, Spin, Button } from 'antd'
 import TACheckinButton from '../../Today/TACheckinButton'
 import styled from 'styled-components'
 import { useStudentQuestion } from '../../../hooks/useStudentQuestion'
@@ -259,18 +258,30 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
       closeEditModal()
       if (isFirstQuestion) {
         notification.warn({
-          style: { cursor: 'pointer' },
           message: 'Enable Notifications',
           className: 'hide-in-percy',
-          description:
-            "Turn on notifications for when it's almost your turn to get help.",
+          description: (
+            <div>
+              <span id="enable-notifications-text">
+                Turn on notifications for when it&apos;s almost your turn to get
+                help.
+              </span>
+              <Button
+                onClick={() => {
+                  notification.destroy()
+                  setIsFirstQuestion(false)
+                  router.push(`/settings?cid=${cid}`)
+                }}
+                className="ml-2"
+                aria-describedby="enable-notifications-text"
+                aria-label="Enable Notifications"
+              >
+                Enable Now
+              </Button>
+            </div>
+          ),
           placement: 'bottomRight',
           duration: 0,
-          onClick: () => {
-            notification.destroy()
-            setIsFirstQuestion(false)
-            router.push(`/settings?cid=${cid}`)
-          },
         })
       }
     },
@@ -361,15 +372,22 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
               onVisibleChange={setShowJoinPopconfirm}
             >
               <JoinButton
+                id="join-queue-button"
                 type="primary"
                 disabled={
                   !queue?.allowQuestions ||
                   queue?.isDisabled ||
-                  isJoinQueueModalLoading
+                  isJoinQueueModalLoading ||
+                  queue.staffList.length < 1 // the endpoint will throw a 500 error if you try to join with no staff in the queue
                 }
                 data-cy="join-queue-button"
                 onClick={joinQueue}
-                icon={<LoginOutlined />}
+                icon={<LoginOutlined aria-hidden="true" />}
+                title={
+                  queue.staffList.length < 1
+                    ? 'No staff are checked into this queue'
+                    : ''
+                }
               >
                 Join Queue
               </JoinButton>
@@ -397,7 +415,7 @@ export default function QueuePage({ qid, cid }: QueuePageProps): ReactElement {
 
   function RenderQueueQuestions({ questions }: QueueProps) {
     return (
-      <div data-cy="queueQuestions">
+      <div data-cy="queueQuestions" aria-label="Queue questions">
         {questions?.length === 0 ? (
           <NoQuestionsText>There are no questions in the queue</NoQuestionsText>
         ) : (

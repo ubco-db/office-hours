@@ -1,6 +1,6 @@
 import { ReactElement, useEffect, useState } from 'react'
 import Modal from 'antd/lib/modal/Modal'
-import { Input, Form, Button, message, Checkbox, Image } from 'antd'
+import { Input, Form, Button, message, Switch } from 'antd'
 import { API } from '@koh/api-client'
 import { AsyncQuestion, asyncQuestionStatus } from '@koh/common'
 import { default as React } from 'react'
@@ -27,7 +27,8 @@ export function AnswerQuestionModal({
       .update(question.id, {
         answerText: value.answerText,
         visible: visibleStatus,
-        status: asyncQuestionStatus.Resolved,
+        status: asyncQuestionStatus.HumanAnswered,
+        verified: value.verified,
       })
       .then((value) => {
         if (value) {
@@ -40,7 +41,7 @@ export function AnswerQuestionModal({
   return (
     <Modal
       title="Post/Edit response to Student question"
-      visible={visible}
+      open={visible}
       onCancel={onClose}
       footer={[
         <Button key="back" onClick={onClose}>
@@ -65,16 +66,6 @@ export function AnswerQuestionModal({
           <strong>{question.questionAbstract}</strong>
         </p>
         <p> {question.questionText}</p>
-        {question?.images.map((i) => {
-          return (
-            <Image
-              height={100}
-              src={`/api/v1/image/${i.id}`}
-              alt="none"
-              key={i.id}
-            />
-          )
-        })}
         <br></br>
       </span>
       <br></br>
@@ -86,6 +77,24 @@ export function AnswerQuestionModal({
           visible: question.visible,
         }}
       >
+        <Form.Item
+          name="visible"
+          label="Set question visible to all students"
+          valuePropName="checked"
+        >
+          <Switch
+            checkedChildren="visible"
+            unCheckedChildren="hidden"
+            onChange={(checked) => setVisibleStatus(checked)}
+          />
+        </Form.Item>
+        <Form.Item
+          name="verified"
+          label="Mark as verified by faculty"
+          valuePropName="checked"
+        >
+          <Switch checkedChildren="verified" unCheckedChildren="unverified" />
+        </Form.Item>
         <Form.Item
           name="answerText"
           rules={[{ required: true, message: 'Please input your response.' }]}

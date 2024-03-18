@@ -189,3 +189,52 @@ body {
 .glowy:after {
 	filter: blur(1.5px);
 }
+
+/* make selected links (i.e. the page you are currently on) hover a different colour (hovering on a selected link would appear the same)
+.ant-menu-horizontal > .ant-menu-item-selected.ant-menu-item a {
+    transition: text-shadow 0.3s ease;
+    text-shadow: 0px 0px 0px transparent;
+}
+.ant-menu-horizontal > .ant-menu-item-selected.ant-menu-item a:hover {
+    text-shadow: 0px 0px 1px #000;
+} */
+
+/* for testing -> all focussed elements get a yellow highlight background */
+/* *:focus {
+    background-color: blueviolet !important;
+} */
+
+ /* this is purely just to give the CustomCard the hover effect when it gets focused (when tabbing through the queues) */
+ a .ant-card.open-queue-card {
+    transition: box-shadow 0.3s ease;
+  }
+  
+  a:focus-within .ant-card.open-queue-card {
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.45);
+  }
+  
+  a:focus-within .ant-card.open-queue-card .ant-card-head {
+    background: rgb(47, 76, 128) !important;
+    transition: color 0.3s ease-in-out !important;
+  }
+  
+  /* // make the green arrow right on hover (still uncertain on whether to keep this) */
+  a:focus-within .ant-card.open-queue-card .anticon.anticon-right {
+    color: lightgreen;
+    transition: color 0.3s ease-in-out;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s ease;
+  }
+  
+  .skip-link:focus {
+    top: 0;
+  }
