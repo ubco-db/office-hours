@@ -120,6 +120,7 @@ export function CheckableQuestionType({
       onBlur={handleBlur}
       tabIndex={0}
       role="checkbox"
+      aria-checked={checked}
     >
       <Text style={{ fontSize: 'smaller', color: textColor }}>{typeName}</Text>
     </div>
