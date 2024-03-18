@@ -409,11 +409,20 @@ export enum ClosedQuestionStatus {
 }
 
 export enum asyncQuestionStatus {
-  Resolved = 'Resolved',
+  AIAnsweredNeedsAttention = 'AIAnsweredNeedsAttention', // AI has answered, but the answer is unsatisfactory.
+  AIAnsweredResolved = 'AIAnsweredResolved', // AI has answered, and the answer is satisfactory.
+  HumanAnswered = 'HumanAnswered', // A human (professor/TA) has provided an answer.
+  AIAnswered = 'AIAnswered', // AI has answered
   TADeleted = 'TADeleted',
   StudentDeleted = 'StudentDeleted',
-  Waiting = 'Waiting',
 }
+
+export enum resolutionSource {
+  AI = 'AI',
+  Human = 'Human',
+  NotAnswerable = 'NotAnswerable',
+}
+
 export const StatusInQueue = [
   OpenQuestionStatus.Drafting,
   OpenQuestionStatus.Queued,
@@ -471,8 +480,8 @@ export class AsyncQuestion {
   @IsInt()
   creatorId?: number
 
-  @Type(() => UserPartial)
-  taHelped?: UserPartial
+  @Type(() => User)
+  taHelped?: User
 
   @Type(() => Date)
   createdAt?: Date
@@ -483,9 +492,6 @@ export class AsyncQuestion {
   @IsOptional()
   @IsString()
   status?: asyncQuestionStatus
-
-  @IsOptional()
-  images?: Image[]
 
   @IsOptional()
   @IsString()
@@ -507,7 +513,9 @@ export class AsyncQuestion {
   visible?: boolean
 
   @IsOptional()
-  @IsArray()
+  @IsBoolean()
+  verified?: boolean
+
   votes?: AsyncQuestionVotes[]
 
   @IsOptional()
@@ -1009,19 +1017,6 @@ export class ListQuestionsResponse {
   unresolvedAlerts?: Array<AlertPayload>
 }
 
-export class AsyncQuestionResponse {
-  @Type(() => Question)
-  waitingQuestions!: Array<AsyncQuestion>
-
-  @Type(() => Question)
-  helpedQuestions!: Array<AsyncQuestion>
-
-  @Type(() => Question)
-  otherQuestions!: Array<AsyncQuestion>
-
-  @Type(() => Question)
-  visibleQuestions!: Array<AsyncQuestion>
-}
 export class GetQuestionResponse extends Question {}
 
 export class GetStudentQuestionResponse extends Question {

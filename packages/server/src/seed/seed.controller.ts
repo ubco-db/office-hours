@@ -1,5 +1,5 @@
-import { CreateQuestionParams, OrganizationRole, Role } from '@koh/common';
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { OrganizationRole, Role } from '@koh/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AlertModel } from 'alerts/alerts.entity';
 import { CourseSectionMappingModel } from 'login/course-section-mapping.entity';
 import { LastRegistrationModel } from 'login/last-registration-model.entity';
@@ -38,6 +38,8 @@ import { OrganizationCourseModel } from 'organization/organization-course.entity
 import { OrganizationUserModel } from 'organization/organization-user.entity';
 import { CourseSettingsModel } from '../course/course_settings.entity';
 import { QuestionTypeModel } from 'questionType/question-type.entity';
+import { InteractionModel } from 'chatbot/interaction.entity';
+import { ChatbotQuestionModel } from 'chatbot/question.entity';
 
 @UseGuards(NonProductionGuard)
 @Controller('seeds')
@@ -65,11 +67,14 @@ export class SeedController {
     await this.seedService.deleteAll(DesktopNotifModel);
     await this.seedService.deleteAll(PhoneNotifModel);
     await this.seedService.deleteAll(AlertModel);
+    await this.seedService.deleteAll(ChatbotQuestionModel);
+    await this.seedService.deleteAll(InteractionModel);
     await this.seedService.deleteAll(UserModel);
     await this.seedService.deleteAll(CourseSectionMappingModel);
     await this.seedService.deleteAll(CourseModel);
     await this.seedService.deleteAll(SemesterModel);
     await this.seedService.deleteAll(OrganizationModel);
+    await this.seedService.deleteAll(QuestionTypeModel);
     await this.seedService.deleteAll(CourseSettingsModel);
     const manager = getManager();
     manager.query('ALTER SEQUENCE user_model_id_seq RESTART WITH 1;');

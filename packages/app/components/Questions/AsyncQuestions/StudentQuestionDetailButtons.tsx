@@ -5,7 +5,7 @@ import { message, Popconfirm, Tooltip } from 'antd'
 import React, { ReactElement, useState } from 'react'
 // import { useTAInQueueInfo } from "../../../hooks/useTAInQueueInfo";
 import { CantFindButton, FinishHelpingButton } from '../Queue/Banner'
-import { AsyncQuestionForm } from './AsyncQuestionForm'
+import { UpdateQuestionForm } from './UpdateAsyncQuestionForm'
 import { useAsnycQuestions } from '../../../hooks/useAsyncQuestions'
 //import { useTeams } from "../../../hooks/useTeams";
 
@@ -13,10 +13,12 @@ export default function StudentQuestionDetailButtons({
   courseId,
   question,
   setIsExpandedTrue,
+  onStatusChange,
 }: {
   courseId: number
   question: AsyncQuestion
   setIsExpandedTrue: (event) => void
+  onStatusChange: () => void
 }): ReactElement {
   const [answerQuestionVisible, setAnswerQuestionVisbile] = useState(false)
   // const handleCancel = () => {
@@ -25,9 +27,9 @@ export default function StudentQuestionDetailButtons({
   // const [form] = Form.useForm();
   const { mutateQuestions } = useAsnycQuestions(courseId)
 
-  if (question.status !== asyncQuestionStatus.Waiting) {
-    return <></>
-  }
+  // if (question.status !== asyncQuestionStatus.Waiting) {
+  //   return <></>
+  // }
   return (
     <>
       <Popconfirm
@@ -35,10 +37,13 @@ export default function StudentQuestionDetailButtons({
         okText="Yes"
         cancelText="No"
         onConfirm={async () => {
-          message.success('Question is removed')
+          // make sure that deleted questions are not visible
           await API.asyncQuestions.update(question.id, {
             status: asyncQuestionStatus.StudentDeleted,
+            visible: false,
           })
+          message.success('Removed Question')
+          onStatusChange()
         }}
       >
         <Tooltip title="Delete Question">
@@ -46,7 +51,9 @@ export default function StudentQuestionDetailButtons({
             shape="circle"
             icon={<CloseOutlined />}
             data-cy="cant-find-button"
-            onClick={(event) => setIsExpandedTrue(event)}
+            onClick={(event) => {
+              setIsExpandedTrue(event)
+            }}
           />
         </Tooltip>
       </Popconfirm>
@@ -60,9 +67,10 @@ export default function StudentQuestionDetailButtons({
           data-cy="edit-question-button"
         />
       </Tooltip>
-      <AsyncQuestionForm
+      <UpdateQuestionForm
         question={question}
         visible={answerQuestionVisible}
+        onStatusChange={onStatusChange}
         onClose={() => setAnswerQuestionVisbile(false)}
         onQuestionUpdated={mutateQuestions}
       />

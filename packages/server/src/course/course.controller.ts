@@ -1,5 +1,4 @@
 import {
-  AsyncQuestionResponse,
   asyncQuestionStatus,
   CoursePartial,
   CourseSettingsRequestBody,
@@ -112,18 +111,40 @@ export class CourseController {
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   async getAsyncQuestions(
     @Param('cid') cid: number,
-  ): Promise<AsyncQuestionResponse> {
+    @User() user: UserModel,
+    @Res() res: Response,
+  ): Promise<AsyncQuestionModel[]> {
+    const userCourse = await UserCourseModel.findOne({
+      where: {
+        user,
+        courseId: cid,
+      },
+    });
+
+    if (!userCourse) {
+      res.status(HttpStatus.NOT_FOUND).send({
+        message: ERROR_MESSAGES.profileController.userResponseNotFound,
+      });
+      return;
+    }
+
+    const isStaff =
+      userCourse.role === Role.TA || userCourse.role === Role.PROFESSOR;
+
     const all = await AsyncQuestionModel.find({
       where: {
         courseId: cid,
       },
-      relations: ['creator', 'course', 'images'],
+      relations: ['creator', 'taHelped'],
       order: {
         createdAt: 'DESC',
       },
     });
     if (!all) {
-      throw NotFoundException;
+      res.status(HttpStatus.NOT_FOUND).send({
+        message: ERROR_MESSAGES.questionController.notFound,
+      });
+      return;
     }
     // const course = await CourseModel.findOne({
     //   where: {
@@ -139,24 +160,23 @@ export class CourseController {
     //     ),
     //   );
     // }
-    const questions = new AsyncQuestionResponse();
-    questions.helpedQuestions = all.filter(
-      (question) => question.status === asyncQuestionStatus.Resolved,
-    );
-    questions.waitingQuestions = all.filter(
-      (question) => question.status === asyncQuestionStatus.Waiting,
-    );
-    questions.otherQuestions = all.filter(
-      (question) =>
-        question.status === asyncQuestionStatus.StudentDeleted ||
-        question.status === asyncQuestionStatus.TADeleted,
-    );
-    questions.visibleQuestions = all.filter(
-      (question) =>
-        question.visible === true &&
-        question.status !== asyncQuestionStatus.TADeleted,
-    );
-    return questions;
+    let questions;
+
+    if (isStaff) {
+      // Staff sees all questions except the ones deleted
+      questions = all.filter(
+        (question) =>
+          question.status !== asyncQuestionStatus.TADeleted &&
+          question.status !== asyncQuestionStatus.StudentDeleted,
+      );
+    } else {
+      // Students see their own questions and questions that are visible
+      questions = all.filter(
+        (question) => question.creatorId === user.id || question.visible,
+      );
+    }
+    res.status(HttpStatus.OK).send(questions);
+    return;
   }
 
   @Get('limited/:id/:code')
