@@ -1,10 +1,12 @@
-# UBC Office Hours
+# HelpMe Help System
 
-This app helps student navigate and queue in office hours. It solves the complex office hour queue system, makes it more convenient for students to ask questions, and easier for TA/Professors to manage office hours.
+Main features:
+- **Queues** that support in-person and virtual office hour or labs with instructors and teaching assistants
+- **Chatbot** for real-time answers about course content and course questions
+- **Asynchronous Queues** that allow students to ask questions outside of labs or office hours 
+- Built for UBC but **supports other organizations** (for more information, contact Ramon Lawrence ramon.lawrence@ubc.ca)
 
-The system was developed by Khoury College, but the forked project is adapted to use in UBCO.
-
-New features such as Chatbot built on concepts of retrieval augmented generation has been integrated through a different API service that is not part of this office hour system. 
+Note: the new Chatbot feature has been integrated through a different API service that is not part of this queue system. 
 
 ## Installation
 The easiest way to spin up the system is through Docker
@@ -13,13 +15,15 @@ Docker container uses a different environment variable file that can be found [h
 
 The docker image should only be used on cloud service or developer to verify the final changes in pull request; this is because API service's image needs to be rebuild when new code changes are made. Instead, follow the steps in this [section](#running-locally-outside-of-docker-container) if you constantly making changes to the API.
 
-1. Start the database and api services within a Docker:
+1. Set up your .env files (one in `packages/server` and one in `packages/app`) to match your environment. You can copy the `dev.env` (for `packages/app`) and `.env.docker` (for `packages/server`) files, rename them to `.env` and fill in the values. More details on the different enviroment variables and where you can get them are in the `ENVIRONMENT_VARIABLES.md` file in the root directory.
+
+2. Start the database and api services within a Docker:
 
 ```bash
 docker-compose build && docker-compose up
 ```
 
-2. Visit the app at http://localhost:80 (or http://localhost)
+3. Visit the app at http://localhost:80 (or http://localhost)
 
 
 ## Developing
